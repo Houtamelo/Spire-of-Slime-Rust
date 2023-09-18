@@ -2,55 +2,55 @@ use std::cell::{Ref, RefCell, RefMut};
 use std::rc::Rc;
 use fyrox::rand::Rng;
 use fyrox::rand::rngs::StdRng;
-use crate::combat::{Character, Manager, Side};
+use crate::combat::{Character, CombatState, Side};
 use crate::combat::effects::{MoveDirection};
 use crate::combat::effects::persistent::PersistentEffect as PersistentEffect;
 use crate::combat::effects::persistent as Persistent;
 use crate::combat::ModifiableStat;
 use crate::combat::ModifiableStat::{DEBUFF_RATE, DEBUFF_RES, MOVE_RATE, MOVE_RES, STUN_DEF};
 
-#[derive(Debug)]
+#[derive(Debug, Clone, PartialEq, Eq)]
 pub enum TargetApplier {
 	Arouse {
-		duration_ms: isize,
-		lust_per_sec: isize,
+		duration_ms: i64,
+		lust_per_sec: usize,
 	},
 	Buff {
-		duration_ms: isize,
+		duration_ms: i64,
 		stat: ModifiableStat,
 		modifier: isize,
 		apply_chance: Option<isize>,
 	},
 	MakeSelfGuardTarget { 
-		duration_ms: isize, 
+		duration_ms: i64, 
 	},
 	MakeTargetGuardSelf { 
-		duration_ms: isize,
+		duration_ms: i64,
 	},
 	Heal { 
 		base_multiplier: isize,
 	},
 	Lust {
-		min: isize,
-		max: isize,
+		min: usize,
+		max: usize,
 	},
 	Mark { 
-		duration_ms: isize,
+		duration_ms: i64,
 	},
 	Move {
 		direction: MoveDirection,
 		apply_chance: Option<isize>,
 	},
 	PersistentHeal {
-		duration_ms: isize,
-		heal_per_sec: isize,
+		duration_ms: i64,
+		heal_per_sec: usize,
 	},
 	Poison {
-		duration_ms: isize,
-		dmg_per_sec: isize,
+		duration_ms: i64,
+		dmg_per_sec: usize,
 	},
 	MakeTargetRiposte {
-		duration_ms: isize,
+		duration_ms: i64,
 		dmg_multiplier: isize,
 		acc: isize,
 	},
@@ -63,36 +63,20 @@ pub enum TargetApplier {
 }
 
 impl TargetApplier {
-	pub fn apply(&self, caster_rc: &Rc<RefCell<Character>>, caster_side: Side, target_rc: &Rc<RefCell<Character>>, target_side: &mut Side, seed: &mut StdRng, manager: &Manager) {
-		let caster: RefMut<Character> = match caster_rc.try_borrow_mut() {
-			Ok(some) => { some }
-			Err(err) => {
-				eprintln!("Trying to apply effects but caster is already borrowed: {:?}", err);
-				return;
-			}
-		};
-
-		let target: RefMut<Character> = match target_rc.try_borrow_mut() {
-			Ok(some) => { some }
-			Err(err) => {
-				eprintln!("Trying to apply effects but target is already borrowed: {:?}", err);
-				return;
-			}
-		};
+	pub fn apply(&self, caster_rc: &mut Rc<RefCell<Character>>, caster_side: Side, target_rc: &mut Rc<RefCell<Character>>, target_side: &mut Side, seed: &mut StdRng, manager: &CombatState) {
+		let caster = caster_rc.get_mut();
+		let target = target_rc.get_mut();
 
 		match self {
 			TargetApplier::Arouse { duration_ms, lust_per_sec } => {
 				target.persistent_effects.push(PersistentEffect::new_arousal(*duration_ms, *lust_per_sec));
 			}
 			TargetApplier::Buff{ duration_ms, stat, modifier, apply_chance } => {
-				match (apply_chance, Side::same_side(&caster_side, target_side)) {
-					(Some(chance), false) => {
-						let final_chance = chance + caster.stat(DEBUFF_RATE) - target.stat(DEBUFF_RES);
-						if seed.gen_range(0..100) > final_chance {
-							return;
-						}
+				if let (Some(chance), false) = (apply_chance, Side::same_side(&caster_side, target_side)) {
+					let final_chance = chance + caster.stat(DEBUFF_RATE) - target.stat(DEBUFF_RES);
+					if seed.gen_range(0..100) > final_chance {
+						return;
 					}
-					_ => {}
 				}
 				
 				target.persistent_effects.push(PersistentEffect::new_buff(*duration_ms, *stat, *modifier));
@@ -120,9 +104,9 @@ impl TargetApplier {
 					}
 					Some(girl) => {
 						
-						let actual_min: isize = *min.min(&(max - 1));
-						let lustAmount: isize = seed.gen_range(*min..=*max);
-						girl.lust += lustAmount;
+						let actual_min: usize = *min.min(&(max - 1));
+						let lustAmount: usize = seed.gen_range(*min..=*max);
+						girl.lust += lustAmount as isize;
 					}
 				}
 			}
@@ -130,14 +114,11 @@ impl TargetApplier {
 				target.persistent_effects.push(PersistentEffect::new_marked(*duration_ms));
 			}
 			TargetApplier::Move{ direction, apply_chance } => {
-				match (apply_chance, Side::same_side(&caster_side, target_side)) {
-					(Some(chance), false) => {
-						let final_chance = chance + caster.stat(MOVE_RATE) - target.stat(MOVE_RES);
-						if seed.gen_range(0..100) > final_chance {
-							return;
-						}
+				if let (Some(chance), false) = (apply_chance, Side::same_side(&caster_side, target_side)) {
+					let final_chance = chance + caster.stat(MOVE_RATE) - target.stat(MOVE_RES);
+					if seed.gen_range(0..100) > final_chance { 
+						return;
 					}
-					_ => {}
 				}
 
 				let direction: isize = match direction {
@@ -145,7 +126,7 @@ impl TargetApplier {
 					MoveDirection::ToEdge(amount) => { amount.abs() }
 				};
 
-				let (index_current, allies): (&mut usize, &Vec<Character>) = match target_side {
+				let (index_current, allies): (&mut usize, &Vec<Rc<RefCell<Character>>>) = match target_side {
 					Side::Left(pos) => (pos, &manager.left_characters),
 					Side::Right(pos) => (pos, &manager.right_characters),
 				};

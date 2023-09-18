@@ -2,15 +2,15 @@ use std::cell::{RefCell, RefMut};
 use std::rc::Rc;
 use fyrox::rand::Rng;
 use fyrox::rand::rngs::StdRng;
-use crate::combat::{Character, Manager, Side};
+use crate::combat::{Character, CombatState, Side};
 use crate::combat::effects::{MoveDirection};
 use crate::combat::effects::persistent;
 use crate::combat::effects::persistent::PersistentEffect as PersistentEffect;
 
-#[derive(Debug)]
+#[derive(Debug, Clone, PartialEq, Eq)]
 pub enum SelfApplier {
 	Buff {
-		duration_ms: isize,
+		duration_ms: i64,
 		stat: crate::combat::ModifiableStat,
 		modifier: isize,
 	},
@@ -18,21 +18,21 @@ pub enum SelfApplier {
 		base_multiplier: isize,
 	},
 	Lust {
-		min: isize,
-		max: isize,
+		min: usize,
+		max: usize,
 	},
 	Mark { 
-		duration_ms: isize,
+		duration_ms: i64,
 	},
 	Move { 
 		direction: MoveDirection,
 	},
 	PersistentHeal {
-		duration_ms: isize,
-		heal_per_sec: isize,
+		duration_ms: i64,
+		heal_per_sec: usize,
 	},
 	Riposte {
-		duration_ms: isize,
+		duration_ms: i64,
 		dmg_multiplier: isize,
 		acc: isize,
 	},
@@ -42,14 +42,9 @@ pub enum SelfApplier {
 }
 
 impl SelfApplier {
-	pub fn apply(&self, caster_rc: &Rc<RefCell<Character>>, side: &mut Side, seed: &mut StdRng, manager: &Manager) {
-		let caster: RefMut<Character> = match caster_rc.try_borrow_mut() {
-			Ok(some) => { some }
-			Err(err) => {
-				eprintln!("Trying to apply effects but caster is already borrowed: {:?}", err);
-				return;
-			}
-		};
+	pub fn apply(&self, caster_rc: &mut Rc<RefCell<Character>>, side: &mut Side, manager: &mut CombatState) {
+		let seed = &mut manager.seed;
+		let mut caster = caster_rc.get_mut();
 
 		match self
 		{
@@ -78,9 +73,9 @@ impl SelfApplier {
 						return;
 					}
 					Some(girl) => {
-						let actual_min: isize = *min.min(&(max - 1));
-						let lustAmount: isize = seed.gen_range(*min..=*max);
-						girl.lust += lustAmount;
+						let actual_min = *min.min(&(max - 1));
+						let lustAmount = seed.gen_range(*min..=*max);
+						girl.lust += lustAmount as isize;
 					}
 				}
 			}
@@ -93,7 +88,7 @@ impl SelfApplier {
 					MoveDirection::ToEdge  (amount) => { amount.abs() }
 				};
 
-				let (index_current, allies): (&mut usize, &Vec<Character>) = match side {
+				let (index_current, allies): (&mut usize, &Vec<Rc<RefCell<Character>>>) = match side {
 					Side::Left (pos) => (pos, &manager.left_characters),
 					Side::Right(pos) => (pos, &manager.right_characters),
 				};

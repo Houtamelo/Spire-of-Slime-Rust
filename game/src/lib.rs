@@ -2,6 +2,8 @@
 #![allow(unused_imports)]
 #![allow(unused_variables)]
 #![allow(nonstandard_style)]
+#![allow(clippy::needless_return)]
+#![allow(clippy::large_enum_variant)]
 
 //! Game project.
 
@@ -9,6 +11,9 @@ mod util;
 mod combat;
 
 pub const MAX_CHARACTERS_PER_TEAM: usize = 4;
+pub const STANDARD_INTERVAL_MS: i64 = 1000;
+pub const STANDARD_INTERVAL_S: i64 = STANDARD_INTERVAL_MS / 1000;
+pub const CONVERT_STANDARD_INTERVAL_TO_UNITCOUNT: i64 = STANDARD_INTERVAL_MS / 1000;
 
 use fyrox::{
     core::pool::Handle,

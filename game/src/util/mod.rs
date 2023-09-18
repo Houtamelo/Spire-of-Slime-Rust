@@ -30,3 +30,13 @@ pub struct Range {
 	pub min: isize,
 	pub max: isize,
 }
+
+impl Range {
+	pub(crate) fn new(min: isize, max: isize) -> Range {
+		return if min > max {
+			Range { min, max: min }
+		} else {
+			Range { min, max }
+		}
+	}
+}
