@@ -3,7 +3,15 @@ include!("defensive.rs");
 include!("lewd.rs");
 
 #[derive(Debug, Clone, PartialEq, Eq)]
-pub enum Skill {
+pub struct Skill {
+	key: Box<String>,
+	recovery_ms: i64,
+	charge_ms: i64,
+	skill_type: SkillType,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub enum SkillType {
 	Offensive(OffensiveSkill),
 	Defensive(DefensiveSkill),
 	Lewd(LewdSkill),
@@ -28,18 +36,18 @@ pub enum CRITMode {
 }
 
 #[derive(Debug, Clone, PartialEq, Eq)]
-pub struct PositionSetup {
+pub struct Positions {
 	indexes: [bool; MAX_CHARACTERS_PER_TEAM],
 }
 
 #[derive(Debug, Clone, PartialEq, Eq)]
-pub enum TargetSetup {
-	Allies  { positions: PositionSetup, multi_target: bool, allowance: TargetAllowance },
-	Enemies { positions: PositionSetup, multi_target: bool },
+pub enum AllowedTargets {
+	Allies  { positions: Positions, multi_target: bool, allowance: AllyAllowance },
+	Enemies { positions: Positions, multi_target: bool },
 }
 
 #[derive(Debug, Clone, PartialEq, Eq)]
-pub enum TargetAllowance {
+pub enum AllyAllowance {
 	CanSelf,
 	NotSelf,
 	OnlySelf

@@ -1,18 +1,16 @@
-use std::cell::{RefCell, RefMut};
-use std::rc::Rc;
 use fyrox::rand::Rng;
-use fyrox::rand::rngs::StdRng;
-use crate::combat::{CombatCharacter, CombatState, Side};
+use combat::ModifiableStat;
+use crate::combat;
+use crate::combat::{CombatCharacter, CombatState, Position};
 use crate::combat::effects::{MoveDirection};
-use crate::combat::effects::persistent;
-use crate::combat::effects::persistent::PersistentEffect as PersistentEffect;
+use crate::combat::effects::persistent::PersistentEffect;
 use crate::combat::entity::Entity;
 
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub enum SelfApplier {
 	Buff {
 		duration_ms: i64,
-		stat: crate::combat::ModifiableStat,
+		stat: ModifiableStat,
 		modifier: isize,
 	},
 	Heal { 
@@ -43,10 +41,8 @@ pub enum SelfApplier {
 }
 
 impl SelfApplier {
-	pub fn apply(&self, caster_rc: &mut Rc<RefCell<CombatCharacter>>, side: &mut Side, manager: &mut CombatState) {
+	pub fn apply(&self, caster: &mut CombatCharacter, manager: &mut CombatState) {
 		let seed = &mut manager.seed;
-		let mut caster = caster_rc.get_mut();
-
 		match self
 		{
 			SelfApplier::Buff{ duration_ms, stat, modifier } => {
@@ -75,7 +71,7 @@ impl SelfApplier {
 					}
 					Some(girl) => {
 						let actual_min = *min.min(&(max - 1));
-						let lustAmount = seed.gen_range(*min..=*max);
+						let lustAmount = seed.gen_range(actual_min..=*max);
 						girl.lust += lustAmount as isize;
 					}
 				}
@@ -89,13 +85,25 @@ impl SelfApplier {
 					MoveDirection::ToEdge  (amount) => { amount.abs() }
 				};
 
-				let (index_current, allies): (&mut usize, &Vec<Entity>) = match side {
-					Side::Left (pos) => (pos, &manager.left_characters),
-					Side::Right(pos) => (pos, &manager.right_characters),
+				let (index_current, allies) : (&mut usize, Vec<&mut Entity>) = match &mut caster.position {
+					Position::Left  { order: pos, .. } => (pos, manager.left_entities_mut ().collect()),
+					Position::Right { order: pos, .. } => (pos, manager.right_entities_mut().collect()),
 				};
 
-				let index_new = (((*index_current as isize) + direction) as usize).clamp(0, allies.len());
-				*index_current = index_new;
+				let mut allies_space_occupied = 0;
+				for ally in allies {
+					allies_space_occupied += ally.position().size();
+				}
+
+				let index_old = index_current.clone() as isize;
+				*index_current = usize::clamp(((*index_current as isize) + direction) as usize, 0, allies_space_occupied);
+				let index_delta = *index_current as isize - index_old;
+				let inverse_delta = -1 * index_delta;
+
+				for ally in allies {
+					let order = ally.position().order_mut();
+					*order = (*order as isize + inverse_delta) as usize;
+				}
 			}
 			SelfApplier::PersistentHeal{ duration_ms, heal_per_sec } => {
 				caster.persistent_effects.push(PersistentEffect::new_heal(*duration_ms, *heal_per_sec));
@@ -103,7 +111,7 @@ impl SelfApplier {
 			SelfApplier::Riposte{ duration_ms, dmg_multiplier, acc } => {
 				caster.persistent_effects.push( PersistentEffect::new_riposte(*duration_ms, *dmg_multiplier, *acc));
 			}
-			SelfApplier::Summon{ character_key } => {} //todo!
+			SelfApplier::Summon{ .. } => {} //todo!
 		}
 	}
 }

@@ -1,7 +1,6 @@
-use std::cell::RefCell;
-use std::rc::{Rc, Weak};
+use combat::ModifiableStat;
+use crate::combat;
 use crate::combat::CombatCharacter;
-use crate::combat::timeline::{EventType, TimelineEvent};
 
 #[derive(Debug, Clone)]
 pub enum PersistentEffect {
@@ -9,7 +8,7 @@ pub enum PersistentEffect {
 		duration_ms: i64,
 		accumulated_ms: i64,
 		dmg_per_sec: usize,
-		caster: Weak<RefCell<CombatCharacter>>,
+		caster_guid: usize,
 	},
 	Heal {
 		duration_ms: i64,
@@ -23,12 +22,12 @@ pub enum PersistentEffect {
 	},
 	Buff {
 		duration_ms: i64,
-		stat: crate::combat::ModifiableStat,
+		stat: ModifiableStat,
 		modifier: isize,
 	},
 	Guarded {
 		duration_ms: i64,
-		guarder: Weak<RefCell<CombatCharacter>>,
+		guarder_guid: usize,
 	},
 	Marked {
 		duration_ms: i64,
@@ -43,9 +42,9 @@ pub enum PersistentEffect {
 impl PartialEq for PersistentEffect {
 	fn eq(&self, other: &Self) -> bool {
 		match (self, other) {
-			(PersistentEffect::Poison { duration_ms: a_dur, accumulated_ms: a_acu, dmg_per_sec: a_dmg, caster: a_char }, 
-			 PersistentEffect::Poison { duration_ms: b_dur, accumulated_ms: b_acu, dmg_per_sec: b_dmg, caster: b_char })
-			=> a_dur == b_dur && a_acu == b_acu && a_dmg == b_dmg && Weak::ptr_eq(a_char, b_char),
+			(PersistentEffect::Poison { duration_ms: a_dur, accumulated_ms: a_acu, dmg_per_sec: a_dmg, caster_guid: a_guid }, 
+			 PersistentEffect::Poison { duration_ms: b_dur, accumulated_ms: b_acu, dmg_per_sec: b_dmg, caster_guid: b_guid })
+			=> a_dur == b_dur && a_acu == b_acu && a_dmg == b_dmg && a_guid == b_guid,
 			(PersistentEffect::Heal { duration_ms: a_dur, accumulated_ms: a_acu, heal_per_sec: a_heal }, 
 			 PersistentEffect::Heal { duration_ms: b_dur, accumulated_ms: b_acu, heal_per_sec: b_heal })
 			=> a_dur == b_dur && a_acu == b_acu && a_heal == b_heal,
@@ -55,9 +54,9 @@ impl PartialEq for PersistentEffect {
 			(PersistentEffect::Buff { duration_ms: a_dur, stat: a_stat, modifier: a_mod }, 
 			 PersistentEffect::Buff { duration_ms: b_dur, stat: b_stat, modifier: b_mod })
 			=> a_dur == b_dur && a_stat == b_stat && a_mod == b_mod,
-			(PersistentEffect::Guarded { duration_ms: a_dur, guarder: a_guarder }, 
-			 PersistentEffect::Guarded { duration_ms: b_dur, guarder: b_guarder })
-			=> a_dur == b_dur && Weak::ptr_eq(a_guarder, b_guarder),
+			(PersistentEffect::Guarded { duration_ms: a_dur, guarder_guid: a_guarder }, 
+			 PersistentEffect::Guarded { duration_ms: b_dur, guarder_guid: b_guarder })
+			=> a_dur == b_dur && a_guarder == b_guarder,
 			(PersistentEffect::Marked { duration_ms: a_dur }, 
 			 PersistentEffect::Marked { duration_ms: b_dur })
 			=> a_dur == b_dur,
@@ -74,39 +73,39 @@ impl Eq for PersistentEffect {}
 impl PersistentEffect {
 	pub fn tick(&mut self, ms: i64) {
 		match self {
-			PersistentEffect::Poison { duration_ms, accumulated_ms, dmg_per_sec, caster} => {
+			PersistentEffect::Poison { duration_ms, accumulated_ms,.. } => {
 				*accumulated_ms += ms;
 				*duration_ms -= ms;
 			},
-			PersistentEffect::Heal{ duration_ms, accumulated_ms, heal_per_sec } => {
+			PersistentEffect::Heal{ duration_ms, accumulated_ms,.. } => {
 				*accumulated_ms += ms;
 				*duration_ms -= ms;
 			},
-			PersistentEffect::Arousal{ duration_ms, accumulated_ms, lust_per_sec } => {
+			PersistentEffect::Arousal{ duration_ms, accumulated_ms, .. } => {
 				*accumulated_ms += ms;
 				*duration_ms -= ms;
 			},
-			PersistentEffect::Buff{ duration_ms, stat, modifier } => {
+			PersistentEffect::Buff{ duration_ms,.. } => {
 				*duration_ms -= ms;
 			},
-			PersistentEffect::Guarded{ duration_ms, guarder } => {
+			PersistentEffect::Guarded{ duration_ms, .. } => {
 				*duration_ms -= ms;
 			},
 			PersistentEffect::Marked{ duration_ms } => {
 				*duration_ms -= ms;
 			},
-			PersistentEffect::Riposte{ duration_ms, dmg_multiplier, acc } => {
+			PersistentEffect::Riposte{ duration_ms, .. } => {
 				*duration_ms -= ms;
 			},
 		}
 	}
 	
-	pub fn new_poison(duration_ms: i64, dmg_per_sec: usize, caster: Weak<RefCell<CombatCharacter>>) -> Self { 
+	pub fn new_poison(duration_ms: i64, dmg_per_sec: usize, caster: &CombatCharacter) -> Self { 
 		PersistentEffect::Poison {
 			duration_ms,
 			accumulated_ms: 0,
 			dmg_per_sec,
-			caster,
+			caster_guid: caster.guid,
 		}
 	}
 	
@@ -126,7 +125,7 @@ impl PersistentEffect {
 		}
 	}
 	
-	pub fn new_buff(duration_ms: i64, stat: crate::combat::ModifiableStat, modifier: isize) -> Self { 
+	pub fn new_buff(duration_ms: i64, stat: ModifiableStat, modifier: isize) -> Self { 
 		PersistentEffect::Buff {
 			duration_ms,
 			stat,
@@ -134,10 +133,10 @@ impl PersistentEffect {
 		}
 	}
 	
-	pub fn new_guarded(duration_ms: i64, guarder: Weak<RefCell<CombatCharacter>>) -> Self { 
+	pub fn new_guarded(duration_ms: i64, guarder: &CombatCharacter) -> Self { 
 		PersistentEffect::Guarded {
 			duration_ms,
-			guarder,
+			guarder_guid: guarder.guid,
 		}
 	}
 	

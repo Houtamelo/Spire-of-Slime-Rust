@@ -1,6 +1,4 @@
 #![allow(dead_code)]
-#![allow(unused_imports)]
-#![allow(unused_variables)]
 #![allow(nonstandard_style)]
 #![allow(clippy::needless_return)]
 #![allow(clippy::large_enum_variant)]

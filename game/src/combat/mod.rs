@@ -1,15 +1,9 @@
-use std::cell::{BorrowError, BorrowMutError, Ref, RefCell, RefMut};
-use std::rc::Rc;
-use fyrox::core::algebra::clamp;
-use fyrox::event::VirtualKeyCode::Mute;
-use fyrox::rand::Rng;
+use std::iter::FilterMap;
+use std::slice::{Iter, IterMut};
 use fyrox::rand::rngs::StdRng;
-use fyrox::scene::base::PropertyValue::String;
-use crate::combat::effects::persistent;
-use crate::combat::ModifiableStat::{MOVE_RATE, MOVE_RES};
 use crate::combat::effects::onSelf::SelfApplier;
-use crate::combat::entity::{CombatCharacter, CharacterState, Entity};
-use crate::combat::timeline::{EventType, TimelineEvent};
+use crate::combat::entity::{CombatCharacter, CharacterState, Entity, Position};
+use crate::combat::timeline::{TimelineEvent};
 
 mod effects;
 mod skills;
@@ -19,8 +13,7 @@ mod entity;
 include!("stat.rs");
 
 pub struct CombatState {
-	left_characters: Vec<Entity>,
-	right_characters: Vec<Entity>,
+	characters: Vec<Entity>,
 	seed: StdRng,
 	elapsed_ms: i64,
 }
@@ -45,15 +38,10 @@ impl CombatState {
 		let mut should_break = false;
 		self.elapsed_ms += delta_time_ms;
 
-		let all_characters : Vec<&mut Rc<RefCell<CombatCharacter>>> = self.left_characters.iter_mut().filter_map(|entity| match entity{
-			Entity::Character(character) => { Some(character) }
-			Entity::Corpse => { None }
-		}).collect();
-		
+		let all_characters : Vec<&mut CombatCharacter> = self.all_characters_mut().collect();
 		
 		for character in all_characters {
-			let mut_char: &mut CombatCharacter = character.get_mut();
-			match &mut_char.state {
+			match &character.state {
 				CharacterState::Idle => {
 					// todo! run AI here
 				} 
@@ -72,93 +60,112 @@ impl CombatState {
 	
 	fn get_timeline_events(&self) -> Vec<TimelineEvent> {
 		let mut all_events: Vec<TimelineEvent> = Vec::new();
-		self.left_characters .iter().filter_map(|entity| match entity{
-			Entity::Character(character) => { Some(character) }
-			Entity::Corpse => { None }
-		}).for_each(|character_rc| TimelineEvent::register_character(character_rc, &mut all_events));
-		
-		self.right_characters.iter().filter_map(|entity| match entity{
-			Entity::Character(character) => { Some(character) }
-			Entity::Corpse => { None }
-		}).for_each(|character_rc| TimelineEvent::register_character(character_rc, &mut all_events));
-		
+		self.all_characters().for_each(|character| TimelineEvent::register_character(character, &mut all_events));
 		all_events.sort_by(|a, b| a.time_frame_ms.cmp(&b.time_frame_ms));
 		return all_events;
 	}
 	
-	fn apply_effect_self(&mut self, effect: SelfApplier, caster_rc: &mut Rc<RefCell<CombatCharacter>>) {
-		let mut side = match self.character_side(caster_rc){
-			Ok(ok) => {ok}
-			Err(err) => {
-				eprintln!("Trying to apply effects but caster is not in combat manager: {:?}", err);
-				return;
-			}
-		};
+	fn apply_effect_self(&mut self, effect: SelfApplier, caster: &mut CombatCharacter) {
+		effect.apply(caster,self);
+	}
 
-		match side {
-			Side::Left (index) => { self.left_characters.remove(index); }
-			Side::Right(index) => { self.right_characters.remove(index); }
-		};
+	pub fn left_characters(&self) -> FilterMap<Iter<Entity>, fn(&Entity) -> Option<&CombatCharacter>> {
+		return self.characters.iter().filter_map(|entity| match entity{
+			Entity::Character(character) => {
+				if let Position::Left { .. } = character.position {
+					Some(character)
+				}
+				else {
+					None
+				}
+			}
+			Entity::Corpse(_) => { None }
+		});
+	}
 		
-		effect.apply(caster_rc, &mut side, self);
+	pub fn left_characters_mut(&mut self) -> FilterMap<IterMut<Entity>, fn(&mut Entity) -> Option<&mut CombatCharacter>> {
+		return self.characters.iter_mut().filter_map(|entity| match entity{
+			Entity::Character(character) => {
+				if let Position::Left { .. } = character.position {
+					Some(character)
+				}
+				else {
+					None
+				}
+			}
+			Entity::Corpse(_) => { None }
+		});
 	}
 	
-	// Returns the side and index of the character with the given guid.
-	fn guid_side(&mut self, guid: usize) -> Result<Side, std::string::String> {
-		for i in 0..self.left_characters.len() {
-			if let Entity::Character(ch) = &mut self.left_characters[i] {
-				if ch.get_mut().guid == guid {
-					return Ok(Side::Left(i));
-				}
-			}
-		}
-		
-		for i in 0..self.right_characters.len() {
-			if let Entity::Character(ch) = &mut self.right_characters[i] {
-				if ch.get_mut().guid == guid {
-					return Ok(Side::Right(i));
-				}
-			}
-		}
-		
-		return Err(format!("Character with guid {} not found in combat manager", guid));
+	pub fn left_entities(&self) -> FilterMap<Iter<Entity>, fn(&Entity) -> Option<&Entity>> {
+		return self.characters.iter()
+				.filter_map(|entity|
+						if let Position::Left { .. } = entity.position() {
+							Some(entity)
+						} else { None });
+	}
+
+	pub fn left_entities_mut(&mut self) -> FilterMap<IterMut<Entity>, fn(&mut Entity) -> Option<&mut Entity>> {
+		return self.characters.iter_mut()
+				.filter_map(|entity|
+						if let Position::Left { .. } = entity.position() {
+							Some(entity)
+						} else { None });
 	}
 	
-	fn character_side(&self, character_rc: &Rc<RefCell<CombatCharacter>>) -> Result<Side, std::string::String> {
-		for i in 0..self.left_characters.len() {
-			if let Entity::Character(ch) = &self.left_characters[i] {
-				if Rc::ptr_eq(ch, character_rc) {
-					return Ok(Side::Left(i));
+	pub fn right_characters(&self) -> FilterMap<Iter<Entity>, fn(&Entity) -> Option<&CombatCharacter>> {
+		return self.characters.iter().filter_map(|entity| match entity{
+			Entity::Character(character) => { 
+				if let Position::Right { .. } = character.position {
+					Some(character)
 				}
+				else { None }
 			}
-		}
-		
-		for i in 0..self.right_characters.len() {
-			if let Entity::Character(ch) = &self.right_characters[i] {
-				if Rc::ptr_eq(ch, character_rc) {
-					return Ok(Side::Right(i));
-				}
-			}
-		}
-		
-		return Err(format!("Character {:?} not found in combat manager", character_rc));
+			Entity::Corpse(_) => { None }
+		});
 	}
-}
-
-
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
-pub enum Side {
-	Left(usize),
-	Right(usize),
-}
-
-impl Side {
-	pub fn same_side(a: &Side, b: &Side) -> bool {
-		return match (a, b) {
-			(Side::Left (_), Side::Left (_)) => true,
-			(Side::Right(_), Side::Right(_)) => true,
-			_ => false,
-		};
+	
+	pub fn right_characters_mut(&mut self) -> FilterMap<IterMut<Entity>, fn(&mut Entity) -> Option<&mut CombatCharacter>> {
+		return self.characters.iter_mut().filter_map(|entity| match entity{
+			Entity::Character(character) => { 
+				if let Position::Right { .. } = character.position {
+					Some(character)
+				}
+				else { None }
+			}
+			Entity::Corpse(_) => { None }
+		});
+	}
+	
+	pub fn right_entities(&self) -> FilterMap<Iter<Entity>, fn(&Entity) -> Option<&Entity>> {
+		return self.characters.iter()
+				.filter_map(|entity| 
+						if let Position::Right { .. } = entity.position() {
+							Some(entity) 
+						} 
+						else { None });
+	}
+	
+	pub fn right_entities_mut(&mut self) -> FilterMap<IterMut<Entity>, fn(&mut Entity) -> Option<&mut Entity>> {
+		return self.characters.iter_mut().filter_map(|entity|
+				if let Position::Right { .. } = entity.position() {
+					Some(entity)
+				}
+				else { None });
+	}
+	
+	pub fn all_characters(&self) -> FilterMap<Iter<Entity>, fn(&Entity) -> Option<&CombatCharacter>> {
+		return self.characters.iter().filter_map(|entity| match entity{
+			Entity::Character(character) => { Some(character) }
+			Entity::Corpse(_) => { None }
+		});
+	}
+	
+	pub fn all_characters_mut(&mut self) -> FilterMap<IterMut<Entity>, fn(&mut Entity) -> Option<&mut CombatCharacter>> {
+		return self.characters.iter_mut().filter_map(|entity| match entity{
+			Entity::Character(character) => { Some(character) }
+			Entity::Corpse(_) => { None }
+		});
 	}
 }
 

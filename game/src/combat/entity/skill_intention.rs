@@ -1,9 +1,11 @@
+use crate::combat::skills::Skill;
+
 #[derive(Debug, Clone)]
 pub struct SkillIntention {
 	skill: Skill,
 	charge_progress: RemainingTicks,
 	recovery_after_complete: Option<RemainingTicks>,
-	chosen_target_position: PositionSetup,
+	chosen_target_position: Position,
 }
 
 impl PartialEq for SkillIntention {

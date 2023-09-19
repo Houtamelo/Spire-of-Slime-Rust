@@ -1,5 +1,4 @@
-use std::cell::{BorrowMutError, Ref, RefCell, RefMut};
-use std::rc::Rc;
+use std::cell::{Ref, RefCell, RefMut};
 use crate::combat::{CombatCharacter, ModifiableStat};
 use crate::combat::effects::onSelf::SelfApplier;
 use crate::combat::effects::onTarget::TargetApplier;
@@ -8,15 +7,12 @@ use crate::util::Range;
 
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct OffensiveSkill {
-	key: Box<String>,
-	recovery_ms: i64,
-	charge_ms: i64,
 	acc_mode: ACCMode,
 	dmg: DMGMode,
 	crit: CRITMode,
 	effects_self: Vec<SelfApplier>,
 	effects_target: Vec<TargetApplier>,
-	target_positions: PositionSetup, 
+	allowed_targets: AllowedTargets, 
 	multi_target: bool,
 	use_counter: UseCounter,
 }
@@ -56,7 +52,7 @@ impl OffensiveSkill {
 		return Some(acc + caster.stat(ModifiableStat::ACC) - target.stat(ModifiableStat::DODGE));
 	}
 	
-	pub fn calc_crit_chance(&self, caster: &CombatCharacter, target: &CombatCharacter) -> Option<isize> {
+	pub fn calc_crit_chance(&self, caster: &CombatCharacter) -> Option<isize> {
 		let crit = match self.crit {
 			CRITMode::CanCrit { crit } => { crit }
 			CRITMode::NeverCrit => { return None; }
