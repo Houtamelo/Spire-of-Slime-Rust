@@ -1,6 +1,6 @@
 use std::cell::{BorrowMutError, Ref, RefCell, RefMut};
 use std::rc::Rc;
-use crate::combat::{Character, ModifiableStat};
+use crate::combat::{CombatCharacter, ModifiableStat};
 use crate::combat::effects::onSelf::SelfApplier;
 use crate::combat::effects::onTarget::TargetApplier;
 use crate::MAX_CHARACTERS_PER_TEAM;
@@ -22,7 +22,7 @@ pub struct OffensiveSkill {
 }
 
 impl OffensiveSkill {
-	pub fn calc_dmg(&self, caster: &Character, target: &Character, crit: bool) -> Option<Range> {
+	pub fn calc_dmg(&self, caster: &CombatCharacter, target: &CombatCharacter, crit: bool) -> Option<Range> {
 		let (power, toughness_reduction) = match self.dmg {
 			DMGMode::Power { power, toughness_reduction } => { (power, toughness_reduction) } 
 			DMGMode::NoDamage => { return None; }
@@ -47,7 +47,7 @@ impl OffensiveSkill {
 		return Some(Range::new(dmg_min, dmg_max));
 	}
 	
-	pub fn calc_hit_chance(&self, caster: &Character, target: &Character) -> Option<isize> {
+	pub fn calc_hit_chance(&self, caster: &CombatCharacter, target: &CombatCharacter) -> Option<isize> {
 		let acc = match self.acc_mode {
 			ACCMode::CanMiss { acc } => { acc }
 			ACCMode::NeverMiss => { return None; }
@@ -56,7 +56,7 @@ impl OffensiveSkill {
 		return Some(acc + caster.stat(ModifiableStat::ACC) - target.stat(ModifiableStat::DODGE));
 	}
 	
-	pub fn calc_crit_chance(&self, caster: &Character, target: &Character) -> Option<isize> {
+	pub fn calc_crit_chance(&self, caster: &CombatCharacter, target: &CombatCharacter) -> Option<isize> {
 		let crit = match self.crit {
 			CRITMode::CanCrit { crit } => { crit }
 			CRITMode::NeverCrit => { return None; }

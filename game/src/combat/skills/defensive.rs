@@ -11,7 +11,7 @@ pub struct DefensiveSkill {
 }
 
 impl DefensiveSkill {
-	pub fn calc_crit_chance(&self, caster: &Character, target: &Character) -> Option<isize> {
+	pub fn calc_crit_chance(&self, caster: &CombatCharacter, target: &CombatCharacter) -> Option<isize> {
 		let crit = match self.crit {
 			CRITMode::CanCrit { crit } => { crit }
 			CRITMode::NeverCrit => { return None; }

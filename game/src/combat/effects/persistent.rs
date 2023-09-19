@@ -1,6 +1,6 @@
 use std::cell::RefCell;
 use std::rc::{Rc, Weak};
-use crate::combat::Character;
+use crate::combat::CombatCharacter;
 use crate::combat::timeline::{EventType, TimelineEvent};
 
 #[derive(Debug, Clone)]
@@ -9,7 +9,7 @@ pub enum PersistentEffect {
 		duration_ms: i64,
 		accumulated_ms: i64,
 		dmg_per_sec: usize,
-		caster: Weak<RefCell<Character>>,
+		caster: Weak<RefCell<CombatCharacter>>,
 	},
 	Heal {
 		duration_ms: i64,
@@ -28,7 +28,7 @@ pub enum PersistentEffect {
 	},
 	Guarded {
 		duration_ms: i64,
-		guarder: Weak<RefCell<Character>>,
+		guarder: Weak<RefCell<CombatCharacter>>,
 	},
 	Marked {
 		duration_ms: i64,
@@ -101,7 +101,7 @@ impl PersistentEffect {
 		}
 	}
 	
-	pub fn new_poison(duration_ms: i64, dmg_per_sec: usize, caster: Weak<RefCell<Character>>) -> Self { 
+	pub fn new_poison(duration_ms: i64, dmg_per_sec: usize, caster: Weak<RefCell<CombatCharacter>>) -> Self { 
 		PersistentEffect::Poison {
 			duration_ms,
 			accumulated_ms: 0,
@@ -134,7 +134,7 @@ impl PersistentEffect {
 		}
 	}
 	
-	pub fn new_guarded(duration_ms: i64, guarder: Weak<RefCell<Character>>) -> Self { 
+	pub fn new_guarded(duration_ms: i64, guarder: Weak<RefCell<CombatCharacter>>) -> Self { 
 		PersistentEffect::Guarded {
 			duration_ms,
 			guarder,

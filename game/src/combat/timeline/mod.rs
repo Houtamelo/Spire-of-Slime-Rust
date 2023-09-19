@@ -1,14 +1,15 @@
 use std::cell::{BorrowError, Ref, RefCell};
 use std::rc::{Rc, Weak};
-use crate::combat::{Character, SkillIntention};
+use crate::combat::{CombatCharacter};
 use crate::combat::effects::persistent::PersistentEffect;
 use crate::{CONVERT_STANDARD_INTERVAL_TO_UNITCOUNT, STANDARD_INTERVAL_MS, STANDARD_INTERVAL_S};
+use crate::combat::entity::{CharacterState, SkillIntention};
 
 #[derive(Debug, Clone)]
 pub struct TimelineEvent {
 	pub time_frame_ms: i64,
 	pub event_type: EventType,
-	pub character: Weak<RefCell<Character>>
+	pub character: Weak<RefCell<CombatCharacter>>
 }
 
 impl PartialEq for TimelineEvent {
@@ -22,7 +23,7 @@ impl PartialEq for TimelineEvent {
 impl Eq for TimelineEvent {}
 
 impl TimelineEvent {
-	pub fn register_character(character_rc: &Rc<RefCell<Character>>, events: &mut Vec<TimelineEvent>) {
+	pub fn register_character(character_rc: &Rc<RefCell<CombatCharacter>>, events: &mut Vec<TimelineEvent>) {
 		let character = match character_rc.try_borrow() {
 			Ok(ok) => { ok }
 			Err(err) => {
@@ -31,10 +32,19 @@ impl TimelineEvent {
 			}
 		};
 
-		let owner_down: Weak<RefCell<Character>> = Rc::downgrade(character_rc);
+		let owner_down: Weak<RefCell<CombatCharacter>> = Rc::downgrade(character_rc);
 		let mut current_ms: i64 = 0;
+		
+		match character.state {
+			CharacterState::Idle => {} 
+			CharacterState::Grappling { .. } => {} 
+			CharacterState::Downed { .. } => {}
+			CharacterState::Stunned { .. } => {} 
+			CharacterState::Charging { .. } => {} 
+			CharacterState::Recovering { .. } => {}
+		}
 
-		if let Some(girl) = &character.girl {
+		/*if let Some(girl) = &character.girl {
 			if let Some(downed) = &girl.downed{
 				let downed_ms = downed.remaining_ms;
 				if downed_ms > 0 {
@@ -63,15 +73,15 @@ impl TimelineEvent {
 				current_ms += skill_intention.charge_progress.remaining_ms;
 				events.push(TimelineEvent { time_frame_ms: current_ms, event_type: EventType::SkillIntention { intention_clone: skill_intention.clone() }, character: owner_down.clone() });
 			}
-		}
+		}*/
 
 		for status in &character.persistent_effects {
 			Self::register_status(status, character_rc, events);
 		}
 	}
 	
-	fn register_status(status: &PersistentEffect, owner_rc: &Rc<RefCell<Character>>, allEvents: &mut Vec<TimelineEvent>) {
-		let owner_down: Weak<RefCell<Character>> = Rc::downgrade(owner_rc);
+	fn register_status(status: &PersistentEffect, owner_rc: &Rc<RefCell<CombatCharacter>>, allEvents: &mut Vec<TimelineEvent>) {
+		let owner_down: Weak<RefCell<CombatCharacter>> = Rc::downgrade(owner_rc);
 		let event_end_ms = status.duration_remaining();
 		debug_assert!(event_end_ms > 0, "Trying to register an event from status with negative duration: {:?}, duration: {:?}", status, event_end_ms);
 		allEvents.push(TimelineEvent { time_frame_ms: event_end_ms, event_type: EventType::StatusEnd { effect_clone: status.clone() }, character: owner_down.clone() });

@@ -8,9 +8,9 @@ use crate::util::RemainingTicks;
 use crate::util::Range;
 
 #[derive(Debug)]
-pub struct Character {
+pub struct CombatCharacter {
 	pub guid: usize,
-	pub last_damager: Weak<RefCell<Character>>,
+	pub last_damager: Weak<RefCell<CombatCharacter>>,
 	pub stamina_cur: isize,
 	pub stamina_max: isize,
 	pub toughness: isize,
@@ -41,7 +41,7 @@ pub struct Girl {
 	pub composure: isize,
 }
 
-impl Character {
+impl CombatCharacter {
 	pub fn stat(&self, stat: ModifiableStat) -> isize {
 		return match stat {
 			ModifiableStat::DEBUFF_RES  => self.debuff_res,
@@ -65,16 +65,16 @@ impl Character {
 	}
 }
 
-impl PartialEq<Self> for Character {
+impl PartialEq<Self> for CombatCharacter {
 	fn eq(&self, other: &Self) -> bool { return self.guid == other.guid; }
 }
 
-impl Eq for Character { }
+impl Eq for CombatCharacter { }
 
 #[derive(Debug)]
 pub enum CharacterState {
 	Idle,
-	Grappling { victim: Rc<RefCell<Character>>, lust_per_sec: usize, temptation_per_sec: usize, accumulated_ms: i64 },
+	Grappling { victim: Rc<RefCell<CombatCharacter>>, lust_per_sec: usize, temptation_per_sec: usize, accumulated_ms: i64 },
 	Downed { remaining: RemainingTicks },
 	Stunned { remaining: RemainingTicks, skill_intention: Option<SkillIntention>, recovery: Option<RemainingTicks> },
 	Charging { skill_intention: SkillIntention },

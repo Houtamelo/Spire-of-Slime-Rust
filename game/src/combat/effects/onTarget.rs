@@ -2,10 +2,11 @@ use std::cell::{Ref, RefCell, RefMut};
 use std::rc::Rc;
 use fyrox::rand::Rng;
 use fyrox::rand::rngs::StdRng;
-use crate::combat::{Character, CombatState, Side};
+use crate::combat::{CombatCharacter, CombatState, Side};
 use crate::combat::effects::{MoveDirection};
 use crate::combat::effects::persistent::PersistentEffect as PersistentEffect;
 use crate::combat::effects::persistent as Persistent;
+use crate::combat::entity::Entity;
 use crate::combat::ModifiableStat;
 use crate::combat::ModifiableStat::{DEBUFF_RATE, DEBUFF_RES, MOVE_RATE, MOVE_RES, STUN_DEF};
 
@@ -63,7 +64,7 @@ pub enum TargetApplier {
 }
 
 impl TargetApplier {
-	pub fn apply(&self, caster_rc: &mut Rc<RefCell<Character>>, caster_side: Side, target_rc: &mut Rc<RefCell<Character>>, target_side: &mut Side, seed: &mut StdRng, manager: &CombatState) {
+	pub fn apply(&self, caster_rc: &mut Rc<RefCell<CombatCharacter>>, caster_side: Side, target_rc: &mut Rc<RefCell<CombatCharacter>>, target_side: &mut Side, seed: &mut StdRng, manager: &CombatState) {
 		let caster = caster_rc.get_mut();
 		let target = target_rc.get_mut();
 
@@ -126,7 +127,7 @@ impl TargetApplier {
 					MoveDirection::ToEdge(amount) => { amount.abs() }
 				};
 
-				let (index_current, allies): (&mut usize, &Vec<Rc<RefCell<Character>>>) = match target_side {
+				let (index_current, allies): (&mut usize, &Vec<Entity>) = match target_side {
 					Side::Left(pos) => (pos, &manager.left_characters),
 					Side::Right(pos) => (pos, &manager.right_characters),
 				};

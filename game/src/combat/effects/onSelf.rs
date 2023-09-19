@@ -2,10 +2,11 @@ use std::cell::{RefCell, RefMut};
 use std::rc::Rc;
 use fyrox::rand::Rng;
 use fyrox::rand::rngs::StdRng;
-use crate::combat::{Character, CombatState, Side};
+use crate::combat::{CombatCharacter, CombatState, Side};
 use crate::combat::effects::{MoveDirection};
 use crate::combat::effects::persistent;
 use crate::combat::effects::persistent::PersistentEffect as PersistentEffect;
+use crate::combat::entity::Entity;
 
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub enum SelfApplier {
@@ -42,7 +43,7 @@ pub enum SelfApplier {
 }
 
 impl SelfApplier {
-	pub fn apply(&self, caster_rc: &mut Rc<RefCell<Character>>, side: &mut Side, manager: &mut CombatState) {
+	pub fn apply(&self, caster_rc: &mut Rc<RefCell<CombatCharacter>>, side: &mut Side, manager: &mut CombatState) {
 		let seed = &mut manager.seed;
 		let mut caster = caster_rc.get_mut();
 
@@ -88,7 +89,7 @@ impl SelfApplier {
 					MoveDirection::ToEdge  (amount) => { amount.abs() }
 				};
 
-				let (index_current, allies): (&mut usize, &Vec<Rc<RefCell<Character>>>) = match side {
+				let (index_current, allies): (&mut usize, &Vec<Entity>) = match side {
 					Side::Left (pos) => (pos, &manager.left_characters),
 					Side::Right(pos) => (pos, &manager.right_characters),
 				};

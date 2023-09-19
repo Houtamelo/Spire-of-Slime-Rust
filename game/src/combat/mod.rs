@@ -1,4 +1,4 @@
-use std::cell::{BorrowError, BorrowMutError, RefCell, RefMut};
+use std::cell::{BorrowError, BorrowMutError, Ref, RefCell, RefMut};
 use std::rc::Rc;
 use fyrox::core::algebra::clamp;
 use fyrox::event::VirtualKeyCode::Mute;
@@ -7,8 +7,8 @@ use fyrox::rand::rngs::StdRng;
 use fyrox::scene::base::PropertyValue::String;
 use crate::combat::effects::persistent;
 use crate::combat::ModifiableStat::{MOVE_RATE, MOVE_RES};
-use crate::combat::effects::onSelf::SelfApplier as SelfEffect;
-use crate::combat::entity::{Character, CharacterState, Entity};
+use crate::combat::effects::onSelf::SelfApplier;
+use crate::combat::entity::{CombatCharacter, CharacterState, Entity};
 use crate::combat::timeline::{EventType, TimelineEvent};
 
 mod effects;
@@ -45,13 +45,14 @@ impl CombatState {
 		let mut should_break = false;
 		self.elapsed_ms += delta_time_ms;
 
-		let all_characters : Vec<&mut Rc<RefCell<Character>>> = self.left_characters.iter_mut().filter_map(|entity| match entity{
+		let all_characters : Vec<&mut Rc<RefCell<CombatCharacter>>> = self.left_characters.iter_mut().filter_map(|entity| match entity{
 			Entity::Character(character) => { Some(character) }
 			Entity::Corpse => { None }
 		}).collect();
 		
+		
 		for character in all_characters {
-			let mut_char: &mut Character = character.get_mut();
+			let mut_char: &mut CombatCharacter = character.get_mut();
 			match &mut_char.state {
 				CharacterState::Idle => {
 					// todo! run AI here
@@ -65,7 +66,7 @@ impl CombatState {
 				CharacterState::Recovering { .. } => {}
 			}
 		}
-
+		
 		return true;
 	}
 	
@@ -85,7 +86,7 @@ impl CombatState {
 		return all_events;
 	}
 	
-	fn apply_effect_self(&mut self, effect: SelfEffect, caster_rc: &mut Rc<RefCell<Character>>) {
+	fn apply_effect_self(&mut self, effect: SelfApplier, caster_rc: &mut Rc<RefCell<CombatCharacter>>) {
 		let mut side = match self.character_side(caster_rc){
 			Ok(ok) => {ok}
 			Err(err) => {
@@ -93,7 +94,6 @@ impl CombatState {
 				return;
 			}
 		};
-
 
 		match side {
 			Side::Left (index) => { self.left_characters.remove(index); }
@@ -104,56 +104,44 @@ impl CombatState {
 	}
 	
 	// Returns the side and index of the character with the given guid.
-	fn guid_side(&self, guid: usize) -> Result<Side, std::string::String> {
-		{
-			let try_error = self.left_characters.iter().try_for_each(|rc| {
-				let result = rc.try_borrow();
-				if result.is_err() {
-					return Err(result.unwrap_err());
+	fn guid_side(&mut self, guid: usize) -> Result<Side, std::string::String> {
+		for i in 0..self.left_characters.len() {
+			if let Entity::Character(ch) = &mut self.left_characters[i] {
+				if ch.get_mut().guid == guid {
+					return Ok(Side::Left(i));
 				}
-				Ok(())
-			});
-
-			if try_error.is_err() {
-				return Err(try_error.unwrap_err().to_string());
 			}
-			
-			let pos = self.left_characters.iter().position(|c| c.borrow().guid == guid);
-			match pos{
-				Some(index) => { return Ok(Side::Left(index)); }
-				None => {}
-			};
 		}
-
-		{
-			let try_error = self.right_characters.iter().try_for_each(|rc| {
-				let result = rc.try_borrow();
-				if result.is_err() {
-					return Err(result.unwrap_err());
+		
+		for i in 0..self.right_characters.len() {
+			if let Entity::Character(ch) = &mut self.right_characters[i] {
+				if ch.get_mut().guid == guid {
+					return Ok(Side::Right(i));
 				}
-				Ok(())
-			});
-			
-			if try_error.is_err() {
-				return Err(try_error.unwrap_err().to_string());
 			}
-			
-			let pos = self.right_characters.iter().position(|c| c.borrow().guid == guid);
-			match pos{
-				Some(index) => { return Ok(Side::Right(index)); }
-				None => {}
-			};
 		}
 		
 		return Err(format!("Character with guid {} not found in combat manager", guid));
 	}
 	
-	fn character_side(&self, character_rc: &Rc<RefCell<Character>>) -> Result<Side, std::string::String> {
-		self.left_characters.iter().position(|c| Rc::ptr_eq(c, character_rc)).map_or
-		(match self.right_characters.iter().position(|c| Rc::ptr_eq(c, character_rc)) {
-			Some(index) => Ok(Side::Right(index)),
-			None => Err(format!("Character {:?} not found in combat manager", character_rc)),
-		}, |index| Ok(Side::Left(index)))
+	fn character_side(&self, character_rc: &Rc<RefCell<CombatCharacter>>) -> Result<Side, std::string::String> {
+		for i in 0..self.left_characters.len() {
+			if let Entity::Character(ch) = &self.left_characters[i] {
+				if Rc::ptr_eq(ch, character_rc) {
+					return Ok(Side::Left(i));
+				}
+			}
+		}
+		
+		for i in 0..self.right_characters.len() {
+			if let Entity::Character(ch) = &self.right_characters[i] {
+				if Rc::ptr_eq(ch, character_rc) {
+					return Ok(Side::Right(i));
+				}
+			}
+		}
+		
+		return Err(format!("Character {:?} not found in combat manager", character_rc));
 	}
 }
 
