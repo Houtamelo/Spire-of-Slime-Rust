@@ -1,11 +1,12 @@
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct DefensiveSkill {
-	crit: CRITMode,
-	effects_self: Vec<SelfApplier>,
-	effects_target: Vec<TargetApplier>,
-	allowed_targets: AllowedTargets,
-	multi_target: bool,
-	use_counter: UseCounter,
+	pub crit: CRITMode,
+	pub effects_self: Vec<SelfApplier>,
+	pub effects_target: Vec<TargetApplier>,
+	pub allowed_ally_positions: PositionMatrix,
+	pub ally_requirement: AllyRequirement,
+	pub multi_target: bool,
+	pub use_counter: UseCounter,
 }
 
 impl DefensiveSkill {

@@ -36,18 +36,12 @@ pub enum CRITMode {
 }
 
 #[derive(Debug, Clone, PartialEq, Eq)]
-pub struct Positions {
+pub struct PositionMatrix {
 	indexes: [bool; MAX_CHARACTERS_PER_TEAM],
 }
 
 #[derive(Debug, Clone, PartialEq, Eq)]
-pub enum AllowedTargets {
-	Allies  { positions: Positions, multi_target: bool, allowance: AllyAllowance },
-	Enemies { positions: Positions, multi_target: bool },
-}
-
-#[derive(Debug, Clone, PartialEq, Eq)]
-pub enum AllyAllowance {
+pub enum AllyRequirement {
 	CanSelf,
 	NotSelf,
 	OnlySelf

@@ -6,5 +6,6 @@
         <language minSize="76" name="Rust" />
       </Languages>
     </inspection_tool>
+    <inspection_tool class="RsLift" enabled="false" level="WEAK WARNING" enabled_by_default="false" />
   </profile>
 </component>

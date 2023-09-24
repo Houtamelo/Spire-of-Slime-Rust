@@ -1,7 +1,8 @@
 use fyrox::rand::Rng;
+use fyrox::rand::rngs::StdRng;
 use combat::ModifiableStat;
 use crate::combat;
-use crate::combat::{CombatCharacter, CombatState, Position};
+use crate::combat::{CombatCharacter, Position};
 use crate::combat::effects::{MoveDirection};
 use crate::combat::effects::persistent::PersistentEffect;
 use crate::combat::entity::Entity;
@@ -41,8 +42,7 @@ pub enum SelfApplier {
 }
 
 impl SelfApplier {
-	pub fn apply(&self, caster: &mut CombatCharacter, manager: &mut CombatState) {
-		let seed = &mut manager.seed;
+	pub fn apply(&self, caster: &mut CombatCharacter, seed: &mut StdRng, crit: bool, allies: &mut Vec<Entity>, enemies: &mut Vec<Entity>) {
 		match self
 		{
 			SelfApplier::Buff{ duration_ms, stat, modifier } => {
@@ -65,7 +65,7 @@ impl SelfApplier {
 				caster.stamina_cur = (caster.stamina_cur + healAmount).clamp(0, caster.stamina_max);
 			}
 			SelfApplier::Lust{ min, max } => {
-				match &mut caster.girl {
+				match &mut caster.girl_stats {
 					None => {
 						return;
 					}
@@ -85,9 +85,9 @@ impl SelfApplier {
 					MoveDirection::ToEdge  (amount) => { amount.abs() }
 				};
 
-				let (index_current, allies) : (&mut usize, Vec<&mut Entity>) = match &mut caster.position {
-					Position::Left  { order: pos, .. } => (pos, manager.left_entities_mut ().collect()),
-					Position::Right { order: pos, .. } => (pos, manager.right_entities_mut().collect()),
+				let index_current : &mut usize = match &mut caster.position {
+					Position::Left  { order: pos, .. } => pos,
+					Position::Right { order: pos, .. } => pos,
 				};
 
 				let mut allies_space_occupied = 0;

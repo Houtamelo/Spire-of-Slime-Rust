@@ -1,20 +1,22 @@
+use fyrox::rand::Rng;
+use fyrox::rand::rngs::StdRng;
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
-pub struct RemainingTicks {
+pub struct TrackedTicks {
 	pub remaining_ms: i64,
 	pub initial_ms: i64,
 }
 
-impl RemainingTicks {
-	pub fn from_seconds(seconds: f64) -> RemainingTicks {
-		return RemainingTicks {
+impl TrackedTicks {
+	pub fn from_seconds(seconds: f64) -> TrackedTicks {
+		return TrackedTicks {
 			remaining_ms: (seconds * 1000.0) as i64,
 			initial_ms: (seconds * 1000.0) as i64,
 		};
 	}
 	
-	pub fn from_milliseconds(milliseconds: i64) -> RemainingTicks {
-		return RemainingTicks {
+	pub fn from_milliseconds(milliseconds: i64) -> TrackedTicks {
+		return TrackedTicks {
 			remaining_ms: milliseconds,
 			initial_ms: milliseconds,
 		};
@@ -32,11 +34,24 @@ pub struct Range {
 }
 
 impl Range {
-	pub(crate) fn new(min: isize, max: isize) -> Range {
+	pub fn new(min: isize, max: isize) -> Range {
 		return if min > max {
 			Range { min, max: min }
 		} else {
 			Range { min, max }
 		}
+	}
+}
+
+pub trait Base100ChanceGenerator {
+	fn base100_chance(&mut self, chance: isize) -> bool;
+}
+
+impl Base100ChanceGenerator for StdRng {
+	fn base100_chance(&mut self, chance: isize) -> bool {
+		if chance > 100 { return true; }
+		
+		let denominator = 100;
+		return self.gen_ratio(chance as u32, denominator);
 	}
 }

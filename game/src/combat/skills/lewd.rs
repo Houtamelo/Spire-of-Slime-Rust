@@ -1,14 +1,14 @@
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct LewdSkill {
-	acc_mode: ACCMode,
-	dmg: DMGMode,
-	crit: CRITMode,
-	effects_self: Vec<SelfApplier>,
-	effects_target: Vec<TargetApplier>,
-	allowed_targets: AllowedTargets,
-	multi_target: bool,
-	use_counter: UseCounter,
-	allowed_targets_keys: Vec<String>,
+	pub acc_mode: ACCMode,
+	pub dmg: DMGMode,
+	pub crit: CRITMode,
+	pub effects_self: Vec<SelfApplier>,
+	pub effects_target: Vec<TargetApplier>,
+	pub allowed_enemy_positions: PositionMatrix,
+	pub multi_target: bool,
+	pub use_counter: UseCounter,
+	pub allowed_targets_keys: Vec<String>,
 }
 
 impl LewdSkill {

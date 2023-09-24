@@ -1,4 +1,5 @@
 use fyrox::rand::Rng;
+use fyrox::rand::rngs::StdRng;
 use crate::combat::{CombatCharacter, CombatState, Position};
 use crate::combat::effects::{MoveDirection};
 use crate::combat::effects::persistent::PersistentEffect;
@@ -60,21 +61,21 @@ pub enum TargetApplier {
 }
 
 impl TargetApplier {
-	pub fn apply(&self, caster: &mut CombatCharacter, target: &mut CombatCharacter, manager: &mut CombatState) {
-		let seed = &mut manager.seed;
+	pub fn apply_on_target(self, caster: &mut CombatCharacter, target: &mut CombatCharacter, allies: &mut Vec<(Entity, bool)>, enemies: &mut Vec<(Entity, bool)>, seed: &mut StdRng) {
 		match self {
 			TargetApplier::Arouse { duration_ms, lust_per_sec } => {
-				target.persistent_effects.push(PersistentEffect::new_arousal(*duration_ms, *lust_per_sec));
+				target.persistent_effects.push(PersistentEffect::new_arousal(duration_ms, lust_per_sec));
 			}
 			TargetApplier::Buff{ duration_ms, stat, modifier, apply_chance } => {
-				if let (Some(chance), false) = (apply_chance, Position::same_side(&caster.position, &target.position)) {
-					let final_chance = chance + caster.stat(DEBUFF_RATE) - target.stat(DEBUFF_RES);
-					if seed.gen_range(0..100) > final_chance {
-						return;
+				match apply_chance {
+					Some(chance) if Position::opposite_side(&caster.position, &target.position) => { //apply chance is only used when the caster and target are enemies
+						let final_chance = chance + caster.stat(DEBUFF_RATE) - target.stat(DEBUFF_RES);
+						return if seed.gen_range(0..100) > final_chance {}
 					}
+					_ => { }
 				}
-				
-				target.persistent_effects.push(PersistentEffect::new_buff(*duration_ms, *stat, *modifier));
+
+				target.persistent_effects.push(PersistentEffect::new_buff(duration_ms, stat, modifier));
 			}
 			TargetApplier::Heal{ base_multiplier } => {
 				let max: isize = caster.damage.max.max(0);
@@ -93,26 +94,27 @@ impl TargetApplier {
 				target.stamina_cur = (target.stamina_cur + healAmount).clamp(0, target.stamina_max);
 			}
 			TargetApplier::Lust{ min, max } => {
-				match &mut target.girl {
+				match &mut target.girl_stats {
 					None => {
 						return;
 					}
 					Some(girl) => {
-						let actual_min: usize = *min.min(&(max - 1));
-						let lustAmount: usize = seed.gen_range(actual_min..=*max);
+						let actual_min: usize = usize::min(min,max - 1);
+						let lustAmount: usize = seed.gen_range(actual_min..=max);
 						girl.lust += lustAmount as isize;
 					}
 				}
 			}
 			TargetApplier::Mark{ duration_ms } => {
-				target.persistent_effects.push(PersistentEffect::new_marked(*duration_ms));
+				target.persistent_effects.push(PersistentEffect::new_marked(duration_ms));
 			}
 			TargetApplier::Move{ direction, apply_chance } => {
-				if let (Some(chance), false) = (apply_chance, Position::same_side(&caster.position, &target.position)) {
-					let final_chance = chance + caster.stat(MOVE_RATE) - target.stat(MOVE_RES);
-					if seed.gen_range(0..100) > final_chance { 
-						return;
+				match apply_chance {
+					Some(chance) if Position::opposite_side(&caster.position, &target.position) => { //apply chance is only used when the caster and target are enemies
+						let final_chance = chance + caster.stat(MOVE_RATE) - target.stat(MOVE_RES);
+						return if seed.gen_range(0..100) > final_chance {}
 					}
+					_ => {}
 				}
 
 				let direction: isize = match direction {
@@ -120,9 +122,9 @@ impl TargetApplier {
 					MoveDirection::ToEdge  (amount) => { amount.abs() }
 				};
 
-				let (index_current, allies) : (&mut usize, Vec<&mut Entity>) = match &mut target.position {
-					Position::Left  { order: pos, .. } => (pos, manager.left_entities_mut ().collect()),
-					Position::Right { order: pos, .. } => (pos, manager.right_entities_mut().collect()),
+				let index_current : &mut usize = match &mut target.position {
+					Position::Left  { order: pos, .. } => pos,
+					Position::Right { order: pos, .. } => pos,
 				};
 
 				let mut allies_space_occupied = 0;
@@ -136,7 +138,7 @@ impl TargetApplier {
 				let inverse_delta = -1 * index_delta;
 
 				for ally in allies {
-					let order = ally.position().order_mut();
+					let order = ally.position_mut().order_mut();
 					*order = (*order as isize + inverse_delta) as usize;
 				}
 			}
@@ -173,5 +175,9 @@ impl TargetApplier {
 			}
 			TargetApplier::Tempt{ .. } => {}//todo!
 		}
+	}
+	
+	pub fn apply_on_self(&self, caster: &mut CombatCharacter) {
+		
 	}
 }

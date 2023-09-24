@@ -1,4 +1,3 @@
-use std::cell::{Ref, RefCell, RefMut};
 use crate::combat::{CombatCharacter, ModifiableStat};
 use crate::combat::effects::onSelf::SelfApplier;
 use crate::combat::effects::onTarget::TargetApplier;
@@ -7,14 +6,14 @@ use crate::util::Range;
 
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct OffensiveSkill {
-	acc_mode: ACCMode,
-	dmg: DMGMode,
-	crit: CRITMode,
-	effects_self: Vec<SelfApplier>,
-	effects_target: Vec<TargetApplier>,
-	allowed_targets: AllowedTargets, 
-	multi_target: bool,
-	use_counter: UseCounter,
+	pub acc_mode: ACCMode,
+	pub dmg: DMGMode,
+	pub crit: CRITMode,
+	pub effects_self: Vec<SelfApplier>,
+	pub effects_target: Vec<TargetApplier>,
+	pub allowed_enemy_positions: PositionMatrix,
+	pub multi_target: bool,
+	pub use_counter: UseCounter,
 }
 
 impl OffensiveSkill {

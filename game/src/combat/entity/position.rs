@@ -1,3 +1,5 @@
+use crate::combat::entity::Position::Right;
+
 #[derive(Debug, Clone, Copy, Eq)]
 pub enum Position {
 	Left  { order: usize, size: usize },
@@ -37,8 +39,16 @@ impl Position {
 impl Position {
 	pub fn same_side(a: &Position, b: &Position) -> bool {
 		return match (a, b) {
-			(Position::Left  { .. }, Position::Left  { .. }) => true,
-			(Position::Right { .. }, Position::Right { .. }) => true,
+			(Left  { .. }, Left  { .. }) => true,
+			(Right { .. }, Right { .. }) => true,
+			_ => false,
+		};
+	}
+	
+	pub fn opposite_side(a: &Position, b: &Position) -> bool {
+		return match (a, b) {
+			(Left  { .. }, Right { .. }) => true,
+			(Right { .. }, Left  { .. }) => true,
 			_ => false,
 		};
 	}
@@ -64,13 +74,13 @@ impl PartialOrd<Self> for Position {
 impl Ord for Position {
 	fn cmp(&self, other: &Self) -> Ordering {
 		return match (self, other) {
-			(Position::Left  { order: order_a, .. }, Position::Left  { order: order_b, .. }) => order_a.cmp(order_b),
-			(Position::Right { order: order_a, .. }, Position::Right { order: order_b, .. }) => order_a.cmp(order_b),
-			(Position::Left  { .. }, Position::Right { .. }) => {
+			(Left  { order: order_a, .. }, Left  { order: order_b, .. }) => order_a.cmp(order_b),
+			(Right { order: order_a, .. }, Right { order: order_b, .. }) => order_a.cmp(order_b),
+			(Left  { .. }, Right { .. }) => {
 				eprintln!("Warning: Trying to compare left and right characters, this should not happen! \nA: {:?} \nB: {:?}", self, other);
 				Ordering::Less
 			}
-			(Position::Right { .. }, Position::Left  { .. }) => {
+			(Right { .. }, Left  { .. }) => {
 				eprintln!("Warning: Trying to compare left and right characters, this should not happen! \nA: {:?} \nB: {:?}", self, other);
 				Ordering::Greater
 			}
