@@ -1,0 +1,185 @@
+use rand::prelude::StdRng;
+use rand::Rng;
+use fyrox::rand::Rng;
+use fyrox::rand::rngs::StdRng;
+use crate::combat::{CombatCharacter, CombatState, Position};
+use crate::combat::effects::{MoveDirection};
+use crate::combat::effects::persistent::PersistentEffect;
+use crate::combat::entity::Entity;
+use crate::combat::ModifiableStat;
+use crate::combat::ModifiableStat::{DEBUFF_RATE, DEBUFF_RES, MOVE_RATE, MOVE_RES, STUN_DEF};
+
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub enum TargetApplier {
+	Arouse {
+		duration_ms: i64,
+		lust_per_sec: usize,
+	},
+	Buff {
+		duration_ms: i64,
+		stat: ModifiableStat,
+		modifier: isize,
+		apply_chance: Option<isize>,
+	},
+	MakeSelfGuardTarget { 
+		duration_ms: i64, 
+	},
+	MakeTargetGuardSelf { 
+		duration_ms: i64,
+	},
+	Heal { 
+		base_multiplier: isize,
+	},
+	Lust {
+		min: usize,
+		max: usize,
+	},
+	Mark { 
+		duration_ms: i64,
+	},
+	Move {
+		direction: MoveDirection,
+		apply_chance: Option<isize>,
+	},
+	PersistentHeal {
+		duration_ms: i64,
+		heal_per_sec: usize,
+	},
+	Poison {
+		duration_ms: i64,
+		dmg_per_sec: usize,
+	},
+	MakeTargetRiposte {
+		duration_ms: i64,
+		dmg_multiplier: isize,
+		acc: isize,
+	},
+	Stun {
+		force: isize,
+	},
+	Tempt { 
+		intensity: isize,
+	},
+}
+
+impl TargetApplier { //todo! consider crit
+	pub fn apply_target(self, caster: &mut CombatCharacter, target: &mut CombatCharacter, allies: &mut Vec<Entity>, enemies: &mut Vec<Entity>, seed: &mut StdRng, is_crit: bool) {
+		match self {
+			TargetApplier::Arouse { duration_ms, lust_per_sec } => {
+				target.persistent_effects.push(PersistentEffect::new_arousal(duration_ms, lust_per_sec));
+			},
+			TargetApplier::Buff{ duration_ms, stat, modifier, apply_chance } => {
+				match apply_chance {
+					Some(chance) if Position::opposite_side(&caster.position, &target.position) => { //apply chance is only used when the caster and target are enemies
+						let final_chance = chance + caster.stat(DEBUFF_RATE) - target.stat(DEBUFF_RES);
+						return if seed.gen_range(0..100) > final_chance {}
+					}
+					_ => { }
+				}
+
+				target.persistent_effects.push(PersistentEffect::new_buff(duration_ms, stat, modifier));
+			},
+			TargetApplier::Heal{ base_multiplier } => {
+				let max: isize = caster.damage.max.max(0);
+				let min: isize = caster.damage.min.clamp(0, max);
+
+				let healAmount: isize;
+
+				if max <= 0 {
+					return;
+				} else if max == min {
+					healAmount = max;
+				} else {
+					healAmount = (seed.gen_range(min..=max) * base_multiplier) / 100;
+				}
+
+				target.stamina_cur = (target.stamina_cur + healAmount).clamp(0, target.stamina_max);
+			},
+			TargetApplier::Lust{ min, max } => {
+				match &mut target.girl_stats {
+					None => {
+						return;
+					}
+					Some(girl) => {
+						let actual_min: usize = usize::min(min,max - 1);
+						let lustAmount: usize = seed.gen_range(actual_min..=max);
+						girl.lust += lustAmount as isize;
+					}
+				}
+			},
+			TargetApplier::Mark{ duration_ms } => {
+				target.persistent_effects.push(PersistentEffect::new_marked(duration_ms));
+			},
+			TargetApplier::Move{ direction, apply_chance } => {
+				match apply_chance {
+					Some(chance) if Position::opposite_side(&caster.position, &target.position) => { //apply chance is only used when the caster and target are enemies
+						let final_chance = chance + caster.stat(MOVE_RATE) - target.stat(MOVE_RES);
+						return if seed.gen_range(0..100) > final_chance {}
+					}
+					_ => {}
+				}
+
+				let direction: isize = match direction {
+					MoveDirection::ToCenter(amount) => { -1 * amount.abs() }
+					MoveDirection::ToEdge  (amount) => { amount.abs() }
+				};
+
+				let index_current : &mut usize = match &mut target.position {
+					Position::Left  { order: pos, .. } => pos,
+					Position::Right { order: pos, .. } => pos,
+				};
+
+				let mut allies_space_occupied = 0;
+				for ally in allies {
+					allies_space_occupied += ally.position().size();
+				}
+
+				let index_old = index_current.clone() as isize;
+				*index_current = usize::clamp(((*index_current as isize) + direction) as usize, 0, allies_space_occupied);
+				let index_delta = *index_current as isize - index_old;
+				let inverse_delta = -1 * index_delta;
+
+				for ally in allies {
+					let order = ally.position_mut().order_mut();
+					*order = (*order as isize + inverse_delta) as usize;
+				}
+			},
+			TargetApplier::PersistentHeal{ duration_ms, heal_per_sec } => {
+				target.persistent_effects.push(PersistentEffect::new_heal(duration_ms, heal_per_sec));
+			},
+			TargetApplier::Poison{ duration_ms, dmg_per_sec } => {
+				target.persistent_effects.push(PersistentEffect::new_poison(duration_ms, dmg_per_sec, caster));
+			},
+			TargetApplier::MakeTargetRiposte{ duration_ms, dmg_multiplier, acc } => {
+				target.persistent_effects.push(PersistentEffect::new_riposte(duration_ms, dmg_multiplier, acc));
+			},
+			TargetApplier::Stun{ force } => {
+				let force = force as f64;
+				let def = target.stat(STUN_DEF) as f64;
+
+				let dividend = force + (force * force / 500.0) - def - (def * def / 500.0);
+				let divisor = 125.0 + (force * 0.25) + (def * 0.25) + (force * def * 0.0005);
+
+				let bonus_redundancy_ms = ((dividend / divisor) * 4000.0) as i64;
+
+				if bonus_redundancy_ms > 0 {
+					match &mut target.stun_redundancy_ms {
+						None => { target.stun_redundancy_ms = Some(bonus_redundancy_ms); }
+						Some(remaining) => { *remaining += bonus_redundancy_ms; }
+					};
+				}
+			}
+			TargetApplier::MakeSelfGuardTarget { duration_ms } => {
+				target.persistent_effects.push(PersistentEffect::new_guarded(duration_ms, caster));
+			}
+			TargetApplier::MakeTargetGuardSelf { duration_ms } => {
+				caster.persistent_effects.push(PersistentEffect::new_guarded(duration_ms, caster));
+			}
+			TargetApplier::Tempt{ .. } => {}//todo!
+		}
+	}
+	
+	pub fn apply_self(self, caster: &mut CombatCharacter, allies: &mut Vec<Entity>, enemies: &mut Vec<Entity>, seed: &mut StdRng, is_crit: bool) {
+		todo!("apply_on_self");
+	}
+}
