@@ -1,14 +1,14 @@
-use std::iter::{FilterMap, Map};
-use std::ops::IndexMut;
+use std::iter::FilterMap;
 use std::slice::{Iter, IterMut};
-use gdnative::{godot_error, godot_print};
+use gdnative::godot_error;
 use rand::prelude::StdRng;
-use crate::combat::entity::{CombatCharacter, CharacterState, Position, MAX_LUST, GrappledGirl, Entity, StateBeforeStunned};
-use crate::combat::timeline::{TimelineEvent};
+use entity::position::Position;
+use crate::combat::entity::*;
+use crate::combat::timeline::TimelineEvent;
 use crate::{CONVERT_STANDARD_INTERVAL_TO_UNITCOUNT, STANDARD_INTERVAL_MS};
+use crate::combat::entity::character::*;
+use crate::combat::entity::girl::*;
 use crate::combat::ModifiableStat::SPD;
-use crate::combat::skills::{DefensiveSkill, PositionMatrix, SkillType};
-use crate::util::{Base100ChanceGenerator, TrackedTicks};
 
 mod effects;
 mod skills;
@@ -163,7 +163,7 @@ impl CombatState {
 							girl_alive.temptation   = isize::clamp(girl_alive.temptation + temptation_delta_on_orgasm, 0, 100);
 
 							if girl_alive.orgasm_count == girl_alive.orgasm_limit {
-								*victim = girl_alive.to_defeated();
+								//*victim = girl_alive.to_defeated(); todo!
 							}
 						}
 					}
@@ -176,7 +176,7 @@ impl CombatState {
 						let mut girl_released: CombatCharacter = girl_alive.to_non_grappled();
 						*state = CharacterState::Idle;
 
-						let girl_size = girl_released.size;
+						let girl_size = *girl_released.position.size();
 						let girl_position = match ticked_position {
 							Position::Left  { .. } => { Position::Right { order: 0, size: girl_size } }
 							Position::Right { .. } => { Position::Left  { order: 0, size: girl_size } }

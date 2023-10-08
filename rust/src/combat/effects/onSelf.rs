@@ -1,13 +1,13 @@
 use rand::prelude::StdRng;
 use rand::Rng;
-use fyrox::rand::Rng;
-use fyrox::rand::rngs::StdRng;
 use combat::ModifiableStat;
 use crate::combat;
-use crate::combat::{CombatCharacter, Position};
-use crate::combat::effects::{MoveDirection};
+use crate::combat::entity::character::*;
+use crate::combat::effects::MoveDirection;
 use crate::combat::effects::persistent::PersistentEffect;
 use crate::combat::entity::Entity;
+use crate::combat::entity::position::Position;
+use crate::combat::skills::CRITMode;
 
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub enum SelfApplier {
@@ -37,6 +37,7 @@ pub enum SelfApplier {
 		duration_ms: i64,
 		dmg_multiplier: isize,
 		acc: isize,
+		crit: CRITMode,
 	},
 	Summon { 
 		character_key: Box<str>,
@@ -110,8 +111,8 @@ impl SelfApplier {
 			SelfApplier::PersistentHeal{ duration_ms, heal_per_sec } => {
 				caster.persistent_effects.push(PersistentEffect::new_heal(*duration_ms, *heal_per_sec));
 			}
-			SelfApplier::Riposte{ duration_ms, dmg_multiplier, acc } => {
-				caster.persistent_effects.push( PersistentEffect::new_riposte(*duration_ms, *dmg_multiplier, *acc));
+			SelfApplier::Riposte{ duration_ms, dmg_multiplier, acc, crit } => {
+				caster.persistent_effects.push( PersistentEffect::new_riposte(*duration_ms, *dmg_multiplier, *acc, crit.clone()));
 			}
 			SelfApplier::Summon{ .. } => {} //todo!
 		}

@@ -1,6 +1,7 @@
 use combat::ModifiableStat;
 use crate::combat;
-use crate::combat::CombatCharacter;
+use crate::combat::entity::character::*;
+use crate::combat::skills::CRITMode;
 
 #[derive(Debug, Clone)]
 pub enum PersistentEffect {
@@ -36,6 +37,7 @@ pub enum PersistentEffect {
 		duration_ms: i64,
 		dmg_multiplier: isize,
 		acc: isize,
+		crit: CRITMode,
 	},
 }
 
@@ -60,9 +62,9 @@ impl PartialEq for PersistentEffect {
 			(PersistentEffect::Marked { duration_ms: a_dur }, 
 			 PersistentEffect::Marked { duration_ms: b_dur })
 			=> a_dur == b_dur,
-			(PersistentEffect::Riposte { duration_ms: a_dur, dmg_multiplier: a_dmg, acc: a_acc }, 
-			 PersistentEffect::Riposte { duration_ms: b_dur, dmg_multiplier: b_dmg, acc: b_acc })
-			=> a_dur == b_dur && a_dmg == b_dmg && a_acc == b_acc,
+			(PersistentEffect::Riposte { duration_ms: a_dur, dmg_multiplier: a_dmg, acc: a_acc, crit: a_crit }, 
+			 PersistentEffect::Riposte { duration_ms: b_dur, dmg_multiplier: b_dmg, acc: b_acc, crit: b_crit})
+			=> a_dur == b_dur && a_dmg == b_dmg && a_acc == b_acc && a_crit == b_crit,
 			_ => false,
 		}
 	}
@@ -146,11 +148,12 @@ impl PersistentEffect {
 		}
 	}
 	
-	pub fn new_riposte(duration_ms: i64, dmg_multiplier: isize, acc: isize) -> Self { 
+	pub fn new_riposte(duration_ms: i64, dmg_multiplier: isize, acc: isize, crit: CRITMode) -> Self { 
 		PersistentEffect::Riposte {
 			duration_ms,
 			dmg_multiplier,
 			acc,
+			crit,
 		}
 	}
 	

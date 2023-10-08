@@ -1,13 +1,20 @@
+use gdnative::log::godot_warn;
 use rand::prelude::StdRng;
 use rand::Rng;
-use fyrox::rand::Rng;
-use fyrox::rand::rngs::StdRng;
-use crate::combat::{CombatCharacter, CombatState, Position};
-use crate::combat::effects::{MoveDirection};
+use crate::combat::effects::MoveDirection;
 use crate::combat::effects::persistent::PersistentEffect;
+use crate::combat::entity::character::*;
 use crate::combat::entity::Entity;
+use crate::combat::entity::position::Position;
 use crate::combat::ModifiableStat;
 use crate::combat::ModifiableStat::{DEBUFF_RATE, DEBUFF_RES, MOVE_RATE, MOVE_RES, STUN_DEF};
+use crate::combat::skills::CRITMode;
+use crate::util::Base100ChanceGenerator;
+
+const CRIT_DURATION_MULTIPLIER: i64 = 150;
+const CRIT_EFFECT_MULTIPLIER: usize = 150;
+const CRIT_EFFECT_MULTIPLIER_I: isize = CRIT_EFFECT_MULTIPLIER as isize;
+const CRIT_CHANCE_MODIFIER  : isize = 50;
 
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub enum TargetApplier {
@@ -53,6 +60,7 @@ pub enum TargetApplier {
 		duration_ms: i64,
 		dmg_multiplier: isize,
 		acc: isize,
+		crit: CRITMode,
 	},
 	Stun {
 		force: isize,
@@ -63,23 +71,33 @@ pub enum TargetApplier {
 }
 
 impl TargetApplier { //todo! consider crit
-	pub fn apply_target(self, caster: &mut CombatCharacter, target: &mut CombatCharacter, allies: &mut Vec<Entity>, enemies: &mut Vec<Entity>, seed: &mut StdRng, is_crit: bool) {
+	pub fn apply_target(&self, caster: &mut CombatCharacter, target: &mut CombatCharacter, caster_allies: &mut Vec<Entity>, caster_enemies: &mut Vec<Entity>, seed: &mut StdRng, is_crit: bool) {
 		match self {
-			TargetApplier::Arouse { duration_ms, lust_per_sec } => {
-				target.persistent_effects.push(PersistentEffect::new_arousal(duration_ms, lust_per_sec));
+			TargetApplier::Arouse { duration_ms, mut lust_per_sec } => {
+				if is_crit { lust_per_sec = (lust_per_sec * CRIT_EFFECT_MULTIPLIER) / 100; }
+				
+				target.persistent_effects.push(PersistentEffect::new_arousal(*duration_ms, lust_per_sec));
 			},
-			TargetApplier::Buff{ duration_ms, stat, modifier, apply_chance } => {
+			TargetApplier::Buff{ duration_ms, stat, mut modifier, apply_chance } => {
 				match apply_chance {
-					Some(chance) if Position::opposite_side(&caster.position, &target.position) => { //apply chance is only used when the caster and target are enemies
+					Some(mut chance) if Position::opposite_side(&caster.position, &target.position) => { //apply chance is only used when the caster and target are enemies
+						if is_crit { chance += CRIT_CHANCE_MODIFIER;  }
+
 						let final_chance = chance + caster.stat(DEBUFF_RATE) - target.stat(DEBUFF_RES);
-						return if seed.gen_range(0..100) > final_chance {}
-					}
+						if seed.base100_chance(final_chance) == false {
+							return;
+						}
+					},
 					_ => { }
 				}
+				
+				if is_crit { modifier = (modifier * CRIT_EFFECT_MULTIPLIER_I) / 100; }
 
-				target.persistent_effects.push(PersistentEffect::new_buff(duration_ms, stat, modifier));
+				target.persistent_effects.push(PersistentEffect::new_buff(*duration_ms, *stat, modifier));
 			},
-			TargetApplier::Heal{ base_multiplier } => {
+			TargetApplier::Heal{ mut base_multiplier } => {
+				if is_crit { base_multiplier = (base_multiplier * CRIT_EFFECT_MULTIPLIER_I) / 100;  }
+				
 				let max: isize = caster.damage.max.max(0);
 				let min: isize = caster.damage.min.clamp(0, max);
 
@@ -95,7 +113,12 @@ impl TargetApplier { //todo! consider crit
 
 				target.stamina_cur = (target.stamina_cur + healAmount).clamp(0, target.stamina_max);
 			},
-			TargetApplier::Lust{ min, max } => {
+			TargetApplier::Lust{ mut min, mut max } => {
+				if is_crit {
+					min = (min * CRIT_EFFECT_MULTIPLIER) / 100;
+					max = (max * CRIT_EFFECT_MULTIPLIER) / 100;
+				}
+				
 				match &mut target.girl_stats {
 					None => {
 						return;
@@ -107,14 +130,20 @@ impl TargetApplier { //todo! consider crit
 					}
 				}
 			},
-			TargetApplier::Mark{ duration_ms } => {
+			TargetApplier::Mark{ mut duration_ms } => {
+				if is_crit { duration_ms = (duration_ms * CRIT_DURATION_MULTIPLIER) / 100; }
+				
 				target.persistent_effects.push(PersistentEffect::new_marked(duration_ms));
 			},
 			TargetApplier::Move{ direction, apply_chance } => {
 				match apply_chance {
-					Some(chance) if Position::opposite_side(&caster.position, &target.position) => { //apply chance is only used when the caster and target are enemies
+					Some(mut chance) if Position::opposite_side(&caster.position, &target.position) => { //apply chance is only used when the caster and target are enemies
+						if is_crit { chance += CRIT_CHANCE_MODIFIER;  }
+						
 						let final_chance = chance + caster.stat(MOVE_RATE) - target.stat(MOVE_RES);
-						return if seed.gen_range(0..100) > final_chance {}
+						if seed.base100_chance(final_chance) == false {
+							return;
+						}
 					}
 					_ => {}
 				}
@@ -124,36 +153,45 @@ impl TargetApplier { //todo! consider crit
 					MoveDirection::ToEdge  (amount) => { amount.abs() }
 				};
 
-				let index_current : &mut usize = match &mut target.position {
-					Position::Left  { order: pos, .. } => pos,
-					Position::Right { order: pos, .. } => pos,
+
+				let target_allies = match Position::opposite_side(&caster.position, &target.position) {
+					true  => caster_enemies,
+					false => caster_allies,
 				};
+				
+				let order_current : &mut usize = target.position.order_mut();
 
 				let mut allies_space_occupied = 0;
-				for ally in allies {
-					allies_space_occupied += ally.position().size();
+				for target_ally in target_allies.iter() {
+					allies_space_occupied += target_ally.position().size();
 				}
 
-				let index_old = index_current.clone() as isize;
-				*index_current = usize::clamp(((*index_current as isize) + direction) as usize, 0, allies_space_occupied);
-				let index_delta = *index_current as isize - index_old;
-				let inverse_delta = -1 * index_delta;
+				let order_old = order_current.clone() as isize;
+				*order_current = usize::clamp(((*order_current as isize) + direction) as usize, 0, allies_space_occupied);
+				let order_delta = *order_current as isize - order_old;
+				let inverse_delta = -1 * order_delta;
 
-				for ally in allies {
-					let order = ally.position_mut().order_mut();
+				for target_ally in target_allies {
+					let order = target_ally.position_mut().order_mut();
 					*order = (*order as isize + inverse_delta) as usize;
 				}
 			},
-			TargetApplier::PersistentHeal{ duration_ms, heal_per_sec } => {
-				target.persistent_effects.push(PersistentEffect::new_heal(duration_ms, heal_per_sec));
+			TargetApplier::PersistentHeal{ duration_ms, mut heal_per_sec } => {
+				if is_crit { heal_per_sec = (heal_per_sec * CRIT_EFFECT_MULTIPLIER) / 100; }
+				
+				target.persistent_effects.push(PersistentEffect::new_heal(*duration_ms, heal_per_sec));
 			},
-			TargetApplier::Poison{ duration_ms, dmg_per_sec } => {
-				target.persistent_effects.push(PersistentEffect::new_poison(duration_ms, dmg_per_sec, caster));
+			TargetApplier::Poison{ duration_ms, mut dmg_per_sec } => {
+				if is_crit { dmg_per_sec = (dmg_per_sec * CRIT_EFFECT_MULTIPLIER) / 100; }
+				
+				target.persistent_effects.push(PersistentEffect::new_poison(*duration_ms, dmg_per_sec, caster));
 			},
-			TargetApplier::MakeTargetRiposte{ duration_ms, dmg_multiplier, acc } => {
-				target.persistent_effects.push(PersistentEffect::new_riposte(duration_ms, dmg_multiplier, acc));
+			TargetApplier::MakeTargetRiposte{ duration_ms, dmg_multiplier, acc,crit } => { // can't crit!
+				target.persistent_effects.push(PersistentEffect::new_riposte(*duration_ms, *dmg_multiplier, *acc, crit.clone()));
 			},
-			TargetApplier::Stun{ force } => {
+			TargetApplier::Stun{ mut force } => {
+				if is_crit { force += CRIT_CHANCE_MODIFIER; }
+				
 				let force = force as f64;
 				let def = target.stat(STUN_DEF) as f64;
 
@@ -164,22 +202,131 @@ impl TargetApplier { //todo! consider crit
 
 				if bonus_redundancy_ms > 0 {
 					match &mut target.stun_redundancy_ms {
-						None => { target.stun_redundancy_ms = Some(bonus_redundancy_ms); }
-						Some(remaining) => { *remaining += bonus_redundancy_ms; }
+						None => { target.stun_redundancy_ms = Some(bonus_redundancy_ms); },
+						Some(remaining) => { *remaining += bonus_redundancy_ms; },
 					};
 				}
-			}
-			TargetApplier::MakeSelfGuardTarget { duration_ms } => {
-				target.persistent_effects.push(PersistentEffect::new_guarded(duration_ms, caster));
-			}
-			TargetApplier::MakeTargetGuardSelf { duration_ms } => {
-				caster.persistent_effects.push(PersistentEffect::new_guarded(duration_ms, caster));
-			}
-			TargetApplier::Tempt{ .. } => {}//todo!
+			},
+			TargetApplier::MakeSelfGuardTarget { duration_ms } => { //can't crit!
+				target.persistent_effects.push(PersistentEffect::new_guarded(*duration_ms, caster));
+			},
+			TargetApplier::MakeTargetGuardSelf { duration_ms } => { //can't crit!
+				caster.persistent_effects.push(PersistentEffect::new_guarded(*duration_ms, caster));
+			},
+			TargetApplier::Tempt{ .. } => {} //todo!
 		}
 	}
 	
-	pub fn apply_self(self, caster: &mut CombatCharacter, allies: &mut Vec<Entity>, enemies: &mut Vec<Entity>, seed: &mut StdRng, is_crit: bool) {
-		todo!("apply_on_self");
+	pub fn apply_self(&self, caster: &mut CombatCharacter, allies: &mut Vec<Entity>, _enemies: &mut Vec<Entity>, seed: &mut StdRng, is_crit: bool) {
+		match self {
+			TargetApplier::Arouse { duration_ms, mut lust_per_sec } => {
+				if is_crit { lust_per_sec = (lust_per_sec * CRIT_EFFECT_MULTIPLIER) / 100; }
+
+				caster.persistent_effects.push(PersistentEffect::new_arousal(*duration_ms, lust_per_sec));
+			},
+			TargetApplier::Buff { duration_ms, stat, mut modifier, .. } => { // apply_chance is ignored when applied to self
+				if is_crit { modifier = (modifier * CRIT_EFFECT_MULTIPLIER_I) / 100; }
+
+				caster.persistent_effects.push(PersistentEffect::new_buff(*duration_ms, *stat, modifier));
+			},
+			TargetApplier::Heal { mut base_multiplier } => {
+				if is_crit { base_multiplier = (base_multiplier * CRIT_EFFECT_MULTIPLIER_I) / 100; }
+				
+				let max: isize = caster.damage.max.max(0);
+				let min: isize = caster.damage.min.clamp(0, max);
+				
+				let healAmount: isize;
+				
+				if max <= 0 {
+					return;
+				} else if max == min {
+					healAmount = max;
+				} else {
+					healAmount = (seed.gen_range(min..=max) * base_multiplier) / 100;
+				}
+
+				caster.stamina_cur = (caster.stamina_cur + healAmount).clamp(0, caster.stamina_max);
+			},
+			TargetApplier::Lust { mut min, mut max } => {
+				if is_crit {
+					min = (min * CRIT_EFFECT_MULTIPLIER) / 100;
+					max = (max * CRIT_EFFECT_MULTIPLIER) / 100;
+				}
+				
+				match &mut caster.girl_stats {
+					None => {
+						return;
+					}
+					Some(girl) => {
+						let actual_min: usize = usize::min(min,max - 1);
+						let lustAmount: usize = seed.gen_range(actual_min..=max);
+						girl.lust += lustAmount as isize;
+					}
+				}
+			},
+			TargetApplier::Mark { mut duration_ms } => {
+				if is_crit { duration_ms = (duration_ms * CRIT_DURATION_MULTIPLIER) / 100; }
+				
+				caster.persistent_effects.push(PersistentEffect::new_marked(duration_ms));
+			},
+			TargetApplier::Move { direction, .. } => { //apply chance ignored when applied to self
+				let direction: isize = match direction {
+					MoveDirection::ToCenter(amount) => { -1 * amount.abs() }
+					MoveDirection::ToEdge  (amount) => { amount.abs() }
+				};
+
+				let order_current: &mut usize = caster.position.order_mut();
+
+				let mut allies_space_occupied = 0;
+				for ally in allies.iter() {
+					allies_space_occupied += ally.position().size();
+				}
+
+				let order_old = order_current.clone() as isize;
+				*order_current = usize::clamp(((*order_current as isize) + direction) as usize, 0, allies_space_occupied);
+				let order_delta = *order_current as isize - order_old;
+				let inverse_delta = -1 * order_delta;
+
+				for ally in allies {
+					let order = ally.position_mut().order_mut();
+					*order = (*order as isize + inverse_delta) as usize;
+				}
+			},
+			TargetApplier::PersistentHeal { duration_ms, mut heal_per_sec } => {
+				if is_crit { heal_per_sec = (heal_per_sec * CRIT_EFFECT_MULTIPLIER) / 100; }
+
+				caster.persistent_effects.push(PersistentEffect::new_heal(*duration_ms, heal_per_sec));
+			},
+			TargetApplier::Poison { duration_ms, mut dmg_per_sec } => {
+				if is_crit { dmg_per_sec = (dmg_per_sec * CRIT_EFFECT_MULTIPLIER) / 100; }
+
+				caster.persistent_effects.push(PersistentEffect::new_poison(*duration_ms, dmg_per_sec, caster));
+			},
+			TargetApplier::MakeTargetRiposte { duration_ms, dmg_multiplier, acc, crit } => {
+				caster.persistent_effects.push(PersistentEffect::new_riposte(*duration_ms, *dmg_multiplier, *acc, crit.clone()));
+			},
+			TargetApplier::Stun { mut force } => {
+				if is_crit { force += CRIT_CHANCE_MODIFIER; }
+
+				let force = force as f64;
+				let def = caster.stat(STUN_DEF) as f64;
+
+				let dividend = force + (force * force / 500.0) - def - (def * def / 500.0);
+				let divisor = 125.0 + (force * 0.25) + (def * 0.25) + (force * def * 0.0005);
+
+				let bonus_redundancy_ms = ((dividend / divisor) * 4000.0) as i64;
+
+				if bonus_redundancy_ms > 0 {
+					match &mut caster.stun_redundancy_ms {
+						None => { caster.stun_redundancy_ms = Some(bonus_redundancy_ms); }
+						Some(remaining) => { *remaining += bonus_redundancy_ms; }
+					};
+				}
+			},
+			// we don't use the default case because we want to be warned about any new effects that are not yet implemented
+			TargetApplier::MakeSelfGuardTarget { .. } => godot_warn!("Warning: MakeSelfGuardTarget effect is not applicable to self! Caster: {:?}", caster),
+			TargetApplier::MakeTargetGuardSelf { .. } => godot_warn!("Warning: MakeTargetGuardSelf effect is not applicable to self! Caster: {:?}", caster),
+			TargetApplier::Tempt { .. } => godot_warn!("Warning: Tempt effect is not applicable to self! Caster: {:?}", caster),
+		}
 	}
 }

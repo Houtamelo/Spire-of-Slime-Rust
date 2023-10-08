@@ -1,7 +1,12 @@
+pub mod girl;
+pub mod position;
+pub mod character;
+pub mod skill_intention;
+
 use std::cmp::Ordering;
-include!("skill_intention.rs");
-include!("character.rs");
-include!("position.rs");
+use position::Position;
+use crate::combat::entity::character::CombatCharacter;
+use crate::combat::entity::girl::DefeatedGirl_Entity;
 
 #[derive(Debug)]
 pub enum Entity {
@@ -42,6 +47,6 @@ impl Entity {
 
 #[derive(Debug)]
 pub struct Corpse {
-	guid: usize,
-	position: Position,
+	pub(crate) guid: usize,
+	pub(crate) position: Position,
 }

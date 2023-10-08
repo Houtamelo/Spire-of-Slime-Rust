@@ -1,12 +1,14 @@
 use gdnative::godot_error;
 use rand::prelude::StdRng;
 use crate::combat::entity::*;
-use crate::combat::skills::{DefensiveSkill, PositionMatrix};
+use crate::combat::entity::character::*;
+use crate::combat::skills::{PositionMatrix};
+use crate::combat::skills::defensive::DefensiveSkill;
 use crate::util::{Base100ChanceGenerator, TrackedTicks};
 
-pub fn start_targeting_self(caster: &mut CombatCharacter, skill: DefensiveSkill, recover_ms: Option<i64>, allies: &mut Vec<Entity>, enemies: &mut Vec<Entity>, seed: &mut StdRng) {
-	process_self_effects_and_costs(caster, allies, enemies, &skill, recover_ms, seed);
-	resolve_target_self(caster, &skill, allies, enemies, seed);
+pub fn start_targeting_self(caster: &mut CombatCharacter, allies: &mut Vec<Entity>, enemies: &mut Vec<Entity>, skill: DefensiveSkill, seed: &mut StdRng, recover_ms: Option<i64>) {
+	process_self_effects_and_costs(caster, allies, enemies, &skill, seed, recover_ms);
+	resolve_target_self(caster, allies, enemies, &skill, seed);
 	
 	if skill.multi_target {
 		let mut targets_guid = get_target_guids(skill.allowed_ally_positions, allies);
@@ -17,7 +19,7 @@ pub fn start_targeting_self(caster: &mut CombatCharacter, skill: DefensiveSkill,
 
 			let mut ally = allies.remove(position);
 			if let Entity::Character(ally) = &mut ally { // for now, we only support skills on characters
-				resolve_target_ally(caster, &skill, ally, allies, enemies, seed);
+				resolve_target_ally(caster, ally, allies, enemies, &skill, seed);
 			}
 			allies.push(ally);
 		}
@@ -37,9 +39,9 @@ pub fn start_targeting_self(caster: &mut CombatCharacter, skill: DefensiveSkill,
 	}
 }
 
-pub fn start_targeting_ally(caster: &mut CombatCharacter, target: &mut CombatCharacter, skill: DefensiveSkill, recover_ms: Option<i64>, allies: &mut Vec<Entity>, enemies: &mut Vec<Entity>, seed: &mut StdRng) {
-	process_self_effects_and_costs(caster, allies, enemies, &skill, recover_ms, seed);
-	resolve_target_ally(caster, &skill, target, allies, enemies, seed);
+pub fn start_targeting_ally(caster: &mut CombatCharacter, target: &mut CombatCharacter, allies: &mut Vec<Entity>, enemies: &mut Vec<Entity>, skill: DefensiveSkill, seed: &mut StdRng, recover_ms: Option<i64>) {
+	process_self_effects_and_costs(caster, allies, enemies, &skill, seed, recover_ms);
+	resolve_target_ally(caster, target, allies, enemies, &skill, seed);
 	
 	if skill.multi_target {
 		let mut targets_guid = get_target_guids(skill.allowed_ally_positions, allies, caster);
@@ -48,11 +50,11 @@ pub fn start_targeting_ally(caster: &mut CombatCharacter, target: &mut CombatCha
 			{
 				let mut ally = allies.remove(position);
 				if let Entity::Character(ally) = &mut ally { // for now, we only support skills on characters
-					resolve_target_ally(caster, &skill, ally, allies, enemies, seed);
+					resolve_target_ally(caster, ally, allies, enemies, &skill, seed);
 				}
 				allies.push(ally);
 			} else if target_guid == caster.guid {
-				resolve_target_self(caster, &skill, allies, enemies, seed);
+				resolve_target_self(caster, allies, enemies, &skill, seed);
 			}
 			else {
 				godot_error!("Warning: Trying to apply skill to ally with guid {target_guid:?}, but it was not found in the allies!");
@@ -79,7 +81,7 @@ pub fn start_targeting_ally(caster: &mut CombatCharacter, target: &mut CombatCha
 	}
 }
 
-fn process_self_effects_and_costs(caster: &mut CombatCharacter, allies: &mut Vec<Entity>, enemies: &mut Vec<Entity>, skill: &DefensiveSkill, recover_ms: Option<i64>, seed: &mut StdRng) {
+fn process_self_effects_and_costs(caster: &mut CombatCharacter, allies: &mut Vec<Entity>, enemies: &mut Vec<Entity>, skill: &DefensiveSkill, seed: &mut StdRng, recover_ms: Option<i64>) {
 	if let Some(recover_ms) = recover_ms {
 		caster.state = CharacterState::Recovering { ticks: TrackedTicks::from_milliseconds(recover_ms) };
 	}
@@ -95,7 +97,7 @@ fn process_self_effects_and_costs(caster: &mut CombatCharacter, allies: &mut Vec
 	}
 }
 
-fn resolve_target_ally(caster: &mut CombatCharacter, skill: &DefensiveSkill, target: &mut CombatCharacter, allies: &mut Vec<Entity>, enemies: &mut Vec<Entity>, seed: &mut StdRng) {
+fn resolve_target_ally(caster: &mut CombatCharacter, target: &mut CombatCharacter, allies: &mut Vec<Entity>, enemies: &mut Vec<Entity>, skill: &DefensiveSkill, seed: &mut StdRng) {
 	let crit_chance: Option<isize> = skill.calc_crit_chance(caster);
 	let is_crit = match crit_chance {
 		Some(chance) if seed.base100_chance(chance) => true,
@@ -107,7 +109,7 @@ fn resolve_target_ally(caster: &mut CombatCharacter, skill: &DefensiveSkill, tar
 	}
 }
 
-fn resolve_target_self(caster: &mut CombatCharacter, skill: &DefensiveSkill, allies: &mut Vec<Entity>, enemies: &mut Vec<Entity>, seed: &mut StdRng) {
+fn resolve_target_self(caster: &mut CombatCharacter, allies: &mut Vec<Entity>, enemies: &mut Vec<Entity>, skill: &DefensiveSkill, seed: &mut StdRng) {
 	let crit_chance: Option<isize> = skill.calc_crit_chance(caster);
 	let is_crit = match crit_chance {
 		Some(chance) if seed.base100_chance(chance) => true,

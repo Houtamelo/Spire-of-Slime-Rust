@@ -1,7 +1,14 @@
+use gdnative::godot_error;
+use entity::position::Position;
 use crate::combat::entity;
-include!("offensive.rs");
-include!("defensive.rs");
-include!("lewd.rs");
+use crate::combat::skills::defensive::DefensiveSkill;
+use crate::combat::skills::lewd::LewdSkill;
+use crate::combat::skills::offensive::OffensiveSkill;
+use crate::MAX_CHARACTERS_PER_TEAM;
+
+pub mod offensive;
+pub mod defensive;
+pub mod lewd;
 
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct Skill {
@@ -32,7 +39,7 @@ pub enum DMGMode {
 
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub enum CRITMode {
-	CanCrit { crit: isize },
+	CanCrit { crit_chance: isize },
 	NeverCrit,
 }
 
@@ -42,11 +49,11 @@ pub struct PositionMatrix {
 }
 
 impl PositionMatrix {
-	pub fn contains(&self, position: entity::Position) -> bool {
+	pub fn contains(&self, position: Position) -> bool {
 		let (order, size) = position.deconstruct();
 		
-		if (order + size - 1 >= MAX_CHARACTERS_PER_TEAM) || (order < 0) || (size == 0) {
-			godot_error!("PositionMatrix::contains: position: {position}, size: {size} is out of bounds");
+		if (order + size > MAX_CHARACTERS_PER_TEAM) || (order < 0) || (size == 0) {
+			godot_error!("PositionMatrix::contains: position: {position:?}, size: {size} is out of bounds");
 			return false;
 		}
 

@@ -1,3 +1,10 @@
+use crate::combat::effects::onSelf::SelfApplier;
+use crate::combat::effects::onTarget::TargetApplier;
+use crate::combat::entity::character::CombatCharacter;
+use crate::combat::ModifiableStat;
+use crate::combat::skills::*;
+use crate::util::I_Range;
+
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct LewdSkill {
 	pub acc_mode: ACCMode,
@@ -12,7 +19,7 @@ pub struct LewdSkill {
 }
 
 impl LewdSkill {
-	pub fn calc_dmg(&self, caster: &CombatCharacter, target: &CombatCharacter, crit: bool) -> Option<Range> {
+	pub fn calc_dmg(&self, caster: &CombatCharacter, target: &CombatCharacter, crit: bool) -> Option<I_Range> {
 		let (power, toughness_reduction) = match self.dmg {
 			DMGMode::Power { power, toughness_reduction } => { (power, toughness_reduction) }
 			DMGMode::NoDamage => { return None; }
@@ -34,7 +41,7 @@ impl LewdSkill {
 			dmg_min = (dmg_min * 150) / 100;
 		}
 
-		return Some(Range::new(dmg_min, dmg_max));
+		return Some(I_Range::new(dmg_min, dmg_max));
 	}
 
 	pub fn calc_hit_chance(&self, caster: &CombatCharacter, target: &CombatCharacter) -> Option<isize> {
@@ -45,10 +52,10 @@ impl LewdSkill {
 
 		return Some(acc + caster.stat(ModifiableStat::ACC) - target.stat(ModifiableStat::DODGE));
 	}
-
+	
 	pub fn calc_crit_chance(&self, caster: &CombatCharacter) -> Option<isize> {
 		let crit = match self.crit {
-			CRITMode::CanCrit { crit } => { crit }
+			CRITMode::CanCrit { crit_chance: crit } => { crit }
 			CRITMode::NeverCrit => { return None; }
 		};
 

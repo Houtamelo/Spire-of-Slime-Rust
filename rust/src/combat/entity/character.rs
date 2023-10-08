@@ -1,22 +1,21 @@
+use std::rc::Rc;
 use crate::combat::effects::persistent::PersistentEffect;
-use crate::combat::entity::Position::Left;
+use crate::combat::entity::girl::*;
+use crate::combat::entity::position::Position;
+use crate::combat::entity::skill_intention::SkillIntention;
 use crate::combat::ModifiableStat;
-use crate::util::TrackedTicks;
-use crate::util::Range;
-
-pub const MAX_LUST: isize = 200;
+use crate::util::{I_Range, TrackedTicks};
 
 #[derive(Debug)]
 pub struct CombatCharacter {
 	pub guid: usize,
-	pub last_damager_guid: usize,
+	pub last_damager_guid: Option<usize>,
 	pub stamina_cur: isize,
 	pub stamina_max: isize,
 	pub toughness: isize,
 	pub stun_def: isize,
 	pub stun_redundancy_ms: Option<i64>,
 	pub girl_stats: Option<Girl_Stats>,
-	pub size: usize,
 	pub debuff_res: isize,
 	pub debuff_rate: isize,
 	pub move_res: isize,
@@ -27,44 +26,13 @@ pub struct CombatCharacter {
 	pub acc: isize,
 	pub crit: isize,
 	pub dodge: isize,
-	pub damage: Range,
+	pub damage: I_Range,
 	pub power: isize,
 	pub persistent_effects: Vec<PersistentEffect>,
 	pub state: CharacterState,
-	pub position: Position
-}
-
-#[derive(Debug, Clone, Copy)]
-pub struct Girl_Stats {
-	pub lust: isize,
-	pub temptation: isize,
-	pub composure: isize,
-	pub orgasm_limit: isize,
-	pub orgasm_count: isize,
-}
-
-#[derive(Debug)]
-pub struct DefeatedGirl_Entity {
-	pub guid: usize,
-	pub size: usize,
-	pub lust: isize,
-	pub temptation: isize,
-	pub orgasm_limit: isize,
-	pub orgasm_count: isize,
-	pub position: Position
-}
-
-impl DefeatedGirl_Entity {
-	pub fn to_grappled(self) -> GrappledGirl {
-		return GrappledGirl::Defeated(DefeatedGirl_Grappled {
-			guid: self.guid,
-			size: self.size,
-			lust: self.lust,
-			temptation: self.temptation,
-			orgasm_limit: self.orgasm_limit,
-			orgasm_count: self.orgasm_count,
-		});
-	}
+	pub position: Position,
+	pub on_defeat: OnDefeat,
+	//pub skill_use_counters: HashMap<Rc<String>, usize>, todo!
 }
 
 impl CombatCharacter {
@@ -97,7 +65,6 @@ impl CombatCharacter {
 			stamina_max: self.stamina_max,
 			toughness: self.toughness,
 			stun_def: self.stun_def,
-			size: self.size,
 			debuff_res: self.debuff_res,
 			debuff_rate: self.debuff_rate,
 			move_res: self.move_res,
@@ -115,7 +82,13 @@ impl CombatCharacter {
 			composure: girl.composure,
 			orgasm_limit: girl.orgasm_limit,
 			orgasm_count: girl.orgasm_count,
+			position_before_grappled: self.position,
+			on_defeat: self.on_defeat,
 		});
+	}
+
+	pub fn increment_skill_counter(&self, skill_key: &mut Rc<String>) {
+		
 	}
 }
 
@@ -139,7 +112,7 @@ impl CharacterState {
 	pub fn spd_charge_ms(remaining_ms: i64, character_speed: isize) -> i64 {
 		return (remaining_ms * 100) / character_speed as i64;
 	}
-	
+
 	pub fn spd_recovery_ms(remaining_ms: i64, character_speed: isize) -> i64 {
 		return (remaining_ms * 100) / character_speed as i64;
 	}
@@ -152,106 +125,8 @@ pub enum StateBeforeStunned {
 	Idle,
 }
 
-#[derive(Debug)]
-pub enum GrappledGirl {
-	Alive(AliveGirl_Grappled),
-	Defeated(DefeatedGirl_Grappled),
-}
-
-impl GrappledGirl {
-	pub fn guid(&self) -> usize {
-		return match self {
-			GrappledGirl::Alive(alive) => alive.guid,
-			GrappledGirl::Defeated(defeated) => defeated.guid,
-		};
-	}
-}
-
-#[derive(Debug, Clone, Copy)]
-pub struct AliveGirl_Grappled {
-	pub guid: usize,
-	pub stamina_cur: isize,
-	pub stamina_max: isize,
-	pub toughness: isize,
-	pub stun_def: isize,
-	pub size: usize,
-	pub debuff_res: isize,
-	pub debuff_rate: isize,
-	pub move_res: isize,
-	pub move_rate: isize,
-	pub poison_res: isize,
-	pub poison_rate: isize,
-	pub spd: isize,
-	pub acc: isize,
-	pub crit: isize,
-	pub dodge: isize,
-	pub damage: Range,
-	pub power: isize,
-	pub lust: isize,
-	pub temptation: isize,
-	pub composure: isize,
-	pub orgasm_limit: isize,
-	pub orgasm_count: isize,
-}
-
-impl AliveGirl_Grappled {
-	// remember to set position afterwards
-	pub fn to_non_grappled(self) -> CombatCharacter {
-		let girl = Girl_Stats {
-			lust: self.lust,
-			temptation: self.temptation,
-			composure: self.composure,
-			orgasm_limit: self.orgasm_limit,
-			orgasm_count: self.orgasm_count,
-		};
-		return CombatCharacter {
-			guid: self.guid,
-			last_damager_guid: 0,
-			stamina_cur: self.stamina_cur,
-			stamina_max: self.stamina_max,
-			toughness: self.toughness,
-			stun_def: self.stun_def,
-			stun_redundancy_ms: None,
-			girl_stats: Some(girl),
-			size: self.size,
-			debuff_res: self.debuff_res,
-			debuff_rate: self.debuff_rate,
-			move_res: self.move_res,
-			move_rate: self.move_rate,
-			poison_res: self.poison_res,
-			poison_rate: self.poison_rate,
-			spd: self.spd,
-			acc: self.acc,
-			crit: self.crit,
-			dodge: self.dodge,
-			damage: self.damage,
-			power: self.power,
-			persistent_effects: vec![],
-			state: CharacterState::Downed { ticks: TrackedTicks::from_milliseconds(2000) },
-			position: Left { order: 0, size: self.size },
-		};
-	}
-}
-
-impl AliveGirl_Grappled {
-	pub fn to_defeated(self) -> GrappledGirl {
-		return GrappledGirl::Defeated(DefeatedGirl_Grappled {
-			guid: self.guid,
-			size: self.size,
-			lust: self.lust,
-			temptation: self.temptation,
-			orgasm_limit: self.orgasm_limit,
-			orgasm_count: self.orgasm_count,
-		});
-	}
-}
-
-#[derive(Debug)]
-pub struct DefeatedGirl_Grappled {
-	pub guid: usize,
-	pub size: usize,
-	pub lust: isize,
-	pub temptation: isize,
-	pub orgasm_limit: isize,
-	pub orgasm_count: isize,
+#[derive(Debug, Copy, Clone)]
+pub enum OnDefeat {
+	Vanish,
+	CorpseOrDefeatedGirl,
 }

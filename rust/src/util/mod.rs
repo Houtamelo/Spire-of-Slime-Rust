@@ -28,17 +28,17 @@ impl TrackedTicks {
 }
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
-pub struct Range {
+pub struct I_Range {
 	pub min: isize,
 	pub max: isize,
 }
 
-impl Range {
-	pub fn new(min: isize, max: isize) -> Range {
+impl I_Range {
+	pub fn new(min: isize, max: isize) -> I_Range {
 		return if min > max {
-			Range { min, max: min }
+			I_Range { min, max: min }
 		} else {
-			Range { min, max }
+			I_Range { min, max }
 		}
 	}
 }
@@ -49,10 +49,10 @@ pub trait Base100ChanceGenerator {
 
 impl Base100ChanceGenerator for StdRng {
 	fn base100_chance(&mut self, chance: isize) -> bool {
-		if chance <= 100 {
-			return self.gen_ratio(chance as u32, 100);
-		} else {
-			return true;
-		}
+		return match chance {
+			100..=isize::MAX => true,
+			1..=99 => self.gen_ratio(chance as u32, 100),
+			_ => false,
+		};
 	}
 }

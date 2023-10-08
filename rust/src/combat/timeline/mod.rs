@@ -1,7 +1,7 @@
-use crate::combat::{CombatCharacter};
 use crate::combat::effects::persistent::PersistentEffect;
 use crate::{CONVERT_STANDARD_INTERVAL_TO_UNITCOUNT, STANDARD_INTERVAL_MS};
-use crate::combat::entity::{CharacterState, SkillIntention, StateBeforeStunned};
+use crate::combat::entity::character::*;
+use crate::combat::entity::skill_intention::SkillIntention;
 use crate::combat::ModifiableStat::SPD;
 
 #[derive(Debug, Clone)]

@@ -1,4 +1,7 @@
-use crate::combat::skills::{DefensiveSkill, LewdSkill, OffensiveSkill};
+use crate::combat::skills::defensive::DefensiveSkill;
+use crate::combat::skills::lewd::LewdSkill;
+use crate::combat::skills::offensive::OffensiveSkill;
+use crate::util::TrackedTicks;
 
 #[derive(Debug, Clone)]
 pub struct SkillIntention {
