@@ -1,7 +1,11 @@
+use std::collections::HashMap;
+use gdnative::log::godot_warn;
 use combat::ModifiableStat;
-use crate::combat;
+use crate::{combat, CONVERT_STANDARD_INTERVAL_TO_UNITCOUNT, STANDARD_INTERVAL_MS};
 use crate::combat::entity::character::*;
+use crate::combat::entity::Entity;
 use crate::combat::skills::CRITMode;
+use crate::util::GUID;
 
 #[derive(Debug, Clone)]
 pub enum PersistentEffect {
@@ -9,7 +13,7 @@ pub enum PersistentEffect {
 		duration_ms: i64,
 		accumulated_ms: i64,
 		dmg_per_sec: usize,
-		caster_guid: usize,
+		caster_guid: GUID,
 	},
 	Heal {
 		duration_ms: i64,
@@ -28,7 +32,7 @@ pub enum PersistentEffect {
 	},
 	Guarded {
 		duration_ms: i64,
-		guarder_guid: usize,
+		guarder_guid: GUID,
 	},
 	Marked {
 		duration_ms: i64,
@@ -73,32 +77,113 @@ impl PartialEq for PersistentEffect {
 impl Eq for PersistentEffect {}
 
 impl PersistentEffect {
-	pub fn tick(&mut self, ms: i64) {
-		match self {
-			PersistentEffect::Poison { duration_ms, accumulated_ms,.. } => {
-				*accumulated_ms += ms;
-				*duration_ms -= ms;
-			},
-			PersistentEffect::Heal{ duration_ms, accumulated_ms,.. } => {
-				*accumulated_ms += ms;
-				*duration_ms -= ms;
-			},
-			PersistentEffect::Arousal{ duration_ms, accumulated_ms, .. } => {
-				*accumulated_ms += ms;
-				*duration_ms -= ms;
-			},
-			PersistentEffect::Buff{ duration_ms,.. } => {
-				*duration_ms -= ms;
-			},
-			PersistentEffect::Guarded{ duration_ms, .. } => {
-				*duration_ms -= ms;
-			},
-			PersistentEffect::Marked{ duration_ms } => {
-				*duration_ms -= ms;
-			},
-			PersistentEffect::Riposte{ duration_ms, .. } => {
-				*duration_ms -= ms;
-			},
+	pub(in crate::combat) fn tick_all(mut owner: CombatCharacter, insert_owner_here: &mut HashMap<GUID, Entity>, ms: i64) {
+		let iter : Vec<PersistentEffect> = owner.persistent_effects.drain(0..owner.persistent_effects.len()).collect();
+		for mut effect in iter {
+			match &mut effect {
+				PersistentEffect::Poison { duration_ms, accumulated_ms, dmg_per_sec, caster_guid, } => {
+					let actual_ms = clamp_tick_ms(&ms, *duration_ms);
+					
+					*accumulated_ms += actual_ms;
+					*duration_ms -= actual_ms;
+					
+					let intervals_count = *accumulated_ms / STANDARD_INTERVAL_MS;
+					let dmg: usize = (intervals_count * CONVERT_STANDARD_INTERVAL_TO_UNITCOUNT) as usize * (*dmg_per_sec);
+
+					if dmg > 0 {
+						*accumulated_ms -= intervals_count * STANDARD_INTERVAL_MS;
+						owner.stamina_cur -= dmg as isize;
+						if owner.is_dead() { // poison killed this character, we can ignore the rest of the status effects
+							return;
+						}
+					}
+					
+					if *duration_ms > 0 {
+						owner.persistent_effects.push(effect);
+					}
+				},
+				PersistentEffect::Heal{ duration_ms, accumulated_ms, heal_per_sec, } => {
+					let actual_ms = clamp_tick_ms(&ms, *duration_ms);
+					
+					*accumulated_ms += actual_ms;
+					*duration_ms -= actual_ms;
+					
+					let intervals_count = *accumulated_ms / STANDARD_INTERVAL_MS;
+					let heal: usize = (intervals_count * CONVERT_STANDARD_INTERVAL_TO_UNITCOUNT) as usize * (*heal_per_sec);
+					
+					if heal > 0 {
+						*accumulated_ms -= intervals_count * STANDARD_INTERVAL_MS;
+						owner.stamina_cur += heal as isize;
+					}
+					
+					if *duration_ms > 0 {
+						owner.persistent_effects.push(effect);
+					}
+				},
+				PersistentEffect::Arousal{ duration_ms, accumulated_ms, lust_per_sec, } => {
+					let actual_ms = clamp_tick_ms(&ms, *duration_ms);
+					
+					*accumulated_ms += actual_ms;
+					*duration_ms -= actual_ms;
+					
+					let intervals_count = *accumulated_ms / STANDARD_INTERVAL_MS;
+					let lust: usize = (intervals_count * CONVERT_STANDARD_INTERVAL_TO_UNITCOUNT) as usize * (*lust_per_sec);
+					
+					if lust > 0 {
+						let Some(girl) = &mut owner.girl_stats else { 
+							godot_warn!("character has arousal status but isn't a girl: {owner:?}");
+							continue;
+						};
+						
+						*accumulated_ms -= intervals_count * STANDARD_INTERVAL_MS;
+						girl.lust += lust as isize;
+					}
+					
+					if *duration_ms > 0 {
+						owner.persistent_effects.push(effect);
+					}
+				},
+				PersistentEffect::Buff{ duration_ms, .. } => {
+					*duration_ms -= ms;
+					
+					if *duration_ms > 0 {
+						owner.persistent_effects.push(effect);
+					}
+				},
+				PersistentEffect::Guarded{ duration_ms, .. } => {
+					*duration_ms -= ms;
+				
+					if *duration_ms > 0 {
+						owner.persistent_effects.push(effect);
+					}
+				},
+				PersistentEffect::Marked{ duration_ms } => {
+					*duration_ms -= ms;
+					
+					if *duration_ms > 0 {
+						owner.persistent_effects.push(effect);
+					}
+				},
+				PersistentEffect::Riposte{ duration_ms, .. } => {
+					*duration_ms -= ms;
+				
+					if *duration_ms > 0 {
+						owner.persistent_effects.push(effect);
+					}
+				},
+			}
+		}
+		
+		insert_owner_here.insert(owner.guid, Entity::Character(owner));
+		return;
+		
+		fn clamp_tick_ms(input: &i64, duration: i64) -> i64 {
+			if *input <= duration { 
+				return *input;
+			} else {
+				godot_warn!("Tick ms is greater than duration_ms. This should not happen. Tick ms: {}, duration_ms: {}", input, duration);
+				return duration;
+			};
 		}
 	}
 	

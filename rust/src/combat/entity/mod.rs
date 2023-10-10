@@ -7,6 +7,7 @@ use std::cmp::Ordering;
 use position::Position;
 use crate::combat::entity::character::CombatCharacter;
 use crate::combat::entity::girl::DefeatedGirl_Entity;
+use crate::util::GUID;
 
 #[derive(Debug)]
 pub enum Entity {
@@ -36,7 +37,7 @@ impl Entity {
 		}
 	}
 	
-	pub fn guid(&self) -> usize {
+	pub fn guid(&self) -> GUID {
 		return match self {
 			Entity::Character(character) => character.guid,
 			Entity::Corpse(corpse) => corpse.guid, 
@@ -47,6 +48,6 @@ impl Entity {
 
 #[derive(Debug)]
 pub struct Corpse {
-	pub(crate) guid: usize,
+	pub(crate) guid: GUID,
 	pub(crate) position: Position,
 }

@@ -10,3 +10,4 @@ crate-type = ["cdylib"]
 [dependencies]
 gdnative = "0.11.3"
 rand = "0.8.5"
+bounded-integer = { version = "0.5.7", features = ["std", "alloc", "macro", "types", "num-traits02", "zerocopy06", "step_trait"]}

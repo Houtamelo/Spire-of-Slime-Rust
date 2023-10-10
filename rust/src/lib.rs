@@ -2,9 +2,13 @@
 #![allow(nonstandard_style)]
 #![allow(clippy::needless_return)]
 #![allow(clippy::large_enum_variant)]
+#![feature(step_trait)]
 
 mod combat;
 mod util;
+
+#[macro_use]
+extern crate bounded_integer;
 
 pub const MAX_CHARACTERS_PER_TEAM: usize = 4;
 pub const STANDARD_INTERVAL_MS: i64 = 1000;

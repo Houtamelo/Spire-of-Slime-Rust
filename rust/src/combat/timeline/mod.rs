@@ -3,12 +3,13 @@ use crate::{CONVERT_STANDARD_INTERVAL_TO_UNITCOUNT, STANDARD_INTERVAL_MS};
 use crate::combat::entity::character::*;
 use crate::combat::entity::skill_intention::SkillIntention;
 use crate::combat::ModifiableStat::SPD;
+use crate::util::GUID;
 
 #[derive(Debug, Clone)]
 pub struct TimelineEvent {
 	pub time_frame_ms: i64,
 	pub event_type: EventType,
-	pub character_guid: usize
+	pub character_guid: GUID
 }
 
 impl PartialEq for TimelineEvent {
@@ -28,21 +29,21 @@ impl TimelineEvent {
 			CharacterState::Idle => {
 				events.push(TimelineEvent { time_frame_ms: 0, event_type: EventType::TurnBegin, character_guid });
 			}
-			CharacterState::Grappling { victim, lust_per_sec, temptation_per_sec, duration_ms, accumulated_ms } => {
-				events.push(TimelineEvent { time_frame_ms: *duration_ms, event_type: EventType::GrapplingEnd, character_guid });
+			CharacterState::Grappling(g) => {
+				events.push(TimelineEvent { time_frame_ms: g.duration_ms, event_type: EventType::GrapplingEnd, character_guid });
 				
-				let total_time_ms: i64 = duration_ms + accumulated_ms;
+				let total_time_ms: i64 = g.duration_ms + g.accumulated_ms;
 				let total_intervals_count: i64 = total_time_ms / STANDARD_INTERVAL_MS;
 
 				if total_intervals_count < 1 {
-					let lust: i64 = (total_time_ms * (*lust_per_sec as i64)) / 1000;
+					let lust: i64 = (total_time_ms * (g.lust_per_sec as i64)) / 1000;
 					if lust > 0 {
-						events.push(TimelineEvent { time_frame_ms: *duration_ms, event_type: EventType::LustTick { amount: lust as usize }, character_guid: victim.guid() });
+						events.push(TimelineEvent { time_frame_ms: g.duration_ms, event_type: EventType::LustTick { amount: lust as usize }, character_guid: g.victim.guid() });
 					}
 					
-					let temptation: i64 = (total_time_ms * (*temptation_per_sec as i64)) / 1000;
+					let temptation: i64 = (total_time_ms * (g.temptation_per_sec as i64)) / 1000;
 					if temptation > 0 {
-						events.push(TimelineEvent { time_frame_ms: *duration_ms, event_type: EventType::TemptationTick { amount: temptation as usize }, character_guid: victim.guid() });
+						events.push(TimelineEvent { time_frame_ms: g.duration_ms, event_type: EventType::TemptationTick { amount: temptation as usize }, character_guid: g.victim.guid() });
 					}
 
 					return;
@@ -50,40 +51,40 @@ impl TimelineEvent {
 
 				let mut current_ms: i64 = 0;
 
-				if *accumulated_ms >= STANDARD_INTERVAL_MS {
-					let standard_interval_count: i64 = accumulated_ms / STANDARD_INTERVAL_MS;
+				if g.accumulated_ms >= STANDARD_INTERVAL_MS {
+					let standard_interval_count: i64 = g.accumulated_ms / STANDARD_INTERVAL_MS;
 					
-					let lust: i64 = (standard_interval_count * CONVERT_STANDARD_INTERVAL_TO_UNITCOUNT) * (*lust_per_sec as i64);
+					let lust: i64 = (standard_interval_count * CONVERT_STANDARD_INTERVAL_TO_UNITCOUNT) * (g.lust_per_sec as i64);
 					if lust > 0 {
-						events.push(TimelineEvent { time_frame_ms: current_ms, event_type: EventType::LustTick { amount: lust as usize }, character_guid: victim.guid() });
+						events.push(TimelineEvent { time_frame_ms: current_ms, event_type: EventType::LustTick { amount: lust as usize }, character_guid: g.victim.guid() });
 					}
 					
-					let temptation: i64 = (standard_interval_count * CONVERT_STANDARD_INTERVAL_TO_UNITCOUNT) * (*temptation_per_sec as i64);
+					let temptation: i64 = (standard_interval_count * CONVERT_STANDARD_INTERVAL_TO_UNITCOUNT) * (g.temptation_per_sec as i64);
 					if temptation > 0 {
-						events.push(TimelineEvent { time_frame_ms: current_ms, event_type: EventType::TemptationTick { amount: temptation as usize }, character_guid: victim.guid() });
+						events.push(TimelineEvent { time_frame_ms: current_ms, event_type: EventType::TemptationTick { amount: temptation as usize }, character_guid: g.victim.guid() });
 					}
 
-					current_ms = -1 * (accumulated_ms - standard_interval_count * 1000);
+					current_ms = -1 * (g.accumulated_ms - standard_interval_count * 1000);
 				}
 				else {
-					current_ms = -1 * accumulated_ms;
+					current_ms = -1 * g.accumulated_ms;
 				}
 
 				for _ in 0..total_intervals_count {
 					current_ms += STANDARD_INTERVAL_MS;
-					let lust: i64 = CONVERT_STANDARD_INTERVAL_TO_UNITCOUNT * (*lust_per_sec as i64);
+					let lust: i64 = CONVERT_STANDARD_INTERVAL_TO_UNITCOUNT * (g.lust_per_sec as i64);
 					events.push(TimelineEvent { time_frame_ms: current_ms, event_type: EventType::LustTick { amount: lust as usize }, character_guid });
 				}
 
 				let remaining_ms = total_time_ms - (total_intervals_count * CONVERT_STANDARD_INTERVAL_TO_UNITCOUNT * 1000);
 				if remaining_ms > 0 {
 					current_ms += remaining_ms;
-					let lust: i64 = (remaining_ms * (*lust_per_sec as i64)) / 1000;
+					let lust: i64 = (remaining_ms * (g.lust_per_sec as i64)) / 1000;
 					if lust > 0 {
 						events.push(TimelineEvent { time_frame_ms: current_ms, event_type: EventType::LustTick { amount: lust as usize }, character_guid });
 					}
 					
-					let temptation: i64 = (remaining_ms * (*temptation_per_sec as i64)) / 1000;
+					let temptation: i64 = (remaining_ms * (g.temptation_per_sec as i64)) / 1000;
 					if temptation > 0 {
 						events.push(TimelineEvent { time_frame_ms: current_ms, event_type: EventType::TemptationTick { amount: temptation as usize }, character_guid });
 					}

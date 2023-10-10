@@ -1,3 +1,6 @@
+pub(crate) mod bounded_integer_traits;
+
+use std::ops::Deref;
 use rand::prelude::StdRng;
 use rand::Rng;
 
@@ -54,5 +57,48 @@ impl Base100ChanceGenerator for StdRng {
 			1..=99 => self.gen_ratio(chance as u32, 100),
 			_ => false,
 		};
+	}
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
+pub struct GUID {
+	value: usize,
+}
+
+impl GUID {
+	pub fn new(value: usize) -> GUID {
+		return GUID { value };
+	}
+}
+
+impl From<usize> for GUID {
+	fn from(value: usize) -> Self {
+		return GUID { value };
+	}
+}
+
+impl From<&usize> for GUID {
+	fn from(value: &usize) -> Self {
+		return GUID { value: *value };
+	}
+}
+
+impl From<GUID> for usize {
+	fn from(value: GUID) -> Self {
+		return value.value;
+	}
+}
+
+impl From<&GUID> for usize {
+	fn from(value: &GUID) -> Self {
+		return value.value;
+	}
+}
+
+impl Deref for GUID {
+	type Target = usize;
+
+	fn deref(&self) -> &Self::Target {
+		return &self.value;
 	}
 }

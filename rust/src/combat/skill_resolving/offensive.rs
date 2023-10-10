@@ -8,15 +8,15 @@ use crate::combat::entity::*;
 use crate::combat::entity::position::Position;
 use crate::combat::skills::*;
 use crate::combat::skills::offensive::OffensiveSkill;
-use crate::util::{Base100ChanceGenerator, TrackedTicks};
+use crate::util::{Base100ChanceGenerator, GUID, TrackedTicks};
 
 //todo! check riposte
 #[must_use]
 pub fn start(mut caster: CombatCharacter, mut target: CombatCharacter, caster_allies: &mut Vec<Entity>, caster_enemies: &mut Vec<Entity>, skill: OffensiveSkill, seed: &mut StdRng, recover_ms: Option<i64>) {
 	process_self_effects_and_costs(&mut caster, caster_allies, caster_enemies, &skill, seed, recover_ms);
 	if skill.multi_target {
-		let mut targets_guid: Vec<usize> = Vec::new();
-		for possible_target in caster_enemies {
+		let mut targets_guid: Vec<GUID> = Vec::new();
+		for possible_target in caster_enemies.iter() {
 			let target_position = possible_target.position();
 			if target_position.contains_any(&skill.allowed_enemy_positions) {
 				targets_guid.push(possible_target.guid());
@@ -122,7 +122,7 @@ fn process_self_effects_and_costs(caster: &mut CombatCharacter, caster_allies: &
 		_ => false,
 	};
 
-	for self_applier in skill.effects_self {
+	for self_applier in skill.effects_self.iter() {
 		self_applier.apply(caster, caster_allies, caster_enemies, seed, is_crit);
 	}
 }
@@ -199,10 +199,10 @@ fn resolve_target(caster: &mut CombatCharacter, target: &mut CombatCharacter, ca
 			}
 		}
 		,
-		CharacterState::Grappling { victim, .. } => {
+		CharacterState::Grappling(g) => {
 			//todo! fix borrow checker
-			
-			return grappler_attacked(caster, target, caster_allies, caster_enemies, victim, damage);
+			return AttackResult::BothAlive;
+			//return grappler_attacked(caster, target, caster_allies, caster_enemies, victim, damage);
 		},
 		CharacterState::Downed { .. } => return AttackResult::BothAlive, // damage is ignored on downed characters.
 	}
@@ -245,7 +245,7 @@ fn resolve_target(caster: &mut CombatCharacter, target: &mut CombatCharacter, ca
 
 					*girl_standing.position.order_mut() = 0;
 
-					for girl_ally in girl_allies {
+					for girl_ally in girl_allies.iter_mut() {
 						let mutref_ally_order = girl_ally.position_mut().order_mut();
 						*mutref_ally_order += girl_standing.position.size();
 					}
@@ -270,7 +270,7 @@ fn resolve_target(caster: &mut CombatCharacter, target: &mut CombatCharacter, ca
 
 					*girl_standing.position.order_mut() = 0;
 
-					for girl_ally in girl_allies {
+					for girl_ally in girl_allies.iter_mut() {
 						let mutref_ally_order = girl_ally.position_mut().order_mut();
 						*mutref_ally_order += girl_standing.position.size();
 					}
@@ -287,7 +287,7 @@ fn resolve_target(caster: &mut CombatCharacter, target: &mut CombatCharacter, ca
 
 					*girl_standing.position.order_mut() = 0;
 
-					for girl_ally in girl_allies {
+					for girl_ally in girl_allies.iter_mut() {
 						let mutref_ally_order = girl_ally.position_mut().order_mut();
 						*mutref_ally_order += girl_standing.position.size();
 					}

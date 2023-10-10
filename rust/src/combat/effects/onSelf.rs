@@ -68,15 +68,10 @@ impl SelfApplier {
 				caster.stamina_cur = (caster.stamina_cur + healAmount).clamp(0, caster.stamina_max);
 			}
 			SelfApplier::Lust{ min, max } => {
-				match &mut caster.girl_stats {
-					None => {
-						return;
-					}
-					Some(girl) => {
-						let actual_min = *min.min(&(max - 1));
-						let lustAmount = seed.gen_range(actual_min..=*max);
-						girl.lust += lustAmount as isize;
-					}
+				if let Some(girl) = &mut caster.girl_stats {
+					let actual_min = *min.min(&(max - 1));
+					let lustAmount = seed.gen_range(actual_min..=*max);
+					girl.lust += lustAmount as isize;
 				}
 			}
 			SelfApplier::Mark{ duration_ms } => {
@@ -94,17 +89,17 @@ impl SelfApplier {
 				};
 
 				let mut allies_space_occupied = 0;
-				for ally in allies {
+				for ally in allies.iter() {
 					allies_space_occupied += ally.position().size();
 				}
 
-				let index_old = index_current.clone() as isize;
+				let index_old = *index_current as isize;
 				*index_current = usize::clamp(((*index_current as isize) + direction) as usize, 0, allies_space_occupied);
 				let index_delta = *index_current as isize - index_old;
 				let inverse_delta = -1 * index_delta;
 
 				for ally in allies {
-					let order = ally.position().order_mut();
+					let order = ally.position_mut().order_mut();
 					*order = (*order as isize + inverse_delta) as usize;
 				}
 			}

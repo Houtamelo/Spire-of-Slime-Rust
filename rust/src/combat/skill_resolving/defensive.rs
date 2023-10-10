@@ -4,14 +4,14 @@ use crate::combat::entity::*;
 use crate::combat::entity::character::*;
 use crate::combat::skills::{PositionMatrix};
 use crate::combat::skills::defensive::DefensiveSkill;
-use crate::util::{Base100ChanceGenerator, TrackedTicks};
+use crate::util::{Base100ChanceGenerator, GUID, TrackedTicks};
 
 pub fn start_targeting_self(caster: &mut CombatCharacter, allies: &mut Vec<Entity>, enemies: &mut Vec<Entity>, skill: DefensiveSkill, seed: &mut StdRng, recover_ms: Option<i64>) {
 	process_self_effects_and_costs(caster, allies, enemies, &skill, seed, recover_ms);
 	resolve_target_self(caster, allies, enemies, &skill, seed);
 	
 	if skill.multi_target {
-		let mut targets_guid = get_target_guids(skill.allowed_ally_positions, allies);
+		let mut targets_guid = get_target_guids(&skill.allowed_ally_positions, allies);
 		while let Some(target_guid) = targets_guid.pop() {
 			let Some(position) = allies.iter().position(|ally| ally.guid() == target_guid) else {
 				godot_error!("Warning: Trying to apply skill to ally with guid {target_guid:?}, but it was not found in the allies!"); continue;
@@ -27,8 +27,8 @@ pub fn start_targeting_self(caster: &mut CombatCharacter, allies: &mut Vec<Entit
 	
 	return;
 
-	fn get_target_guids(positions: PositionMatrix, possible_targets: &Vec<Entity>) -> Vec<usize> {
-		let mut target_guids: Vec<usize> = Vec::new();
+	fn get_target_guids(positions: &PositionMatrix, possible_targets: &Vec<Entity>) -> Vec<GUID> {
+		let mut target_guids: Vec<GUID> = Vec::new();
 		for possible_target in possible_targets {
 			let target_position = possible_target.position();
 			if target_position.contains_any(&positions) {
@@ -44,7 +44,7 @@ pub fn start_targeting_ally(caster: &mut CombatCharacter, target: &mut CombatCha
 	resolve_target_ally(caster, target, allies, enemies, &skill, seed);
 	
 	if skill.multi_target {
-		let mut targets_guid = get_target_guids(skill.allowed_ally_positions, allies, caster);
+		let mut targets_guid = get_target_guids(&skill.allowed_ally_positions, allies, caster);
 		while let Some(target_guid) = targets_guid.pop() {
 			if let Some(position) = allies.iter().position(|ally| ally.guid() == target_guid)
 			{
@@ -64,8 +64,8 @@ pub fn start_targeting_ally(caster: &mut CombatCharacter, target: &mut CombatCha
 
 	return;
 
-	fn get_target_guids(positions: PositionMatrix, possible_targets: &Vec<Entity>, caster: &CombatCharacter) -> Vec<usize> {
-		let mut target_guids: Vec<usize> = Vec::new();
+	fn get_target_guids(positions: &PositionMatrix, possible_targets: &Vec<Entity>, caster: &CombatCharacter) -> Vec<GUID> {
+		let mut target_guids: Vec<GUID> = Vec::new();
 		for possible_target in possible_targets {
 			let target_position = possible_target.position();
 			if target_position.contains_any(&positions) {
@@ -92,7 +92,7 @@ fn process_self_effects_and_costs(caster: &mut CombatCharacter, allies: &mut Vec
 		_ => false
 	};
 
-	for self_applier in skill.effects_self {
+	for self_applier in skill.effects_self.iter() {
 		self_applier.apply(caster, allies, enemies, seed, is_crit);
 	}
 }
@@ -104,7 +104,7 @@ fn resolve_target_ally(caster: &mut CombatCharacter, target: &mut CombatCharacte
 		_ => false
 	};
 
-	for target_applier in skill.effects_target {
+	for target_applier in skill.effects_target.iter() {
 		target_applier.apply_target(caster, target, allies, enemies, seed, is_crit);
 	}
 }
@@ -116,7 +116,7 @@ fn resolve_target_self(caster: &mut CombatCharacter, allies: &mut Vec<Entity>, e
 		_ => false
 	};
 
-	for target_applier in skill.effects_target {
+	for target_applier in skill.effects_target.iter() {
 		target_applier.apply_self(caster, allies, enemies, seed, is_crit);
 	}
 }
