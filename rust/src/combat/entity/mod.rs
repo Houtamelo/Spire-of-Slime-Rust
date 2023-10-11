@@ -4,6 +4,7 @@ pub mod character;
 pub mod skill_intention;
 
 use std::cmp::Ordering;
+use std::rc::Rc;
 use position::Position;
 use crate::combat::entity::character::CombatCharacter;
 use crate::combat::entity::girl::DefeatedGirl_Entity;
@@ -48,6 +49,35 @@ impl Entity {
 
 #[derive(Debug)]
 pub struct Corpse {
-	pub(crate) guid: GUID,
-	pub(crate) position: Position,
+	pub guid: GUID,
+	pub position: Position,
+	pub data_key: Rc<String>,
+}
+
+#[macro_export]
+macro_rules! iter_allies_of {
+	($character: expr, $entities: expr) => {
+		$entities.values().filter(|entity| $crate::combat::Position::same_side(entity.position(), $character.position()))
+	};
+}
+
+#[macro_export]
+macro_rules! iter_mut_allies_of {
+	($character: expr, $entities: expr) => {
+		$entities.values_mut().filter(|entity| $crate::combat::Position::same_side(entity.position(), $character.position()))
+	};
+}   
+
+#[macro_export]
+macro_rules! iter_enemies_of {
+	($character: expr, $entities: expr) => {
+		$entities.values().filter(|entity| $crate::combat::Position::opposite_side(entity.position(), $character.position()))
+	};
+}
+
+#[macro_export]
+macro_rules! iter_mut_enemies_of {
+	($character: expr, $entities: expr) => {
+		$entities.values_mut().filter(|entity| $crate::combat::Position::opposite_side(entity.position(), $character.position()))
+	};
 }

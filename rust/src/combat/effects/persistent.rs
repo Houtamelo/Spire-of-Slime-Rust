@@ -81,7 +81,7 @@ impl PersistentEffect {
 		let iter : Vec<PersistentEffect> = owner.persistent_effects.drain(0..owner.persistent_effects.len()).collect();
 		for mut effect in iter {
 			match &mut effect {
-				PersistentEffect::Poison { duration_ms, accumulated_ms, dmg_per_sec, caster_guid, } => {
+				PersistentEffect::Poison { duration_ms, accumulated_ms, dmg_per_sec, .. } => {
 					let actual_ms = clamp_tick_ms(&ms, *duration_ms);
 					
 					*accumulated_ms += actual_ms;
@@ -102,7 +102,7 @@ impl PersistentEffect {
 						owner.persistent_effects.push(effect);
 					}
 				},
-				PersistentEffect::Heal{ duration_ms, accumulated_ms, heal_per_sec, } => {
+				PersistentEffect::Heal{ duration_ms, accumulated_ms, heal_per_sec } => {
 					let actual_ms = clamp_tick_ms(&ms, *duration_ms);
 					
 					*accumulated_ms += actual_ms;
@@ -120,7 +120,7 @@ impl PersistentEffect {
 						owner.persistent_effects.push(effect);
 					}
 				},
-				PersistentEffect::Arousal{ duration_ms, accumulated_ms, lust_per_sec, } => {
+				PersistentEffect::Arousal{ duration_ms, accumulated_ms, lust_per_sec } => {
 					let actual_ms = clamp_tick_ms(&ms, *duration_ms);
 					
 					*accumulated_ms += actual_ms;

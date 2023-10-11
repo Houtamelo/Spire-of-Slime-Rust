@@ -1,6 +1,8 @@
-pub(crate) mod bounded_integer_traits;
+pub(crate) mod bounded_integer_traits_ISize;
+pub(crate) mod bounded_integer_traits_U32;
 
 use std::ops::Deref;
+use bounded_integer::{BoundedU32};
 use rand::prelude::StdRng;
 use rand::Rng;
 
@@ -47,16 +49,12 @@ impl I_Range {
 }
 
 pub trait Base100ChanceGenerator {
-	fn base100_chance(&mut self, chance: isize) -> bool;
+	fn base100_chance(&mut self, chance: BoundedU32<0, 100>) -> bool;
 }
 
 impl Base100ChanceGenerator for StdRng {
-	fn base100_chance(&mut self, chance: isize) -> bool {
-		return match chance {
-			100..=isize::MAX => true,
-			1..=99 => self.gen_ratio(chance as u32, 100),
-			_ => false,
-		};
+	fn base100_chance(&mut self, chance: BoundedU32<0, 100>) -> bool {
+		return  self.gen_ratio(chance.get(), 100);
 	}
 }
 

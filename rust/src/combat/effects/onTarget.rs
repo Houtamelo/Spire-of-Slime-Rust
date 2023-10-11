@@ -1,6 +1,8 @@
+use std::collections::HashMap;
 use gdnative::log::godot_warn;
 use rand::prelude::StdRng;
 use rand::Rng;
+use crate::{iter_allies_of, iter_mut_allies_of};
 use crate::combat::effects::MoveDirection;
 use crate::combat::effects::persistent::PersistentEffect;
 use crate::combat::entity::character::*;
@@ -9,12 +11,13 @@ use crate::combat::entity::position::Position;
 use crate::combat::ModifiableStat;
 use crate::combat::ModifiableStat::{DEBUFF_RATE, DEBUFF_RES, MOVE_RATE, MOVE_RES, STUN_DEF};
 use crate::combat::skills::CRITMode;
-use crate::util::Base100ChanceGenerator;
+use crate::util::{Base100ChanceGenerator, GUID};
+use crate::util::bounded_integer_traits_U32::ToBounded;
 
-const CRIT_DURATION_MULTIPLIER: i64 = 150;
-const CRIT_EFFECT_MULTIPLIER: usize = 150;
-const CRIT_EFFECT_MULTIPLIER_I: isize = CRIT_EFFECT_MULTIPLIER as isize;
-const CRIT_CHANCE_MODIFIER  : isize = 50;
+pub(super) const CRIT_DURATION_MULTIPLIER: i64 = 150;
+pub(super) const CRIT_EFFECT_MULTIPLIER: usize = 150;
+pub(super) const CRIT_EFFECT_MULTIPLIER_I: isize = CRIT_EFFECT_MULTIPLIER as isize;
+pub(super) const CRIT_CHANCE_MODIFIER  : isize = 50;
 
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub enum TargetApplier {
@@ -70,8 +73,8 @@ pub enum TargetApplier {
 	},
 }
 
-impl TargetApplier { //todo! consider crit
-	pub fn apply_target(&self, caster: &mut CombatCharacter, target: &mut CombatCharacter, caster_allies: &mut Vec<Entity>, caster_enemies: &mut Vec<Entity>, seed: &mut StdRng, is_crit: bool) {
+impl TargetApplier {
+	pub fn apply_target(&self, caster: &mut CombatCharacter, target: &mut CombatCharacter, others: &mut HashMap<GUID, Entity>, seed: &mut StdRng, is_crit: bool) {
 		match self {
 			TargetApplier::Arouse { duration_ms, mut lust_per_sec } => {
 				if is_crit { lust_per_sec = (lust_per_sec * CRIT_EFFECT_MULTIPLIER) / 100; }
@@ -84,7 +87,7 @@ impl TargetApplier { //todo! consider crit
 						if is_crit { chance += CRIT_CHANCE_MODIFIER;  }
 
 						let final_chance = chance + caster.stat(DEBUFF_RATE) - target.stat(DEBUFF_RES);
-						if seed.base100_chance(final_chance) == false {
+						if seed.base100_chance(final_chance.bind_0_p100()) == false {
 							return;
 						}
 					},
@@ -141,7 +144,7 @@ impl TargetApplier { //todo! consider crit
 						if is_crit { chance += CRIT_CHANCE_MODIFIER;  }
 						
 						let final_chance = chance + caster.stat(MOVE_RATE) - target.stat(MOVE_RES);
-						if seed.base100_chance(final_chance) == false {
+						if seed.base100_chance(final_chance.bind_0_p100()) == false {
 							return;
 						}
 					}
@@ -154,24 +157,18 @@ impl TargetApplier { //todo! consider crit
 				};
 
 
-				let target_allies = match Position::opposite_side(&caster.position, &target.position) {
-					true  => caster_enemies,
-					false => caster_allies,
-				};
-				
-				let order_current : &mut usize = target.position.order_mut();
-
 				let mut allies_space_occupied = 0;
-				for target_ally in target_allies.iter() {
+				for target_ally in iter_allies_of!(target, others) {
 					allies_space_occupied += target_ally.position().size();
 				}
 
-				let order_old = order_current.clone() as isize;
+				let order_current : &mut usize = target.position.order_mut();
+				let order_old = *order_current as isize;
 				*order_current = usize::clamp(((*order_current as isize) + direction) as usize, 0, allies_space_occupied);
 				let order_delta = *order_current as isize - order_old;
 				let inverse_delta = -1 * order_delta;
 
-				for target_ally in target_allies {
+				for target_ally in iter_mut_allies_of!(target, others) {
 					let order = target_ally.position_mut().order_mut();
 					*order = (*order as isize + inverse_delta) as usize;
 				}
@@ -186,7 +183,7 @@ impl TargetApplier { //todo! consider crit
 				
 				target.persistent_effects.push(PersistentEffect::new_poison(*duration_ms, dmg_per_sec, caster));
 			},
-			TargetApplier::MakeTargetRiposte{ duration_ms, dmg_multiplier, acc,crit } => { // can't crit!
+			TargetApplier::MakeTargetRiposte{ duration_ms, dmg_multiplier, acc, crit } => { // can't crit!
 				target.persistent_effects.push(PersistentEffect::new_riposte(*duration_ms, *dmg_multiplier, *acc, crit.clone()));
 			},
 			TargetApplier::Stun{ mut force } => {
@@ -217,7 +214,7 @@ impl TargetApplier { //todo! consider crit
 		}
 	}
 	
-	pub fn apply_self(&self, caster: &mut CombatCharacter, allies: &mut Vec<Entity>, _enemies: &mut Vec<Entity>, seed: &mut StdRng, is_crit: bool) {
+	pub fn apply_self(&self, caster: &mut CombatCharacter, others: &mut HashMap<GUID, Entity>, seed: &mut StdRng, is_crit: bool) {
 		match self {
 			TargetApplier::Arouse { duration_ms, mut lust_per_sec } => {
 				if is_crit { lust_per_sec = (lust_per_sec * CRIT_EFFECT_MULTIPLIER) / 100; }
@@ -252,16 +249,11 @@ impl TargetApplier { //todo! consider crit
 					min = (min * CRIT_EFFECT_MULTIPLIER) / 100;
 					max = (max * CRIT_EFFECT_MULTIPLIER) / 100;
 				}
-				
-				match &mut caster.girl_stats {
-					None => {
-						return;
-					}
-					Some(girl) => {
-						let actual_min: usize = usize::min(min,max - 1);
-						let lustAmount: usize = seed.gen_range(actual_min..=max);
-						girl.lust += lustAmount as isize;
-					}
+
+				if let Some(girl) = &mut caster.girl_stats {
+					let actual_min: usize = usize::min(min, max - 1);
+					let lustAmount: usize = seed.gen_range(actual_min..=max);
+					girl.lust += lustAmount as isize;
 				}
 			},
 			TargetApplier::Mark { mut duration_ms } => {
@@ -275,19 +267,18 @@ impl TargetApplier { //todo! consider crit
 					MoveDirection::ToEdge  (amount) => { amount.abs() }
 				};
 
-				let order_current: &mut usize = caster.position.order_mut();
-
 				let mut allies_space_occupied = 0;
-				for ally in allies.iter() {
+				for ally in iter_allies_of!(caster, others) {
 					allies_space_occupied += ally.position().size();
 				}
 
-				let order_old = order_current.clone() as isize;
+				let order_current: &mut usize = caster.position.order_mut();
+				let order_old = *order_current as isize;
 				*order_current = usize::clamp(((*order_current as isize) + direction) as usize, 0, allies_space_occupied);
 				let order_delta = *order_current as isize - order_old;
 				let inverse_delta = -1 * order_delta;
 
-				for ally in allies {
+				for ally in iter_mut_allies_of!(caster, others) {
 					let order = ally.position_mut().order_mut();
 					*order = (*order as isize + inverse_delta) as usize;
 				}

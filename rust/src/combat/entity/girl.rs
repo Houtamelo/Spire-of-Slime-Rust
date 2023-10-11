@@ -39,6 +39,10 @@ impl DefeatedGirl_Entity {
 			position_before_grappled: self.position,
 		});
 	}
+
+	pub fn position(&self) -> &Position {
+		return &self.position;
+	}
 }
 
 #[derive(Debug, Clone)]

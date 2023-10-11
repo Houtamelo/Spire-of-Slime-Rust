@@ -1,15 +1,15 @@
-use std::collections::HashMap;
-use crate::util::bounded_integer_traits::*;
-use gdnative::godot_error;
-use gdnative::prelude::godot_warn;
+use std::collections::{HashMap, HashSet};
+use crate::util::bounded_integer_traits_ISize::*;
+use gdnative::prelude::*;
 use rand::prelude::StdRng;
 use entity::position::Position;
 use crate::combat::entity::*;
-use crate::{CONVERT_STANDARD_INTERVAL_TO_UNITCOUNT, STANDARD_INTERVAL_MS};
+use crate::{CONVERT_STANDARD_INTERVAL_TO_UNITCOUNT, iter_mut_allies_of, STANDARD_INTERVAL_MS};
 use crate::combat::effects::persistent::PersistentEffect;
 use crate::combat::entity::character::*;
 use crate::combat::entity::girl::*;
 use crate::combat::ModifiableStat::SPD;
+use crate::combat::timeline::TimelineEvent;
 use crate::util::GUID;
 
 mod effects;
@@ -28,95 +28,74 @@ pub struct CombatState {
 
 impl CombatState {
 	pub fn run(&mut self) {
-		//let events = self.get_timeline_events();
-		//if events.len() > 0 {
-		//	let next_event = &events[0];
-	//		self.tick(next_event.time_frame_ms);
-	//	}todo!
+		let events = self.get_timeline_events();
+		if events.len() > 0 {
+			let next_event = &events[0];
+			self.tick(next_event.time_frame_ms); 
+		}
 	}
 
 	fn tick(&mut self, delta_time_ms: i64) {
 		self.elapsed_ms += delta_time_ms;
 		
-		let mut guids_to_tick : Vec<GUID>  = Vec::new();
-		let mut left_entities : HashMap<GUID, Entity> = HashMap::new();
-		let mut right_entities: HashMap<GUID, Entity> = HashMap::new();
+		let guids_to_tick : HashSet<GUID> = self.entities.values().map(|entity| entity.guid()).collect();
 
-		for (guid, entity) in self.entities.drain() {
-			match (*entity.position(), entity) {
-				(Position::Left { ..}, Entity::Character(character)) => {
-					guids_to_tick.push(character.guid);
-					PersistentEffect::tick_all(character, &mut  left_entities, delta_time_ms);
-				}
-				(Position::Right { .. }, Entity::Character(character)) => {
-					guids_to_tick.push(character.guid);
-					PersistentEffect::tick_all(character, &mut right_entities, delta_time_ms);
-				}
-				(Position::Left  { .. }, entity)  => {  left_entities.insert(guid, entity); }
-				(Position::Right { .. }, entity) => { right_entities.insert(guid, entity); }
+		for guid in guids_to_tick.iter() {
+			if let Some(Entity::Character(character)) = self.entities.remove(guid) {
+				PersistentEffect::tick_all(character, &mut self.entities, delta_time_ms);
 			}
 		}
-		
-		while let Some(guid) = guids_to_tick.pop() {
-			if let Some(left_entity) = left_entities.remove(&guid) {
-				if let Entity::Character(character) = left_entity {
-					tick_character(character, &mut left_entities, &mut right_entities, delta_time_ms);
-				} else { 
-					left_entities.insert(guid, left_entity);
-				}
-			} 
-			else if let Some(right_entity) = right_entities.remove(&guid) {
-				if let Entity::Character(character) = right_entity {
-					tick_character(character, &mut left_entities, &mut right_entities, delta_time_ms);
-				} else { 
-					right_entities.insert(guid, right_entity);
-				}
+
+		for guid in guids_to_tick.iter() {
+			if let Some(Entity::Character(character)) = self.entities.remove(&guid) {
+				tick_character(character, &mut self.entities, delta_time_ms);
 			} else {
 				godot_warn!("Warning: Trying to tick character with guid {guid:?}, but it was not found in the left or right entities!");
 			}
 		}
 		
-		for entity in left_entities  { self.entities.insert(entity.0, entity.1); }
-		for entity in right_entities { self.entities.insert(entity.0, entity.1); }
-		
 		return;
 		
-		fn tick_character(mut character: CombatCharacter, allies: &mut HashMap<GUID, Entity>, enemies: &mut HashMap<GUID, Entity>, delta_time_ms: i64) {
-			let state = &mut character.state;
-			match state {
+		fn tick_character(mut character: CombatCharacter, others: &mut HashMap<GUID, Entity>, delta_time_ms: i64) {
+			match character.state {
 				CharacterState::Idle => {
 					// todo! run AI here
-					allies.insert(character.guid, Entity::Character(character));
+					character.state = CharacterState::Idle;
+					others.insert(character.guid, Entity::Character(character));
 				}
-				CharacterState::Grappling(_) => {
-					tick_grappled_girl(character, allies, enemies, delta_time_ms);
+				CharacterState::Grappling(grappling) => {
+					character.state = CharacterState::Grappling(grappling);
+					tick_grappled_girl(character, others, delta_time_ms);
 				}
-				CharacterState::Downed { ticks } => {
+				CharacterState::Downed { mut ticks } => {
 					ticks.remaining_ms -= delta_time_ms;
 					if ticks.remaining_ms <= 0 {
-						*state = CharacterState::Idle;
+						character.state = CharacterState::Idle;
 						character.stamina_cur = isize::max(character.stamina_cur, (character.stamina_max * 5) / 10)
+					} else {
+						character.state = CharacterState::Downed { ticks };
 					}
-					
-					allies.insert(character.guid, Entity::Character(character));
+
+					others.insert(character.guid, Entity::Character(character));
 				}
-				CharacterState::Stunned { ticks, state_before_stunned } => {
+				CharacterState::Stunned { mut ticks, state_before_stunned } => {
 					ticks.remaining_ms -= delta_time_ms;
 					if ticks.remaining_ms <= 0 {
-						*state = match state_before_stunned {
-							StateBeforeStunned::Recovering { ticks } => { CharacterState::Recovering { ticks: ticks.to_owned() } }
-							StateBeforeStunned::Charging   { skill_intention } => { CharacterState::Charging { skill_intention: skill_intention.to_owned() } }
-							StateBeforeStunned::Idle => { CharacterState::Idle }
+						character.state = match state_before_stunned {
+							StateBeforeStunned::Recovering { ticks }             => { CharacterState::Recovering { ticks } }
+							StateBeforeStunned::Charging   { skill_intention } => { CharacterState::Charging { skill_intention } }
+							StateBeforeStunned::Idle                                           => { CharacterState::Idle }
 						}
+					} else {
+						character.state = CharacterState::Stunned { ticks, state_before_stunned }
 					}
 
-					allies.insert(character.guid, Entity::Character(character));
+					others.insert(character.guid, Entity::Character(character));
 				}
-				CharacterState::Charging { .. } => {
+				CharacterState::Charging { skill_intention } => {
+					character.state = CharacterState::Charging { skill_intention }; // move it back to calculate SPD on next line
 					let spd_delta_time_ms = CharacterState::spd_charge_ms(delta_time_ms, character.stat(SPD));
-
-					// we cannot use skill_intention from the first match because we borrow ticked_character mutably to calculate it's SPD
-					let CharacterState::Charging { skill_intention} = &mut character.state else { panic!() };
+					let CharacterState::Charging { mut skill_intention} = character.state else { panic!() };
 
 					skill_intention.charge_ticks.remaining_ms -= spd_delta_time_ms;
 					if skill_intention.charge_ticks.remaining_ms <= 0 {
@@ -126,27 +105,31 @@ impl CombatState {
 							None => { CharacterState::Idle }
 						}
 					} else {
-						allies.insert(character.guid, Entity::Character(character));
+						character.state = CharacterState::Charging { skill_intention };
 					}
+
+					others.insert(character.guid, Entity::Character(character));
 				},
 				CharacterState::Recovering { ticks } => {
-					let mut ticks_clone = ticks.clone(); // clone is needed because we need to pass ticked_character as immutable to calculate it's SPD
+					character.state = CharacterState::Recovering { ticks }; // move it back to calculate SPD on next line
 					let spd_delta_time_ms = CharacterState::spd_recovery_ms(delta_time_ms, character.stat(SPD));
-					ticks_clone.remaining_ms -= spd_delta_time_ms;
-					if ticks_clone.remaining_ms <= 0 {
+					let CharacterState::Recovering { mut ticks } = character.state else { panic!() };
+
+					ticks.remaining_ms -= spd_delta_time_ms;
+					if ticks.remaining_ms <= 0 {
 						character.state = CharacterState::Idle;
 						//todo! run AI here
 					}
 					else {
-						character.state = CharacterState::Recovering { ticks: ticks_clone };
+						character.state = CharacterState::Recovering { ticks };
 					}
 
-					allies.insert(character.guid, Entity::Character(character));
+					others.insert(character.guid, Entity::Character(character));
 				}
 			}
 		}
 		
-		fn tick_grappled_girl(mut grappler: CombatCharacter, allies: &mut HashMap<GUID, Entity>, enemies: &mut HashMap<GUID, Entity>, delta_time_ms: i64) {
+		fn tick_grappled_girl(mut grappler: CombatCharacter, others: &mut HashMap<GUID, Entity>, delta_time_ms: i64) {
 			let CharacterState::Grappling(mut g_state) = grappler.state else { panic!() };
 			
 			match g_state.victim {
@@ -168,16 +151,14 @@ impl CombatState {
 						};
 
 						// shift all allies of the released girl to the edge, to make space for her at the front
-						for ally_of_girl in enemies.values_mut() {
-							match &mut ally_of_girl.position_mut() {
-								Position::Left  { order, .. } => { *order += girl_size; }
-								Position::Right { order, .. } => { *order += girl_size; }
-							}
+						for ally_of_girl in iter_mut_allies_of!(girl_released, others) {
+							let order_mut = ally_of_girl.position_mut().order_mut();
+							*order_mut += girl_size;
 						}
 
 						girl_released.position = girl_position;
-						enemies.insert(girl_released.guid, Entity::Character(girl_released));
-						allies.insert(grappler.guid, Entity::Character(grappler));
+						others.insert(girl_released.guid, Entity::Character(girl_released));
+						others.insert(grappler     .guid, Entity::Character(grappler));
 						return;
 					}
 					
@@ -187,7 +168,7 @@ impl CombatState {
 					if g_state.accumulated_ms < STANDARD_INTERVAL_MS {
 						g_state.victim = GrappledGirl::Alive(girl_alive);
 						grappler.state = CharacterState::Grappling(g_state);
-						allies.insert(grappler.guid, Entity::Character(grappler));
+						others.insert(grappler.guid, Entity::Character(grappler));
 						return;
 					}
 
@@ -201,7 +182,7 @@ impl CombatState {
 					if girl_alive.lust < MAX_LUST {
 						g_state.victim = GrappledGirl::Alive(girl_alive);
 						grappler.state = CharacterState::Grappling(g_state);
-						allies.insert(grappler.guid, Entity::Character(grappler));
+						others.insert(grappler.guid, Entity::Character(grappler));
 						return;
 					}
 
@@ -221,7 +202,7 @@ impl CombatState {
 						grappler.state = CharacterState::Grappling(g_state);
 					}
 
-					allies.insert(grappler.guid, Entity::Character(grappler));
+					others.insert(grappler.guid, Entity::Character(grappler));
 				}
 				GrappledGirl::Defeated(mut girl_defeated) => {
 					g_state.accumulated_ms += delta_time_ms;
@@ -243,100 +224,21 @@ impl CombatState {
 					
 					g_state.victim = GrappledGirl::Defeated(girl_defeated);
 					grappler.state = CharacterState::Grappling(g_state);
-					allies.insert(grappler.guid, Entity::Character(grappler));
+					others.insert(grappler.guid, Entity::Character(grappler));
 				}
 			}
 		}
 	}
 	
-	//todo!
-	/*fn get_timeline_events(&self) -> Vec<TimelineEvent> {
+	fn get_timeline_events(&self) -> Vec<TimelineEvent> {
 		let mut all_events: Vec<TimelineEvent> = Vec::new();
-		self.all_characters().for_each(|character| TimelineEvent::register_character(character, &mut all_events));
+		for entity in self.entities.values() {
+			if let Entity::Character(character) = entity {
+				TimelineEvent::register_character(character, &mut all_events)
+			}
+		}
+		
 		all_events.sort_by(|a, b| a.time_frame_ms.cmp(&b.time_frame_ms));
 		return all_events;
 	}
-
-	pub fn left_characters(&self) -> FilterMap<Iter<Entity>, fn(&Entity) -> Option<&CombatCharacter>> {
-		return self.entities.iter().filter_map(|entity| match entity {
-			Entity::Character(character) => {
-				if let Position::Left { .. } = character.position { Some(character) }
-				else { None }
-			}
-			_ => { None }
-		});
-	}
-		
-	pub fn left_characters_mut(&mut self) -> FilterMap<IterMut<Entity>, fn(&mut Entity) -> Option<&mut CombatCharacter>> {
-		return self.entities.iter_mut().filter_map(|entity| match entity {
-			Entity::Character(character) => {
-				if let Position::Left { .. } = character.position { Some(character) }
-				else { None }
-			}
-			_ => { None }
-		});
-	}
-	
-	pub fn left_entities(&self) -> FilterMap<Iter<Entity>, fn(&Entity) -> Option<&Entity>> {
-		return self.entities.iter()
-		           .filter_map(|entity|
-						if let Position::Left { .. } = entity.position() {
-							Some(entity)
-						} else { None });
-	}
-
-	pub fn left_entities_mut(&mut self) -> FilterMap<IterMut<Entity>, fn(&mut Entity) -> Option<&mut Entity>> {
-		return self.entities.iter_mut().filter_map(|entity|
-				if let Position::Left { .. } = entity.position() {
-					Some(entity)
-				} else { None });
-	}
-	
-	pub fn right_characters(&self) -> FilterMap<Iter<Entity>, fn(&Entity) -> Option<&CombatCharacter>> {
-		return self.entities.iter().filter_map(|entity| match entity {
-			Entity::Character(character) => { 
-				if let Position::Right { .. } = character.position { Some(character) }
-				else { None }
-			}
-			_ => { None }
-		});
-	}
-	
-	pub fn right_characters_mut(&mut self) -> FilterMap<IterMut<Entity>, fn(&mut Entity) -> Option<&mut CombatCharacter>> {
-		return self.entities.iter_mut().filter_map(|entity| match entity {
-			Entity::Character(character) => { 
-				if let Position::Right { .. } = character.position { Some(character) }
-				else { None }
-			}
-			_ => { None }
-		});
-	}
-	
-	pub fn right_entities(&self) -> FilterMap<Iter<Entity>, fn(&Entity) -> Option<&Entity>> {
-		return self.entities.iter().filter_map(|entity|
-				if let Position::Right { .. } = entity.position() {
-					Some(entity)
-				} else { None });
-	}
-	
-	pub fn right_entities_mut(&mut self) -> FilterMap<IterMut<Entity>, fn(&mut Entity) -> Option<&mut Entity>> {
-		return self.entities.iter_mut().filter_map(|entity|
-				if let Position::Right { .. } = entity.position() {
-					Some(entity)
-				} else { None });
-	}
-	
-	pub fn all_characters(&self) -> FilterMap<Iter<Entity>, fn(&Entity) -> Option<&CombatCharacter>> {
-		return self.entities.iter().filter_map(|entity| match entity {
-			Entity::Character(character) => { Some(character) }
-			_ => { None }
-		});
-	}
-	
-	pub fn all_characters_mut(&mut self) -> FilterMap<IterMut<Entity>, fn(&mut Entity) -> Option<&mut CombatCharacter>> {
-		return self.entities.iter_mut().filter_map(|entity| match entity {
-			Entity::Character(character) => { Some(character) }
-			_ => { None }
-		});
-	}*/
 }

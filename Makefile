@@ -1,4 +1,3 @@
-# TODO: This Makefile will be removed in the future
 {%- comment -%} dynamic make targets {%- endcomment -%}
 {%- assign target_dir = "./target" -%}
 {%- assign lib_dir = "./lib" -%}

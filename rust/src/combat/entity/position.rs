@@ -1,8 +1,11 @@
 use std::cmp::Ordering;
+use std::collections::HashMap;
 use gdnative::godot_error;
 use crate::combat::skills::PositionMatrix;
 use Position::Left as Left;
 use Position::Right as Right;
+use crate::combat::entity::Entity;
+use crate::util::GUID;
 
 #[derive(Debug, Clone, Copy, Eq)]
 pub enum Position {
@@ -57,6 +60,22 @@ impl Position {
 		}
 
 		return false;
+	}
+	
+	pub fn insert_entity(entity: Entity, side_1: (Side, &mut HashMap<GUID, Entity>), side_2: (Side, &mut HashMap<GUID, Entity>)) {
+		let entity_allies= match &entity.position() {
+			Left  { .. } if side_1.0 == Side::Left  => { side_1.1 },
+			Left  { .. } if side_2.0 == Side::Left  => { side_2.1 },
+			Right { .. } if side_1.0 == Side::Right => { side_1.1 },
+			Right { .. } if side_2.0 == Side::Right => { side_2.1 },
+			_ => {
+				godot_error!("Warning: Trying to insert entity in a side but none of the provided sides match the entity's position! \nEntity: {:?} \nSide 1: {:?} \nSide 2: {:?}\n\n Entity will be dropped"
+					, entity, side_1, side_2);
+				return;
+			}
+		};
+		
+		entity_allies.insert(entity.guid(), entity);
 	}
 }
 
@@ -117,4 +136,10 @@ impl Ord for Position {
 			}
 		};
 	}
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
+pub enum Side {
+	Left,
+	Right
 }

@@ -2,6 +2,7 @@ use std::collections::HashMap;
 use std::rc::Rc;
 use bounded_integer::BoundedIsize;
 use crate::combat::effects::persistent::PersistentEffect;
+use crate::combat::entity::{Corpse, Entity};
 use crate::combat::entity::girl::*;
 use crate::combat::entity::position::Position;
 use crate::combat::entity::skill_intention::SkillIntention;
@@ -39,6 +40,10 @@ pub struct CombatCharacter {
 }
 
 impl CombatCharacter {
+	pub fn position(&self) -> &Position {
+		return &self.position;
+	}
+	
 	pub fn stat(&self, stat: ModifiableStat) -> isize {
 		return match stat {
 			ModifiableStat::DEBUFF_RES  => self.debuff_res.get(),
@@ -61,35 +66,63 @@ impl CombatCharacter {
 		};
 	}
 
-	pub fn to_grappled(self, girl: Girl_Stats) -> GrappledGirl {
-		return GrappledGirl::Alive(AliveGirl_Grappled {
-			guid: self.guid,
-			data_key: self.data_key,
-			stamina_cur: self.stamina_cur,
-			stamina_max: self.stamina_max,
-			toughness: self.toughness,
-			stun_def: self.stun_def,
-			debuff_res: self.debuff_res,
-			debuff_rate: self.debuff_rate,
-			move_res: self.move_res,
-			move_rate: self.move_rate,
-			poison_res: self.poison_res,
-			poison_rate: self.poison_rate,
-			spd: self.spd,
-			acc: self.acc,
-			crit: self.crit,
-			dodge: self.dodge,
-			damage: self.damage,
-			power: self.power,
-			lust: girl.lust,
-			temptation: girl.temptation,
-			composure: girl.composure,
-			orgasm_limit: girl.orgasm_limit,
-			orgasm_count: girl.orgasm_count,
-			position_before_grappled: self.position,
-			on_defeat: self.on_defeat,
-			skill_use_counters: self.skill_use_counters,
-		});
+	pub fn to_grappled(self) -> Option<GrappledGirl> {
+		if let Some(girl) = self.girl_stats {
+			return Some(GrappledGirl::Alive(AliveGirl_Grappled {
+				guid: self.guid,
+				data_key: self.data_key,
+				stamina_cur: self.stamina_cur,
+				stamina_max: self.stamina_max,
+				toughness: self.toughness,
+				stun_def: self.stun_def,
+				debuff_res: self.debuff_res,
+				debuff_rate: self.debuff_rate,
+				move_res: self.move_res,
+				move_rate: self.move_rate,
+				poison_res: self.poison_res,
+				poison_rate: self.poison_rate,
+				spd: self.spd,
+				acc: self.acc,
+				crit: self.crit,
+				dodge: self.dodge,
+				damage: self.damage,
+				power: self.power,
+				lust: girl.lust,
+				temptation: girl.temptation,
+				composure: girl.composure,
+				orgasm_limit: girl.orgasm_limit,
+				orgasm_count: girl.orgasm_count,
+				position_before_grappled: self.position,
+				on_defeat: self.on_defeat,
+				skill_use_counters: self.skill_use_counters,
+			}));
+		} else { 
+			return None;
+		}
+	}
+	
+	pub fn entity_on_defeat(self) -> Option<Entity> {
+		return match self.on_defeat {
+			OnDefeat::Vanish => None,
+			OnDefeat::CorpseOrDefeatedGirl => {
+				match self.girl_stats {
+					Some(girl) => Some(Entity::DefeatedGirl(DefeatedGirl_Entity {
+						guid: self.guid,
+						data_key: self.data_key,
+						lust: girl.lust,
+						temptation: girl.temptation,
+						orgasm_limit: girl.orgasm_limit,
+						orgasm_count: girl.orgasm_count,
+						position: self.position,
+					})),
+					None => Some(Entity::Corpse(Corpse {
+						guid: self.guid,
+						position: self.position,
+						data_key: self.data_key,
+					}))
+				}
+			}
+		}
 	}
 
 	pub fn increment_skill_counter(&mut self, skill_key: &Rc<String>) {
