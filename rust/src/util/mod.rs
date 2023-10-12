@@ -1,10 +1,10 @@
-pub(crate) mod bounded_integer_traits_ISize;
-pub(crate) mod bounded_integer_traits_U32;
+pub mod bounded_isize;
+pub mod bounded_u32;
 
 use std::ops::Deref;
-use bounded_integer::{BoundedU32};
 use rand::prelude::StdRng;
 use rand::Rng;
+use crate::BoundU32;
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
 pub struct TrackedTicks {
@@ -49,11 +49,11 @@ impl I_Range {
 }
 
 pub trait Base100ChanceGenerator {
-	fn base100_chance(&mut self, chance: BoundedU32<0, 100>) -> bool;
+	fn base100_chance(&mut self, chance: BoundU32<0, 100>) -> bool;
 }
 
 impl Base100ChanceGenerator for StdRng {
-	fn base100_chance(&mut self, chance: BoundedU32<0, 100>) -> bool {
+	fn base100_chance(&mut self, chance: BoundU32<0, 100>) -> bool {
 		return  self.gen_ratio(chance.get(), 100);
 	}
 }

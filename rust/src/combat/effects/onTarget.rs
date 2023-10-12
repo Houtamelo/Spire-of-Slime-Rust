@@ -12,7 +12,6 @@ use crate::combat::ModifiableStat;
 use crate::combat::ModifiableStat::{DEBUFF_RATE, DEBUFF_RES, MOVE_RATE, MOVE_RES, STUN_DEF};
 use crate::combat::skills::CRITMode;
 use crate::util::{Base100ChanceGenerator, GUID};
-use crate::util::bounded_integer_traits_U32::ToBounded;
 
 pub(super) const CRIT_DURATION_MULTIPLIER: i64 = 150;
 pub(super) const CRIT_EFFECT_MULTIPLIER: usize = 150;
@@ -74,12 +73,16 @@ pub enum TargetApplier {
 }
 
 impl TargetApplier {
-	pub fn apply_target(&self, caster: &mut CombatCharacter, target: &mut CombatCharacter, others: &mut HashMap<GUID, Entity>, seed: &mut StdRng, is_crit: bool) {
+
+	/// returns target if it's still standing
+	#[must_use]
+	pub fn apply_target(&self, caster: &mut CombatCharacter, mut target: CombatCharacter, others: &mut HashMap<GUID, Entity>, seed: &mut StdRng, is_crit: bool) -> Option<CombatCharacter> {
 		match self {
 			TargetApplier::Arouse { duration_ms, mut lust_per_sec } => {
 				if is_crit { lust_per_sec = (lust_per_sec * CRIT_EFFECT_MULTIPLIER) / 100; }
 				
 				target.persistent_effects.push(PersistentEffect::new_arousal(*duration_ms, lust_per_sec));
+				return Some(target);
 			},
 			TargetApplier::Buff{ duration_ms, stat, mut modifier, apply_chance } => {
 				match apply_chance {
@@ -87,8 +90,8 @@ impl TargetApplier {
 						if is_crit { chance += CRIT_CHANCE_MODIFIER;  }
 
 						let final_chance = chance + caster.stat(DEBUFF_RATE) - target.stat(DEBUFF_RES);
-						if seed.base100_chance(final_chance.bind_0_p100()) == false {
-							return;
+						if seed.base100_chance(final_chance.into()) == false {
+							return Some(target);
 						}
 					},
 					_ => { }
@@ -97,6 +100,7 @@ impl TargetApplier {
 				if is_crit { modifier = (modifier * CRIT_EFFECT_MULTIPLIER_I) / 100; }
 
 				target.persistent_effects.push(PersistentEffect::new_buff(*duration_ms, *stat, modifier));
+				return Some(target);
 			},
 			TargetApplier::Heal{ mut base_multiplier } => {
 				if is_crit { base_multiplier = (base_multiplier * CRIT_EFFECT_MULTIPLIER_I) / 100;  }
@@ -107,7 +111,7 @@ impl TargetApplier {
 				let healAmount: isize;
 
 				if max <= 0 {
-					return;
+					return Some(target);
 				} else if max == min {
 					healAmount = max;
 				} else {
@@ -115,28 +119,27 @@ impl TargetApplier {
 				}
 
 				target.stamina_cur = (target.stamina_cur + healAmount).clamp(0, target.stamina_max);
+				return Some(target);
 			},
 			TargetApplier::Lust{ mut min, mut max } => {
 				if is_crit {
 					min = (min * CRIT_EFFECT_MULTIPLIER) / 100;
 					max = (max * CRIT_EFFECT_MULTIPLIER) / 100;
 				}
-				
-				match &mut target.girl_stats {
-					None => {
-						return;
-					}
-					Some(girl) => {
-						let actual_min: usize = usize::min(min,max - 1);
-						let lustAmount: usize = seed.gen_range(actual_min..=max);
-						girl.lust += lustAmount as isize;
-					}
+
+				if let Some(girl) = &mut target.girl_stats {
+					let actual_min: usize = usize::min(min, max - 1);
+					let lustAmount: usize = seed.gen_range(actual_min..=max);
+					girl.lust += lustAmount as isize;
 				}
+
+				return Some(target);
 			},
 			TargetApplier::Mark{ mut duration_ms } => {
 				if is_crit { duration_ms = (duration_ms * CRIT_DURATION_MULTIPLIER) / 100; }
 				
 				target.persistent_effects.push(PersistentEffect::new_marked(duration_ms));
+				return Some(target);
 			},
 			TargetApplier::Move{ direction, apply_chance } => {
 				match apply_chance {
@@ -144,8 +147,8 @@ impl TargetApplier {
 						if is_crit { chance += CRIT_CHANCE_MODIFIER;  }
 						
 						let final_chance = chance + caster.stat(MOVE_RATE) - target.stat(MOVE_RES);
-						if seed.base100_chance(final_chance.bind_0_p100()) == false {
-							return;
+						if seed.base100_chance(final_chance.into()) == false {
+							return Some(target);
 						}
 					}
 					_ => {}
@@ -155,7 +158,6 @@ impl TargetApplier {
 					MoveDirection::ToCenter(amount) => { -1 * amount.abs() }
 					MoveDirection::ToEdge  (amount) => { amount.abs() }
 				};
-
 
 				let mut allies_space_occupied = 0;
 				for target_ally in iter_allies_of!(target, others) {
@@ -172,19 +174,24 @@ impl TargetApplier {
 					let order = target_ally.position_mut().order_mut();
 					*order = (*order as isize + inverse_delta) as usize;
 				}
+
+				return Some(target);
 			},
 			TargetApplier::PersistentHeal{ duration_ms, mut heal_per_sec } => {
 				if is_crit { heal_per_sec = (heal_per_sec * CRIT_EFFECT_MULTIPLIER) / 100; }
 				
 				target.persistent_effects.push(PersistentEffect::new_heal(*duration_ms, heal_per_sec));
+				return Some(target);
 			},
 			TargetApplier::Poison{ duration_ms, mut dmg_per_sec } => {
 				if is_crit { dmg_per_sec = (dmg_per_sec * CRIT_EFFECT_MULTIPLIER) / 100; }
 				
 				target.persistent_effects.push(PersistentEffect::new_poison(*duration_ms, dmg_per_sec, caster));
+				return Some(target);
 			},
 			TargetApplier::MakeTargetRiposte{ duration_ms, dmg_multiplier, acc, crit } => { // can't crit!
 				target.persistent_effects.push(PersistentEffect::new_riposte(*duration_ms, *dmg_multiplier, *acc, crit.clone()));
+				return Some(target);
 			},
 			TargetApplier::Stun{ mut force } => {
 				if is_crit { force += CRIT_CHANCE_MODIFIER; }
@@ -199,18 +206,47 @@ impl TargetApplier {
 
 				if bonus_redundancy_ms > 0 {
 					match &mut target.stun_redundancy_ms {
-						None => { target.stun_redundancy_ms = Some(bonus_redundancy_ms); },
 						Some(remaining) => { *remaining += bonus_redundancy_ms; },
+						None => { target.stun_redundancy_ms = Some(bonus_redundancy_ms); },
 					};
 				}
+
+				return Some(target);
 			},
 			TargetApplier::MakeSelfGuardTarget { duration_ms } => { //can't crit!
 				target.persistent_effects.push(PersistentEffect::new_guarded(*duration_ms, caster));
+				return Some(target);
 			},
 			TargetApplier::MakeTargetGuardSelf { duration_ms } => { //can't crit!
 				caster.persistent_effects.push(PersistentEffect::new_guarded(*duration_ms, caster));
+				return Some(target);
 			},
-			TargetApplier::Tempt{ .. } => {} //todo!
+			TargetApplier::Tempt{ intensity } => {
+				let Some(girl) = &mut caster.girl_stats else {
+					godot_warn!("Warning: Trying to apply tempt to character {target:?}, but it's not a girl.");
+					return Some(target);
+				};
+
+				let lust_squared = girl.lust.get() as f64 * girl.lust.get() as f64;
+				let extra_intensity_from_lust = lust_squared / 500.0;
+				let multiplier_from_lust = 1.0 + (lust_squared / 80000.0);
+
+				let intensity_f64 = (*intensity as f64 + extra_intensity_from_lust) * multiplier_from_lust;
+				let composure_f64 = girl.composure.get() as f64;
+
+				let dividend = 10.0 * (intensity_f64 + (intensity_f64 * intensity_f64 / 500.0) - composure_f64 - (composure_f64 * composure_f64 / 500.0));
+				let divisor = 125.0 + (intensity_f64 * 0.25) + (composure_f64 * 0.25) + (intensity_f64 * composure_f64 * 0.0005);
+
+				let temptation_delta = (dividend / divisor) as isize;
+				
+				if temptation_delta <= 0 {
+					return Some(target);
+				}
+
+				girl.temptation += temptation_delta;
+
+				return Some(target);
+			} //todo!
 		}
 	}
 	

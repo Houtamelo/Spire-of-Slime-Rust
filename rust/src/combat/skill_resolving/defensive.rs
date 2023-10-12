@@ -17,37 +17,37 @@ pub fn start_targeting_self(caster: &mut CombatCharacter, others: &mut HashMap<G
 
 	let mut targets_guid = HashSet::new();
 	for possible_target in iter_allies_of!(caster, others) {
-		let target_position = possible_target.position();
-		if target_position.contains_any(&skill.allowed_ally_positions) {
+		if possible_target.position().contains_any(&skill.allowed_ally_positions) {
 			targets_guid.insert(possible_target.guid());
 		}
 	}
 
-	for target_guid in targets_guid.drain() {
-		if let Some(mut ally) = others.remove(&target_guid) {
-			if let Entity::Character(ally) = &mut ally { // for now, we only support skills on characters
-				resolve_target_ally(caster, ally, others, &skill, seed);
+	for target_guid in targets_guid {
+		if let Some(Entity::Character(ally)) = others.remove(&target_guid) {
+			let target_ally_option = resolve_target_ally(caster, ally, others, &skill, seed);
+			if let Some(ally_alive) = target_ally_option {
+				others.insert(ally_alive.guid(), Entity::Character(ally_alive));
 			}
-			others.insert(ally.guid(), ally);
-
 		} else {
 			godot_warn!("Warning: Trying to apply skill to ally with guid {target_guid:?}, but it was not found in the allies!");
 		}
 	}
 }
 
-pub fn start_targeting_ally(caster: &mut CombatCharacter, target: &mut CombatCharacter, others: &mut HashMap<GUID, Entity>, skill: DefensiveSkill, seed: &mut StdRng, recover_ms: Option<i64>) {
+pub fn start_targeting_ally(caster: &mut CombatCharacter, target: CombatCharacter, others: &mut HashMap<GUID, Entity>, skill: DefensiveSkill, seed: &mut StdRng, recover_ms: Option<i64>) {
 	process_self_effects_and_costs(caster, others, &skill, seed, recover_ms);
-	resolve_target_ally(caster, target, others, &skill, seed);
-	
+
 	if skill.multi_target == false {
+		let target_option = resolve_target_ally(caster, target, others, &skill, seed);
+		if let Some(target) = target_option {
+			others.insert(target.guid(), Entity::Character(target));
+		}
 		return;
 	}
 
 	let mut targets_guid: HashSet<GUID> = HashSet::new();
 	for possible_target in iter_allies_of!(target, others) {
-		let target_position = possible_target.position();
-		if target_position.contains_any(&skill.allowed_ally_positions) {
+		if possible_target.position().contains_any(&skill.allowed_ally_positions) {
 			targets_guid.insert(possible_target.guid());
 		}
 	}
@@ -56,13 +56,17 @@ pub fn start_targeting_ally(caster: &mut CombatCharacter, target: &mut CombatCha
 		targets_guid.insert(caster.guid);
 	}
 
-	for target_guid in targets_guid.drain() {
-		if let Some(mut ally) = others.remove(&target_guid) {
-			if let Entity::Character(ally) = &mut ally { // for now, we only support skills on characters
-				resolve_target_ally(caster, ally, others, &skill, seed);
-			}
-			others.insert(ally.guid(), ally);
+	let target_option = resolve_target_ally(caster, target, others, &skill, seed);
+	if let Some(target) = target_option {
+		others.insert(target.guid(), Entity::Character(target));
+	}
 
+	for target_guid in targets_guid {
+		if let Some(Entity::Character(ally)) = others.remove(&target_guid) {
+			let target_ally_option = resolve_target_ally(caster, ally, others, &skill, seed);
+			if let Some(ally_alive) = target_ally_option {
+				others.insert(ally_alive.guid(), Entity::Character(ally_alive));
+			}
 		} else if target_guid == caster.guid {
 			resolve_target_self(caster, others, &skill, seed);
 		} else {
@@ -87,7 +91,9 @@ fn process_self_effects_and_costs(caster: &mut CombatCharacter, others: &mut Has
 	}
 }
 
-fn resolve_target_ally(caster: &mut CombatCharacter, target: &mut CombatCharacter, others: &mut HashMap<GUID, Entity>, skill: &DefensiveSkill, seed: &mut StdRng) {
+/// Returns the target, if it wasn't killed/grappled.
+#[must_use]
+fn resolve_target_ally(caster: &mut CombatCharacter, mut target: CombatCharacter, others: &mut HashMap<GUID, Entity>, skill: &DefensiveSkill, seed: &mut StdRng) -> Option<CombatCharacter> {
 	let crit_chance = skill.calc_crit_chance(caster);
 	let is_crit = match crit_chance {
 		Some(chance) if seed.base100_chance(chance) => true,
@@ -95,8 +101,14 @@ fn resolve_target_ally(caster: &mut CombatCharacter, target: &mut CombatCharacte
 	};
 
 	for target_applier in skill.effects_target.iter() {
-		target_applier.apply_target(caster, target, others, seed, is_crit);
+		if let Some(target_option) = target_applier.apply_target(caster, target, others, seed, is_crit) {
+			target = target_option;
+		} else {
+			return None;
+		}
 	}
+
+	return Some(target);
 }
 
 fn resolve_target_self(caster: &mut CombatCharacter, others: &mut HashMap<GUID, Entity>, skill: &DefensiveSkill, seed: &mut StdRng) {

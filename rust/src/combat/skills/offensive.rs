@@ -1,6 +1,5 @@
 use std::rc::Rc;
-use bounded_integer::{BoundedU32};
-use crate::util::bounded_integer_traits_U32::ToBounded;
+use crate::BoundU32;
 use crate::combat::ModifiableStat;
 use crate::combat::effects::onSelf::SelfApplier;
 use crate::combat::effects::onTarget::TargetApplier;
@@ -68,7 +67,7 @@ impl OffensiveSkill {
 		return I_Range { min: dmg_min, max: dmg_max };
 	}
 	
-	pub fn final_hit_chance(&self, caster: &CombatCharacter, target: &CombatCharacter) -> Option<BoundedU32<0, 100>> {
+	pub fn final_hit_chance(&self, caster: &CombatCharacter, target: &CombatCharacter) -> Option<BoundU32<0, 100>> {
 		let acc = match self.acc_mode {
 			ACCMode::CanMiss { acc } => { acc }
 			ACCMode::NeverMiss => { return None; }
@@ -77,11 +76,11 @@ impl OffensiveSkill {
 		return Some(OffensiveSkill::final_hit_chance_independent(acc, caster, target));
 	}
 
-	pub fn final_hit_chance_independent(base_acc: isize, caster: &CombatCharacter, target: &CombatCharacter) -> BoundedU32<0, 100> {
-		return (base_acc + caster.stat(ModifiableStat::ACC) - target.stat(ModifiableStat::DODGE)).bind_0_p100();
+	pub fn final_hit_chance_independent(base_acc: isize, caster: &CombatCharacter, target: &CombatCharacter) -> BoundU32<0, 100> {
+		return (base_acc + caster.stat(ModifiableStat::ACC) - target.stat(ModifiableStat::DODGE)).into();
 	}
 	
-	pub fn final_crit_chance(&self, caster: &CombatCharacter) -> Option<BoundedU32<0, 100>> {
+	pub fn final_crit_chance(&self, caster: &CombatCharacter) -> Option<BoundU32<0, 100>> {
 		let crit = match self.crit {
 			CRITMode::CanCrit { crit_chance: crit } => { crit }
 			CRITMode::NeverCrit => { return None; }
@@ -90,7 +89,7 @@ impl OffensiveSkill {
 		return Some(OffensiveSkill::final_crit_chance_independent(crit, caster));
 	}
 	
-	pub fn final_crit_chance_independent(base_crit: isize, caster: &CombatCharacter) -> BoundedU32<0, 100> {
-		return (base_crit + caster.stat(ModifiableStat::CRIT)).bind_0_p100();
+	pub fn final_crit_chance_independent(base_crit: isize, caster: &CombatCharacter) -> BoundU32<0, 100> {
+		return (base_crit + caster.stat(ModifiableStat::CRIT)).into();
 	}
 }

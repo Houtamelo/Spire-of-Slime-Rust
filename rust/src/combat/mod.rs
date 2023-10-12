@@ -1,5 +1,4 @@
 use std::collections::{HashMap, HashSet};
-use crate::util::bounded_integer_traits_ISize::*;
 use gdnative::prelude::*;
 use rand::prelude::StdRng;
 use entity::position::Position;
@@ -186,9 +185,9 @@ impl CombatState {
 						return;
 					}
 
-					girl_alive.lust = 0.bind_0_p200();
+					girl_alive.lust = 0.into();
 					girl_alive.orgasm_count = isize::clamp(girl_alive.orgasm_count + 1, 0, girl_alive.orgasm_limit);
-					girl_alive.temptation = isize::clamp(girl_alive.temptation.get() - 40, 0, 100).bind_0_p100();
+					girl_alive.temptation -= 40;
 
 					if girl_alive.orgasm_count == girl_alive.orgasm_limit {
 						if let Some(defeated_girl) = girl_alive.to_defeated() {
@@ -217,9 +216,9 @@ impl CombatState {
 					
 					if girl_defeated.lust >= MAX_LUST {
 						const temptation_delta_on_orgasm: isize = -40;
-						girl_defeated.lust = 0.bind_0_p200();
+						girl_defeated.lust = 0.into();
 						girl_defeated.orgasm_count = isize::clamp(girl_defeated.orgasm_count + 1, 0, girl_defeated.orgasm_limit);
-						girl_defeated.temptation = isize::clamp(girl_defeated.temptation.get() + temptation_delta_on_orgasm, 0, 100).bind_0_p100();
+						girl_defeated.temptation += temptation_delta_on_orgasm;
 					}
 					
 					g_state.victim = GrappledGirl::Defeated(girl_defeated);

@@ -1,6 +1,6 @@
 use std::collections::HashMap;
 use std::rc::Rc;
-use bounded_integer::BoundedIsize;
+use crate::BoundISize;
 use crate::combat::effects::persistent::PersistentEffect;
 use crate::combat::entity::{Corpse, Entity};
 use crate::combat::entity::girl::*;
@@ -8,6 +8,7 @@ use crate::combat::entity::position::Position;
 use crate::combat::entity::skill_intention::SkillIntention;
 use crate::combat::ModifiableStat;
 use crate::util::{GUID, I_Range, TrackedTicks};
+use crate::util::bounded_u32::BoundU32;
 
 #[derive(Debug, Clone)]
 pub struct CombatCharacter {
@@ -16,22 +17,22 @@ pub struct CombatCharacter {
 	pub last_damager_guid: Option<GUID>,
 	pub stamina_cur: isize,
 	pub stamina_max: isize,
-	pub toughness: BoundedIsize< -100, 100>,
-	pub stun_def: BoundedIsize< -100, 300>,
+	pub toughness: BoundISize<-100, 100>,
+	pub stun_def : BoundISize<-100, 300>,
 	pub stun_redundancy_ms: Option<i64>,
 	pub girl_stats: Option<Girl_Stats>,
-	pub debuff_res: BoundedIsize< -300, 300>,
-	pub debuff_rate: BoundedIsize< -300, 300>,
-	pub move_res: BoundedIsize< -300, 300>,
-	pub move_rate: BoundedIsize< -300, 300>,
-	pub poison_res: BoundedIsize< -300, 300>,
-	pub poison_rate: BoundedIsize< -300, 300>,
-	pub spd: BoundedIsize<20, 300>,
-	pub acc: BoundedIsize< -300, 300>,
-	pub crit: BoundedIsize< -300, 300>,
-	pub dodge: BoundedIsize< -300, 300>,
+	pub debuff_res : BoundISize<-300, 300>,
+	pub debuff_rate: BoundISize<-300, 300>,
+	pub move_res   : BoundISize<-300, 300>,
+	pub move_rate  : BoundISize<-300, 300>,
+	pub poison_res : BoundISize<-300, 300>,
+	pub poison_rate: BoundISize<-300, 300>,
+	pub spd        : BoundU32<  20, 300>,
+	pub acc        : BoundISize<-300, 300>,
+	pub crit       : BoundISize<-300, 300>,
+	pub dodge      : BoundISize<-300, 300>,
 	pub damage: I_Range,
-	pub power: BoundedIsize<0, 500>,
+	pub power: BoundU32<0, 500>,
 	pub persistent_effects: Vec<PersistentEffect>,
 	pub state: CharacterState,
 	pub position: Position,
@@ -42,6 +43,10 @@ pub struct CombatCharacter {
 impl CombatCharacter {
 	pub fn position(&self) -> &Position {
 		return &self.position;
+	}
+
+	pub fn guid(&self) -> GUID {
+		return self.guid;
 	}
 	
 	pub fn stat(&self, stat: ModifiableStat) -> isize {
@@ -57,8 +62,8 @@ impl CombatCharacter {
 				None => 0,
 				Some(girl) => {girl.composure.get()}
 			},
-			ModifiableStat::POWER       => self.power.get(),
-			ModifiableStat::SPD         => self.spd.get(),
+			ModifiableStat::POWER       => self.power.get() as isize,
+			ModifiableStat::SPD         => self.spd.get() as isize,
 			ModifiableStat::DEBUFF_RATE => self.debuff_rate.get(),
 			ModifiableStat::POISON_RATE => self.poison_rate.get(),
 			ModifiableStat::MOVE_RATE   => self.move_rate.get(),
@@ -66,7 +71,7 @@ impl CombatCharacter {
 		};
 	}
 
-	pub fn to_grappled(self) -> Option<GrappledGirl> {
+	pub fn into_grappled(self) -> Option<GrappledGirl> {
 		if let Some(girl) = self.girl_stats {
 			return Some(GrappledGirl::Alive(AliveGirl_Grappled {
 				guid: self.guid,
@@ -138,7 +143,7 @@ impl CombatCharacter {
 	
 	/// Used to check if character died after losing stamina.
 	pub fn is_alive(&self) -> bool {
-		return self.stamina_cur > 0 && self.stamina_max > 0;
+		return self.stamina_cur > 0;
 	}
 	
 	pub fn is_dead(&self) -> bool {

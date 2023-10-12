@@ -11,9 +11,9 @@ use crate::combat::skills::offensive::OffensiveSkill;
 use crate::{iter_enemies_of, iter_mut_allies_of};
 use crate::util::{Base100ChanceGenerator, GUID, TrackedTicks};
 
-//todo! check riposte
 pub fn start(mut caster: CombatCharacter, target: CombatCharacter, others: &mut HashMap<GUID, Entity>, skill: OffensiveSkill, seed: &mut StdRng, recover_ms: Option<i64>) {
 	process_self_effects_and_costs(&mut caster, others, &skill, seed, recover_ms);
+
 	if skill.multi_target == false {
 		let caster_option = resolve_target(caster, target, others, &skill, seed);  // caster may die due to riposte so we get him back as an option
 		if let Some(caster) = caster_option {
@@ -33,9 +33,10 @@ pub fn start(mut caster: CombatCharacter, target: CombatCharacter, others: &mut 
 
 	let Some(mut caster) = resolve_target(caster, target, others, &skill, seed) else { return; }; // caster may die due to riposte so we get him back as an option
 
-	for target_guid in targets_guid.drain() { // for now, we only support skills on characters
+	for target_guid in targets_guid { // for now, we only support skills on characters
 		if let Some(Entity::Character(enemy)) = others.remove(&target_guid) {
-			match resolve_target(caster, enemy, others, &skill, seed) {
+			let caster_option = resolve_target(caster, enemy, others, &skill, seed);  // caster may die due to riposte so we get him back as an option
+			match caster_option {
 				Some(caster_alive) => { caster = caster_alive; },
 				None => return,
 			}
@@ -75,13 +76,10 @@ fn process_self_effects_and_costs(caster: &mut CombatCharacter, others: &mut Has
 fn resolve_target(mut caster: CombatCharacter, mut target: CombatCharacter, others: &mut HashMap<GUID, Entity>, skill: &OffensiveSkill, seed: &mut StdRng)
 	-> Option<CombatCharacter> {
 	
-	match skill.final_hit_chance(&caster, &target) {
-		Some(chance) => {
-			if seed.base100_chance(chance) == false {
-				return on_both_survive(caster, target, others);
-			}
+	if let Some(chance) = skill.final_hit_chance(&caster, &target) {
+		if seed.base100_chance(chance) == false {
+			return on_both_survive(caster, target, others);
 		}
-		None => {}
 	}
 	
 	let crit_chance = skill.final_crit_chance(&caster);
@@ -91,7 +89,12 @@ fn resolve_target(mut caster: CombatCharacter, mut target: CombatCharacter, othe
 	};
 
 	for target_applier in skill.effects_target.iter() {
-		target_applier.apply_target(&mut caster, &mut target, others, seed, is_crit);
+		let target_option = target_applier.apply_target(&mut caster, target, others, seed, is_crit);
+		if let Some(target_alive) = target_option {
+			target = target_alive;
+		} else {
+			return Some(caster); // target was dropped
+		}
 	}
 
 	let Some(damage_range) = skill.calc_dmg(&caster, &target, is_crit) else {
