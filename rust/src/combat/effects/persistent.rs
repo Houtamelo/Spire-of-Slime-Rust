@@ -4,7 +4,8 @@ use combat::ModifiableStat;
 use crate::{combat, CONVERT_STANDARD_INTERVAL_TO_UNITCOUNT, STANDARD_INTERVAL_MS};
 use crate::combat::entity::character::*;
 use crate::combat::entity::Entity;
-use crate::combat::skills::CRITMode;
+use crate::combat::perk::Perk;
+use crate::combat::skill_types::CRITMode;
 use crate::util::GUID;
 
 #[derive(Debug, Clone)]
@@ -43,9 +44,13 @@ pub enum PersistentEffect {
 		acc: isize,
 		crit: CRITMode,
 	},
+	TemporaryPerk {
+		duration_ms: i64,
+		perk: Perk,
+	}
 }
 
-impl PartialEq for PersistentEffect {
+/*+impl PartialEq for PersistentEffect {
 	fn eq(&self, other: &Self) -> bool {
 		match (self, other) {
 			(PersistentEffect::Poison { duration_ms: a_dur, accumulated_ms: a_acu, dmg_per_sec: a_dmg, caster_guid: a_guid }, 
@@ -69,12 +74,15 @@ impl PartialEq for PersistentEffect {
 			(PersistentEffect::Riposte { duration_ms: a_dur, dmg_multiplier: a_dmg, acc: a_acc, crit: a_crit }, 
 			 PersistentEffect::Riposte { duration_ms: b_dur, dmg_multiplier: b_dmg, acc: b_acc, crit: b_crit})
 			=> a_dur == b_dur && a_dmg == b_dmg && a_acc == b_acc && a_crit == b_crit,
+			(PersistentEffect::TemporaryPerk { duration_ms: a_dur, perk: a_perk },
+			 PersistentEffect::TemporaryPerk { duration_ms: b_dur, perk: b_perk })
+			=> a_dur == b_dur && a_perk == b_perk,
 			_ => false,
 		}
 	}
 }
 
-impl Eq for PersistentEffect {}
+impl Eq for PersistentEffect {}*/
 
 impl PersistentEffect {
 	pub(in crate::combat) fn tick_all(mut owner: CombatCharacter, insert_owner_here: &mut HashMap<GUID, Entity>, ms: i64) {
@@ -171,6 +179,13 @@ impl PersistentEffect {
 						owner.persistent_effects.push(effect);
 					}
 				},
+				PersistentEffect::TemporaryPerk{ duration_ms, .. } => {
+					*duration_ms -= ms;
+
+					if *duration_ms > 0 {
+						owner.persistent_effects.push(effect);
+					}
+				},
 			}
 		}
 		
@@ -244,13 +259,14 @@ impl PersistentEffect {
 	
 	pub fn duration_remaining(&self) -> i64 {
 		return match self {
-			PersistentEffect::Poison { duration_ms, ..} => { *duration_ms },
-			PersistentEffect::Heal   { duration_ms, ..} => { *duration_ms },
-			PersistentEffect::Arousal{ duration_ms, ..} => { *duration_ms },
-			PersistentEffect::Buff   { duration_ms, ..} => { *duration_ms },
-			PersistentEffect::Guarded{ duration_ms, ..} => { *duration_ms },
-			PersistentEffect::Marked { duration_ms    } => { *duration_ms },
-			PersistentEffect::Riposte{ duration_ms, ..} => { *duration_ms },
+			PersistentEffect::Poison       { duration_ms, ..} => { *duration_ms },
+			PersistentEffect::Heal         { duration_ms, ..} => { *duration_ms },
+			PersistentEffect::Arousal      { duration_ms, ..} => { *duration_ms },
+			PersistentEffect::Buff         { duration_ms, ..} => { *duration_ms },
+			PersistentEffect::Guarded      { duration_ms, ..} => { *duration_ms },
+			PersistentEffect::Marked       { duration_ms    } => { *duration_ms },
+			PersistentEffect::Riposte      { duration_ms, ..} => { *duration_ms },
+			PersistentEffect::TemporaryPerk{ duration_ms, ..} => { *duration_ms },
 		};
 	}
 }

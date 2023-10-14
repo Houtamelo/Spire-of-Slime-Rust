@@ -8,7 +8,7 @@ use crate::combat::effects::MoveDirection;
 use crate::combat::effects::onTarget::{CRIT_DURATION_MULTIPLIER, CRIT_EFFECT_MULTIPLIER, CRIT_EFFECT_MULTIPLIER_I};
 use crate::combat::effects::persistent::PersistentEffect;
 use crate::combat::entity::Entity;
-use crate::combat::skills::CRITMode;
+use crate::combat::skill_types::CRITMode;
 use crate::util::GUID;
 
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -17,6 +17,9 @@ pub enum SelfApplier {
 		duration_ms: i64,
 		stat: ModifiableStat,
 		modifier: isize,
+	},
+	ChangeExhaustion {
+		delta: isize,
 	},
 	Heal { 
 		base_multiplier: isize,
@@ -54,11 +57,16 @@ impl SelfApplier {
 
 				caster.persistent_effects.push(PersistentEffect::new_buff(*duration_ms, *stat, modifier));
 			}
+			SelfApplier::ChangeExhaustion { delta } => { // ignores crit
+				if let Some(girl) = &mut caster.girl_stats {
+					girl.exhaustion += *delta;
+				}
+			},
 			SelfApplier::Heal{ mut base_multiplier } => {
 				if is_crit { base_multiplier = (base_multiplier * CRIT_EFFECT_MULTIPLIER_I) / 100; }
 
-				let max: isize = caster.damage.max.max(0);
-				let min: isize = caster.damage.min.clamp(0, max);
+				let max: isize = caster.dmg.max.max(0);
+				let min: isize = caster.dmg.min.clamp(0, max);
 
 				let healAmount: isize;
 

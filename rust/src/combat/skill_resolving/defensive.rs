@@ -4,7 +4,7 @@ use rand::prelude::StdRng;
 use crate::iter_allies_of;
 use crate::combat::entity::*;
 use crate::combat::entity::character::*;
-use crate::combat::skills::defensive::DefensiveSkill;
+use crate::combat::skill_types::defensive::DefensiveSkill;
 use crate::util::{Base100ChanceGenerator, GUID, TrackedTicks};
 
 pub fn start_targeting_self(caster: &mut CombatCharacter, others: &mut HashMap<GUID, Entity>, skill: DefensiveSkill, seed: &mut StdRng, recover_ms: Option<i64>) {
@@ -17,7 +17,7 @@ pub fn start_targeting_self(caster: &mut CombatCharacter, others: &mut HashMap<G
 
 	let mut targets_guid = HashSet::new();
 	for possible_target in iter_allies_of!(caster, others) {
-		if possible_target.position().contains_any(&skill.allowed_ally_positions) {
+		if possible_target.position().contains_any(&skill.target_positions) {
 			targets_guid.insert(possible_target.guid());
 		}
 	}
@@ -47,12 +47,12 @@ pub fn start_targeting_ally(caster: &mut CombatCharacter, target: CombatCharacte
 
 	let mut targets_guid: HashSet<GUID> = HashSet::new();
 	for possible_target in iter_allies_of!(target, others) {
-		if possible_target.position().contains_any(&skill.allowed_ally_positions) {
+		if possible_target.position().contains_any(&skill.target_positions) {
 			targets_guid.insert(possible_target.guid());
 		}
 	}
 
-	if caster.position.contains_any(&skill.allowed_ally_positions) { // caster may collaterally target himself
+	if caster.position.contains_any(&skill.target_positions) { // caster may collaterally target himself
 		targets_guid.insert(caster.guid);
 	}
 

@@ -1,7 +1,7 @@
 use std::cmp::Ordering;
 use std::collections::HashMap;
 use gdnative::godot_error;
-use crate::combat::skills::PositionMatrix;
+use crate::combat::skill_types::PositionMatrix;
 use Position::Left as Left;
 use Position::Right as Right;
 use crate::combat::entity::Entity;
@@ -52,8 +52,8 @@ impl Position {
 		let begin = *self.order();
 		let end = begin + self.size() - 1;
 
-		for index in 0..positions.indexed_positions.len() {
-			let at_index = positions.indexed_positions[index];
+		for index in 0..positions.positions.len() {
+			let at_index = positions.positions[index];
 			if at_index == true && index >= begin && index <= end {
 				return true;
 			}

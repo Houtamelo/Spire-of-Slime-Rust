@@ -12,10 +12,11 @@ use crate::combat::timeline::TimelineEvent;
 use crate::util::GUID;
 
 mod effects;
-mod skills;
+mod skill_types;
 mod timeline;
-mod entity;
+pub mod entity;
 mod skill_resolving;
+mod perk;
 
 include!("stat.rs");
 
@@ -93,7 +94,7 @@ impl CombatState {
 				}
 				CharacterState::Charging { skill_intention } => {
 					character.state = CharacterState::Charging { skill_intention }; // move it back to calculate SPD on next line
-					let spd_delta_time_ms = CharacterState::spd_charge_ms(delta_time_ms, character.stat(SPD));
+					let spd_delta_time_ms = CharacterState::spd_charge_ms(delta_time_ms, character.get_stat(SPD));
 					let CharacterState::Charging { mut skill_intention} = character.state else { panic!() };
 
 					skill_intention.charge_ticks.remaining_ms -= spd_delta_time_ms;
@@ -111,7 +112,7 @@ impl CombatState {
 				},
 				CharacterState::Recovering { ticks } => {
 					character.state = CharacterState::Recovering { ticks }; // move it back to calculate SPD on next line
-					let spd_delta_time_ms = CharacterState::spd_recovery_ms(delta_time_ms, character.stat(SPD));
+					let spd_delta_time_ms = CharacterState::spd_recovery_ms(delta_time_ms, character.get_stat(SPD));
 					let CharacterState::Recovering { mut ticks } = character.state else { panic!() };
 
 					ticks.remaining_ms -= spd_delta_time_ms;
@@ -132,7 +133,7 @@ impl CombatState {
 			let CharacterState::Grappling(mut g_state) = grappler.state else { panic!() };
 			
 			match g_state.victim {
-				GrappledGirl::Alive(mut girl_alive) => {
+				GrappledGirlEnum::Alive(mut girl_alive) => {
 					if g_state.duration_ms <= delta_time_ms { // duration is over so time to cum!
 						let seconds = ((g_state.accumulated_ms + g_state.duration_ms) / 1000) as isize;
 						girl_alive.lust += seconds * (g_state.lust_per_sec as isize);
@@ -165,7 +166,7 @@ impl CombatState {
 
 					// early return
 					if g_state.accumulated_ms < STANDARD_INTERVAL_MS {
-						g_state.victim = GrappledGirl::Alive(girl_alive);
+						g_state.victim = GrappledGirlEnum::Alive(girl_alive);
 						grappler.state = CharacterState::Grappling(g_state);
 						others.insert(grappler.guid, Entity::Character(grappler));
 						return;
@@ -179,7 +180,7 @@ impl CombatState {
 
 					// early return
 					if girl_alive.lust < MAX_LUST {
-						g_state.victim = GrappledGirl::Alive(girl_alive);
+						g_state.victim = GrappledGirlEnum::Alive(girl_alive);
 						grappler.state = CharacterState::Grappling(g_state);
 						others.insert(grappler.guid, Entity::Character(grappler));
 						return;
@@ -197,13 +198,13 @@ impl CombatState {
 							grappler.state = CharacterState::Idle;
 						}
 					} else {
-						g_state.victim = GrappledGirl::Alive(girl_alive);
+						g_state.victim = GrappledGirlEnum::Alive(girl_alive);
 						grappler.state = CharacterState::Grappling(g_state);
 					}
 
 					others.insert(grappler.guid, Entity::Character(grappler));
 				}
-				GrappledGirl::Defeated(mut girl_defeated) => {
+				GrappledGirlEnum::Defeated(mut girl_defeated) => {
 					g_state.accumulated_ms += delta_time_ms;
 					
 					if g_state.accumulated_ms >= STANDARD_INTERVAL_MS {
@@ -221,7 +222,7 @@ impl CombatState {
 						girl_defeated.temptation += temptation_delta_on_orgasm;
 					}
 					
-					g_state.victim = GrappledGirl::Defeated(girl_defeated);
+					g_state.victim = GrappledGirlEnum::Defeated(girl_defeated);
 					grappler.state = CharacterState::Grappling(g_state);
 					others.insert(grappler.guid, Entity::Character(grappler));
 				}

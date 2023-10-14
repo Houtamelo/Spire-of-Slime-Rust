@@ -2,11 +2,12 @@ pub mod girl;
 pub mod position;
 pub mod character;
 pub mod skill_intention;
+pub mod data;
 
 use std::cmp::Ordering;
-use std::rc::Rc;
 use position::Position;
 use crate::combat::entity::character::CombatCharacter;
+use crate::combat::entity::data::EntityData;
 use crate::combat::entity::girl::DefeatedGirl_Entity;
 use crate::util::GUID;
 
@@ -51,7 +52,7 @@ impl Entity {
 pub struct Corpse {
 	pub guid: GUID,
 	pub position: Position,
-	pub data_key: Rc<String>,
+	pub data: EntityData,
 }
 
 #[macro_export]
@@ -80,4 +81,11 @@ macro_rules! iter_mut_enemies_of {
 	($character: expr, $entities: expr) => {
 		$entities.values_mut().filter(|entity| $crate::combat::Position::opposite_side(entity.position(), $character.position()))
 	};
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
+pub enum Race {
+	Human,
+	Plant,
+	Mutation,
 }

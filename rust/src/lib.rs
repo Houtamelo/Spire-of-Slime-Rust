@@ -2,13 +2,14 @@
 #![allow(nonstandard_style)]
 #![allow(clippy::needless_return)]
 #![allow(clippy::large_enum_variant)]
-#![feature(step_trait)]
 #![allow(clippy::len_zero)]
 #![allow(clippy::upper_case_acronyms)]
 #![allow(clippy::bool_comparison)]
 #![allow(clippy::neg_multiply)]
 #![allow(clippy::enum_variant_names)]
 #![allow(clippy::match_like_matches_macro)]
+#![feature(step_trait)]
+#![feature(const_trait_impl)]
 
 mod combat;
 mod util;

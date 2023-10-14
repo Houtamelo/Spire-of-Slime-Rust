@@ -2,15 +2,19 @@ use std::collections::HashMap;
 use gdnative::log::godot_warn;
 use rand::prelude::StdRng;
 use rand::Rng;
+use proc_macros::get_perk;
 use crate::{iter_allies_of, iter_mut_allies_of};
 use crate::combat::effects::MoveDirection;
 use crate::combat::effects::persistent::PersistentEffect;
 use crate::combat::entity::character::*;
+use crate::combat::entity::data::character::CharacterData;
+use crate::combat::entity::data::girls::ethel::perks::{Category_Bruiser, EthelPerk};
 use crate::combat::entity::Entity;
 use crate::combat::entity::position::Position;
 use crate::combat::ModifiableStat;
 use crate::combat::ModifiableStat::{DEBUFF_RATE, DEBUFF_RES, MOVE_RATE, MOVE_RES, STUN_DEF};
-use crate::combat::skills::CRITMode;
+use crate::combat::perk::Perk;
+use crate::combat::skill_types::CRITMode;
 use crate::util::{Base100ChanceGenerator, GUID};
 
 pub(super) const CRIT_DURATION_MULTIPLIER: i64 = 150;
@@ -29,6 +33,9 @@ pub enum TargetApplier {
 		stat: ModifiableStat,
 		modifier: isize,
 		apply_chance: Option<isize>,
+	},
+	ChangeExhaustion {
+		delta: isize,
 	},
 	MakeSelfGuardTarget { 
 		duration_ms: i64, 
@@ -67,7 +74,11 @@ pub enum TargetApplier {
 	Stun {
 		force: isize,
 	},
-	Tempt { 
+	TemporaryPerk {
+		duration_ms: i64,
+		perk: Perk,
+	},
+	Tempt {
 		intensity: isize,
 	},
 }
@@ -84,12 +95,12 @@ impl TargetApplier {
 				target.persistent_effects.push(PersistentEffect::new_arousal(*duration_ms, lust_per_sec));
 				return Some(target);
 			},
-			TargetApplier::Buff{ duration_ms, stat, mut modifier, apply_chance } => {
+			TargetApplier::Buff{ duration_ms, mut stat, mut modifier, apply_chance } => {
 				match apply_chance {
 					Some(mut chance) if Position::opposite_side(&caster.position, &target.position) => { //apply chance is only used when the caster and target are enemies
 						if is_crit { chance += CRIT_CHANCE_MODIFIER;  }
 
-						let final_chance = chance + caster.stat(DEBUFF_RATE) - target.stat(DEBUFF_RES);
+						let final_chance = chance + caster.get_stat(DEBUFF_RATE) - target.get_stat(DEBUFF_RES);
 						if seed.base100_chance(final_chance.into()) == false {
 							return Some(target);
 						}
@@ -99,14 +110,26 @@ impl TargetApplier {
 				
 				if is_crit { modifier = (modifier * CRIT_EFFECT_MULTIPLIER_I) / 100; }
 
-				target.persistent_effects.push(PersistentEffect::new_buff(*duration_ms, *stat, modifier));
+				if let Some(Perk::Ethel(EthelPerk::Bruiser(Category_Bruiser::DisruptiveManeuvers))) = get_perk!(&target, Perk::Ethel(EthelPerk::Bruiser(Category_Bruiser::DisruptiveManeuvers))) {
+					stat = ModifiableStat::get_random_except(seed, stat);
+
+					let apply_to_caster = ModifiableStat::get_random_except(seed, stat);
+					caster.persistent_effects.push(PersistentEffect::new_buff(*duration_ms, apply_to_caster, modifier));
+				}
+
+				target.persistent_effects.push(PersistentEffect::new_buff(*duration_ms, stat, modifier));
+				return Some(target);
+			},
+			TargetApplier::ChangeExhaustion { delta } => { // ignores crit
+				let Some(girl) = &mut target.girl_stats else { return Some(target); };
+				girl.exhaustion += *delta;
 				return Some(target);
 			},
 			TargetApplier::Heal{ mut base_multiplier } => {
 				if is_crit { base_multiplier = (base_multiplier * CRIT_EFFECT_MULTIPLIER_I) / 100;  }
 				
-				let max: isize = caster.damage.max.max(0);
-				let min: isize = caster.damage.min.clamp(0, max);
+				let max: isize = caster.dmg.max.max(0);
+				let min: isize = caster.dmg.min.clamp(0, max);
 
 				let healAmount: isize;
 
@@ -118,7 +141,7 @@ impl TargetApplier {
 					healAmount = (seed.gen_range(min..=max) * base_multiplier) / 100;
 				}
 
-				target.stamina_cur = (target.stamina_cur + healAmount).clamp(0, target.stamina_max);
+				target.stamina_cur = CombatCharacter::clamp_stamina(target.stamina_cur + healAmount, target.get_stat(ModifiableStat::MAX_STAMINA));
 				return Some(target);
 			},
 			TargetApplier::Lust{ mut min, mut max } => {
@@ -146,7 +169,7 @@ impl TargetApplier {
 					Some(mut chance) if Position::opposite_side(&caster.position, &target.position) => { //apply chance is only used when the caster and target are enemies
 						if is_crit { chance += CRIT_CHANCE_MODIFIER;  }
 						
-						let final_chance = chance + caster.stat(MOVE_RATE) - target.stat(MOVE_RES);
+						let final_chance = chance + caster.get_stat(MOVE_RATE) - target.get_stat(MOVE_RES);
 						if seed.base100_chance(final_chance.into()) == false {
 							return Some(target);
 						}
@@ -197,7 +220,7 @@ impl TargetApplier {
 				if is_crit { force += CRIT_CHANCE_MODIFIER; }
 				
 				let force = force as f64;
-				let def = target.stat(STUN_DEF) as f64;
+				let def = target.get_stat(STUN_DEF) as f64;
 
 				let dividend = force + (force * force / 500.0) - def - (def * def / 500.0);
 				let divisor = 125.0 + (force * 0.25) + (def * 0.25) + (force * def * 0.0005);
@@ -214,15 +237,19 @@ impl TargetApplier {
 				return Some(target);
 			},
 			TargetApplier::MakeSelfGuardTarget { duration_ms } => { //can't crit!
-				target.persistent_effects.push(PersistentEffect::new_guarded(*duration_ms, caster));
+				target.persistent_effects.push(PersistentEffect::Guarded { duration_ms: *duration_ms, guarder_guid: caster.guid });
 				return Some(target);
 			},
 			TargetApplier::MakeTargetGuardSelf { duration_ms } => { //can't crit!
-				caster.persistent_effects.push(PersistentEffect::new_guarded(*duration_ms, caster));
+				caster.persistent_effects.push(PersistentEffect::Guarded { duration_ms: *duration_ms, guarder_guid: target.guid });
 				return Some(target);
 			},
+			TargetApplier::TemporaryPerk { duration_ms, perk } => {
+				target.persistent_effects.push(PersistentEffect::TemporaryPerk { duration_ms: *duration_ms, perk: perk.clone() });
+				return Some(target);
+			}
 			TargetApplier::Tempt{ intensity } => {
-				let Some(girl) = &mut caster.girl_stats else {
+				let Some(girl) = &mut target.girl_stats else {
 					godot_warn!("Warning: Trying to apply tempt to character {target:?}, but it's not a girl.");
 					return Some(target);
 				};
@@ -244,9 +271,28 @@ impl TargetApplier {
 				}
 
 				girl.temptation += temptation_delta;
+				if girl.temptation < 100 {
+					return Some(target);
+				}
 
-				return Some(target);
-			} //todo!
+				let CharacterData::NPC(_) = caster.data else { return Some(target); };  // making sure caster is an npc (required for grappling)
+
+				if target.can_be_grappled() == false {
+					return Some(target);
+				}
+
+				let grappled_girl = target.into_grappled_unchecked();
+
+				caster.state = CharacterState::Grappling(State_Grappling {
+					victim: grappled_girl,
+					lust_per_sec: 45,
+					temptation_per_sec: -5,
+					duration_ms: 5000,
+					accumulated_ms: 0,
+				});
+
+				return None;
+			}
 		}
 	}
 	
@@ -262,11 +308,16 @@ impl TargetApplier {
 
 				caster.persistent_effects.push(PersistentEffect::new_buff(*duration_ms, *stat, modifier));
 			},
+			TargetApplier::ChangeExhaustion { delta } => { // ignores crit
+				if let Some(girl) = &mut caster.girl_stats {
+					girl.exhaustion += *delta;
+				}
+			},
 			TargetApplier::Heal { mut base_multiplier } => {
 				if is_crit { base_multiplier = (base_multiplier * CRIT_EFFECT_MULTIPLIER_I) / 100; }
 				
-				let max: isize = caster.damage.max.max(0);
-				let min: isize = caster.damage.min.clamp(0, max);
+				let max: isize = caster.dmg.max.max(0);
+				let min: isize = caster.dmg.min.clamp(0, max);
 				
 				let healAmount: isize;
 				
@@ -336,7 +387,7 @@ impl TargetApplier {
 				if is_crit { force += CRIT_CHANCE_MODIFIER; }
 
 				let force = force as f64;
-				let def = caster.stat(STUN_DEF) as f64;
+				let def = caster.get_stat(STUN_DEF) as f64;
 
 				let dividend = force + (force * force / 500.0) - def - (def * def / 500.0);
 				let divisor = 125.0 + (force * 0.25) + (def * 0.25) + (force * def * 0.0005);

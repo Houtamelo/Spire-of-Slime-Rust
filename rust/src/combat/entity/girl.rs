@@ -1,41 +1,47 @@
 use std::collections::HashMap;
-use std::rc::Rc;
 use crate::{BoundISize, BoundU32};
 use crate::combat::entity::character::{CharacterState, CombatCharacter, OnDefeat};
+use crate::combat::entity::data::character::CharacterData;
+use crate::combat::entity::data::girls::{GirlData};
+use crate::combat::entity::data::skill_name::SkillName;
 use crate::combat::entity::position::Position;
+use crate::combat::perk::Perk;
 use crate::util::{GUID, I_Range, TrackedTicks};
 
 pub const MAX_LUST: isize = 200;
 
 #[derive(Debug, Clone)]
-pub struct Girl_Stats {
+pub struct GirlState {
 	pub lust        : BoundU32<0, 200>,
 	pub temptation  : BoundU32<0, 100>,
 	pub composure   : BoundISize< -100, 300>,
 	pub orgasm_limit: isize,
 	pub orgasm_count: isize,
+	pub exhaustion  : BoundU32<0, 100>,
 }
 
 #[derive(Debug, Clone)]
 pub struct DefeatedGirl_Entity {
-	pub guid        : GUID,
-	pub data_key: Rc<String>,
+	pub data: GirlData,
+	pub guid: GUID,
 	pub lust        : BoundU32<0, 200>,
 	pub temptation  : BoundU32<0, 100>,
 	pub orgasm_limit: isize,
 	pub orgasm_count: isize,
+	pub exhaustion  : BoundU32<0, 100>,
 	pub position: Position,
 }
 
 impl DefeatedGirl_Entity {
-	pub fn to_grappled(self) -> GrappledGirl {
-		return GrappledGirl::Defeated(DefeatedGirl_Grappled {
+	pub fn to_grappled(self) -> GrappledGirlEnum {
+		return GrappledGirlEnum::Defeated(DefeatedGirl_Grappled {
 			guid: self.guid,
-			data_key: self.data_key,
+			data: self.data,
 			lust: self.lust,
 			temptation: self.temptation,
 			orgasm_limit: self.orgasm_limit,
 			orgasm_count: self.orgasm_count,
+			exhaustion: self.exhaustion,
 			position_before_grappled: self.position,
 		});
 	}
@@ -46,26 +52,26 @@ impl DefeatedGirl_Entity {
 }
 
 #[derive(Debug, Clone)]
-pub enum GrappledGirl {
+pub enum GrappledGirlEnum {
 	Alive(AliveGirl_Grappled),
 	Defeated(DefeatedGirl_Grappled),
 }
 
-impl GrappledGirl {
+impl GrappledGirlEnum {
 	pub fn guid(&self) -> GUID {
 		return match self {
-			GrappledGirl::Alive(alive) => alive.guid,
-			GrappledGirl::Defeated(defeated) => defeated.guid,
+			GrappledGirlEnum::Alive(alive) => alive.guid,
+			GrappledGirlEnum::Defeated(defeated) => defeated.guid,
 		};
 	}
 }
 
 #[derive(Debug, Clone)]
 pub struct AliveGirl_Grappled {
-	pub guid        : GUID,
-	pub data_key    : Rc<String>,
-	pub stamina_cur : isize,
-	pub stamina_max : isize,
+	pub guid: GUID,
+	pub data: GirlData,
+	pub stamina_cur: isize,
+	pub stamina_max: isize,
 	pub lust       : BoundU32<0, 200>,
 	pub temptation : BoundU32<0, 100>,
 	pub composure  : BoundISize< -100, 300>,
@@ -85,19 +91,22 @@ pub struct AliveGirl_Grappled {
 	pub power      : BoundU32<0, 500>,
 	pub orgasm_limit: isize,
 	pub orgasm_count: isize,
+	pub exhaustion  : BoundU32<0, 100>,
 	pub position_before_grappled: Position,
 	pub on_defeat: OnDefeat,
-	pub skill_use_counters: HashMap<Rc<String>, usize>,
+	pub skill_use_counters: HashMap<SkillName, usize>,
+	pub perks: Vec<Perk>,
 }
 
 impl AliveGirl_Grappled {
 	pub fn to_non_grappled(self) -> CombatCharacter {
-		let girl = Girl_Stats {
+		let girl = GirlState {
 			lust: self.lust,
 			temptation: self.temptation,
 			composure: self.composure,
 			orgasm_limit: self.orgasm_limit,
 			orgasm_count: self.orgasm_count,
+			exhaustion: self.exhaustion,
 		};
 		
 		let mut position = self.position_before_grappled;
@@ -105,7 +114,7 @@ impl AliveGirl_Grappled {
 		
 		return CombatCharacter {
 			guid: self.guid,
-			data_key: self.data_key,
+			data: CharacterData::Girl(self.data),
 			last_damager_guid: None,
 			stamina_cur: self.stamina_cur,
 			stamina_max: self.stamina_max,
@@ -123,9 +132,10 @@ impl AliveGirl_Grappled {
 			acc: self.acc,
 			crit: self.crit,
 			dodge: self.dodge,
-			damage: self.damage,
+			dmg: self.damage,
 			power: self.power,
 			persistent_effects: vec![],
+			perks: self.perks,
 			state: CharacterState::Downed { ticks: TrackedTicks::from_milliseconds(2000) },
 			position,
 			on_defeat: self.on_defeat,
@@ -133,16 +143,17 @@ impl AliveGirl_Grappled {
 		};
 	}
 
-	pub fn to_defeated(self) -> Option<GrappledGirl> {
+	pub fn to_defeated(self) -> Option<GrappledGirlEnum> {
 		return match self.on_defeat {
 			OnDefeat::Vanish => None,
-			OnDefeat::CorpseOrDefeatedGirl => Some(GrappledGirl::Defeated(DefeatedGirl_Grappled {
+			OnDefeat::CorpseOrDefeatedGirl => Some(GrappledGirlEnum::Defeated(DefeatedGirl_Grappled {
 				guid: self.guid,
-				data_key: self.data_key,
+				data: self.data,
 				lust: self.lust,
 				temptation: self.temptation,
 				orgasm_limit: self.orgasm_limit,
 				orgasm_count: self.orgasm_count,
+				exhaustion: self.exhaustion,
 				position_before_grappled: self.position_before_grappled,
 			}))
 		};
@@ -151,12 +162,13 @@ impl AliveGirl_Grappled {
 
 #[derive(Debug, Clone)]
 pub struct DefeatedGirl_Grappled {
+	pub data: GirlData,
 	pub guid: GUID,
-	pub data_key: Rc<String>,
 	pub lust      : BoundU32<0, 200>,
 	pub temptation: BoundU32<0, 100>,
 	pub orgasm_limit: isize,
 	pub orgasm_count: isize,
+	pub exhaustion  : BoundU32<0, 100>,
 	pub position_before_grappled: Position,
 }
 
@@ -167,11 +179,12 @@ impl DefeatedGirl_Grappled {
 		
 		return DefeatedGirl_Entity {
 			guid: self.guid,
-			data_key: self.data_key,
+			data: self.data,
 			lust: self.lust,
 			temptation: self.temptation,
 			orgasm_limit: self.orgasm_limit,
 			orgasm_count: self.orgasm_count,
+			exhaustion: self.exhaustion,
 			position,
 		};
 	}

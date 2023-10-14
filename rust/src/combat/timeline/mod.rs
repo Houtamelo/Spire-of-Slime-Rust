@@ -118,13 +118,13 @@ impl TimelineEvent {
 				}
 			} 
 			CharacterState::Charging   { skill_intention } => {
-				let estimated_charge_ms = CharacterState::spd_charge_ms(skill_intention.charge_ticks.remaining_ms, character.stat(SPD));
+				let estimated_charge_ms = CharacterState::spd_charge_ms(skill_intention.charge_ticks.remaining_ms, character.get_stat(SPD));
 				if estimated_charge_ms > 0 {
 					events.push(TimelineEvent { time_frame_ms: estimated_charge_ms, event_type: EventType::SkillIntention { intention_clone: skill_intention.clone() }, character_guid });
 				}
 			}
 			CharacterState::Recovering { ticks } => {
-				let estimated_recovery_ms = CharacterState::spd_recovery_ms(ticks.remaining_ms, character.stat(SPD));
+				let estimated_recovery_ms = CharacterState::spd_recovery_ms(ticks.remaining_ms, character.get_stat(SPD));
 				if estimated_recovery_ms > 0 {
 					events.push(TimelineEvent { time_frame_ms: estimated_recovery_ms, event_type: EventType::TurnBegin, character_guid });
 				}

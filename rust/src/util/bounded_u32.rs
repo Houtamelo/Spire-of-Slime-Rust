@@ -326,6 +326,12 @@ macro_rules! bounded_u32 {
 		    }
 	    }
 
+	    impl std::ops::DerefMut for BoundU32<$MIN, $MAX> {
+		    fn deref_mut(&mut self) -> &mut Self::Target {
+			    return &mut self.inner_value;
+		    }
+	    }
+
 	    impl PartialEq<Self> for BoundU32<$MIN, $MAX> {
 		    fn eq(&self, other: &Self) -> bool {
 			    return self.inner_value == other.inner_value;
@@ -404,6 +410,12 @@ macro_rules! bounded_u32 {
 		    }
 	    }
 
+	    impl From<usize> for BoundU32<$MIN, $MAX> {
+		    fn from(value: usize) -> Self {
+			    return Self::new(value as u32);
+		    }
+	    }
+
 	    impl From<isize> for BoundU32<$MIN, $MAX> {
 		    fn from(value: isize) -> Self {
 			    if value < 0 {
@@ -430,7 +442,12 @@ bounded_u32!(20, 300);
 bounded_u32!( 0, 500);
 bounded_u32!( 0, 200);
 bounded_u32!( 0, 100);
-
+bounded_u32!( 1, 500);
+bounded_u32!( 1, 4);
+bounded_u32!( 1, 8);
+bounded_u32!( 0, 4);
+bounded_u32!( 0, 5);
+bounded_u32!( 0, 6);
 
 // Creating a new BoundU32 instance with a valid inner value should return the instance with the same inner value.
 #[test]

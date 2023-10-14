@@ -1,0 +1,131 @@
+#![allow(clippy::useless_format)]
+#![allow(clippy::needless_return)]
+
+extern crate proc_macro;
+use proc_macro::TokenStream;
+
+#[proc_macro]
+pub fn insert_combat_character_fields(_item: TokenStream) -> TokenStream {
+	let mut output = _item.to_string();
+	let fields =
+			"	pub(super) size: crate::BoundU32<1, 4>,
+    pub(super) dmg        : std::ops::RangeInclusive<usize>,
+    pub(super) spd        : crate::BoundU32<20, 300>,
+    pub(super) acc        : crate::BoundISize<-300, 300>,
+    pub(super) crit       : crate::BoundISize<-300, 300>,
+    pub(super) dodge      : crate::BoundISize<-300, 300>,
+    pub(super) stamina_max: crate::BoundU32<1, 500>,
+    pub(super) toughness  : crate::BoundISize<-100, 100>,
+    pub(super) stun_def   : crate::BoundISize<-100, 300>,
+    pub(super) debuff_res : crate::BoundISize<-300, 300>,
+    pub(super) debuff_rate: crate::BoundISize<-300, 300>,
+    pub(super) move_res   : crate::BoundISize<-300, 300>,
+    pub(super) move_rate  : crate::BoundISize<-300, 300>,
+    pub(super) poison_res : crate::BoundISize<-300, 300>,
+    pub(super) poison_rate: crate::BoundISize<-300, 300>,";
+
+	let left_bracket_index = output.find('{').unwrap();
+	output.insert_str(left_bracket_index + 1, fields);
+	return output.parse().unwrap();
+}
+
+
+// usage example: positions! (❌, ✔️, ✔️, ✔️),
+#[proc_macro]
+pub fn positions(_item: TokenStream) -> TokenStream {
+	let output = _item.to_string().replace('\"', "");
+	let bools = output.split('|').collect::<Vec<&str>>();
+	let one = bools[0];
+	let two = bools[1];
+	let tree = bools[2];
+	let four = bools[3];
+
+	let one_b = match one.trim() {
+		"✔️" => true,
+		"❌" => false,
+		_ => panic!("Invalid value for one: {}", one),
+	};
+
+	let two_b = match two.trim() {
+		"✔️" => true,
+		"❌" => false,
+		_ => panic!("Invalid value for two: {}", two),
+	};
+
+	let tree_b = match tree.trim() {
+		"✔️" => true,
+		"❌" => false,
+		_ => panic!("Invalid value for tree: {}", tree),
+	};
+
+	let four_b = match four.trim() {
+		"✔️" => true,
+		"❌" => false,
+		_ => panic!("Invalid value for four: {}", four),
+	};
+
+	return format!("crate::combat::skill_types::PositionMatrix {{ positions: [{one_b}, {two_b}, {tree_b}, {four_b}] }}").parse().unwrap();
+}
+
+#[proc_macro]
+pub fn get_perk(_item: TokenStream) -> TokenStream {
+	let string = _item.to_string();
+	let inputs = string.split(',').collect::<Vec<&str>>();
+	if inputs.len() != 2 {
+		panic!("Invalid number of arguments for get_perk! Expected 2, got {}", inputs.len());
+	}
+
+	let owner = inputs[0];
+	let perk_type = inputs[1];
+
+	return format!("
+		(|character: &CombatCharacter| -> Option<&Perk> {{
+			for perk in character.perks.iter() {{
+				if let {perk_type} = perk {{
+					return Some(perk);
+				}}
+			}}
+
+			for effect in character.persistent_effects.iter() {{
+				if let crate::combat::effects::persistent::PersistentEffect::TemporaryPerk {{ perk, .. }} = effect {{
+					if let {perk_type} = perk {{
+						return Some(perk);
+					}}
+				}}
+			}}
+
+			return None;
+		}})({owner})").parse().unwrap();
+}
+
+#[proc_macro]
+pub fn get_perk_mut(_item: TokenStream) -> TokenStream {
+	let string = _item.to_string();
+	let inputs = string.split(',').collect::<Vec<&str>>();
+	if inputs.len() != 2 {
+		panic!("Invalid number of arguments for get_perk! Expected 2, got {}", inputs.len());
+	}
+
+	let owner = inputs[0];
+	let perk_type = inputs[1];
+
+	return format!("
+		(|character: &mut CombatCharacter| -> Option<&mut Perk> {{
+			for perk in character.perks.iter_mut() {{
+				if let {perk_type} = perk {{
+					return Some(perk);
+				}}
+			}}
+
+			for effect in character.persistent_effects.iter_mut() {{
+				if let crate::combat::effects::persistent::PersistentEffect::TemporaryPerk {{ perk, .. }} = effect {{
+					if let {perk_type} = perk {{
+						return Some(perk);
+					}}
+				}}
+			}}
+
+			return None;
+		}})({owner})").parse().unwrap();
+}
+

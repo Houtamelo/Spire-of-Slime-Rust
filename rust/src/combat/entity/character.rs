@@ -1,43 +1,49 @@
 use std::collections::HashMap;
-use std::rc::Rc;
+use proc_macros::get_perk;
 use crate::BoundISize;
 use crate::combat::effects::persistent::PersistentEffect;
 use crate::combat::entity::{Corpse, Entity};
+use crate::combat::entity::data::character::{CharacterData};
+use crate::combat::entity::data::EntityData;
+use crate::combat::entity::data::girls::ethel::perks::{Category_Bruiser, Category_Tank, EthelPerk};
+use crate::combat::entity::data::skill_name::SkillName;
 use crate::combat::entity::girl::*;
 use crate::combat::entity::position::Position;
 use crate::combat::entity::skill_intention::SkillIntention;
 use crate::combat::ModifiableStat;
+use crate::combat::perk::Perk;
 use crate::util::{GUID, I_Range, TrackedTicks};
-use crate::util::bounded_u32::BoundU32;
+use crate::util::bounded_u32::*;
 
 #[derive(Debug, Clone)]
 pub struct CombatCharacter {
 	pub guid: GUID,
-	pub data_key: Rc<String>,
+	pub data: CharacterData,
 	pub last_damager_guid: Option<GUID>,
 	pub stamina_cur: isize,
-	pub stamina_max: isize,
-	pub toughness: BoundISize<-100, 100>,
-	pub stun_def : BoundISize<-100, 300>,
+	pub(super) stamina_max: isize,
+	pub(super) toughness: BoundISize<-100, 100>,
+	pub(super) stun_def : BoundISize<-100, 300>,
 	pub stun_redundancy_ms: Option<i64>,
-	pub girl_stats: Option<Girl_Stats>,
-	pub debuff_res : BoundISize<-300, 300>,
-	pub debuff_rate: BoundISize<-300, 300>,
-	pub move_res   : BoundISize<-300, 300>,
-	pub move_rate  : BoundISize<-300, 300>,
-	pub poison_res : BoundISize<-300, 300>,
-	pub poison_rate: BoundISize<-300, 300>,
-	pub spd        : BoundU32<  20, 300>,
-	pub acc        : BoundISize<-300, 300>,
-	pub crit       : BoundISize<-300, 300>,
-	pub dodge      : BoundISize<-300, 300>,
-	pub damage: I_Range,
-	pub power: BoundU32<0, 500>,
+	pub girl_stats: Option<GirlState>,
+	pub(super) debuff_res : BoundISize<-300, 300>,
+	pub(super) debuff_rate: BoundISize<-300, 300>,
+	pub(super) move_res   : BoundISize<-300, 300>,
+	pub(super) move_rate  : BoundISize<-300, 300>,
+	pub(super) poison_res : BoundISize<-300, 300>,
+	pub(super) poison_rate: BoundISize<-300, 300>,
+	pub(super) spd        : BoundU32  <  20, 300>,
+	pub(super) acc        : BoundISize<-300, 300>,
+	pub(super) crit       : BoundISize<-300, 300>,
+	pub(super) dodge      : BoundISize<-300, 300>,
+	pub dmg: I_Range,
+	pub(super) power: BoundU32<0, 500>,
 	pub persistent_effects: Vec<PersistentEffect>,
+	pub perks: Vec<Perk>,
 	pub state: CharacterState,
 	pub position: Position,
 	pub on_defeat: OnDefeat,
-	pub skill_use_counters: HashMap<Rc<String>, usize>,
+	pub skill_use_counters: HashMap<SkillName, usize>,
 }
 
 impl CombatCharacter {
@@ -49,59 +55,123 @@ impl CombatCharacter {
 		return self.guid;
 	}
 	
-	pub fn stat(&self, stat: ModifiableStat) -> isize {
+	pub fn get_stat(&self, stat: ModifiableStat) -> isize {
 		return match stat {
 			ModifiableStat::DEBUFF_RES  => self.debuff_res.get(),
 			ModifiableStat::POISON_RES  => self.poison_res.get(),
-			ModifiableStat::MOVE_RES    => self.move_res.get(),
-			ModifiableStat::ACC         => self.acc.get(),
+			ModifiableStat::MOVE_RES    => {
+				let mut base = self.move_res.get();
+				if let Some(Perk::Ethel(EthelPerk::Tank(Category_Tank::Vanguard))) = get_perk!(self, Perk::Ethel(EthelPerk::Tank(Category_Tank::Vanguard))) {
+					base += 30;
+				}
+				return base;
+			},
+			ModifiableStat::ACC         => {
+				let mut base = self.acc.get();
+				if let Some(Perk::Ethel(EthelPerk::Bruiser(Category_Bruiser::Relentless { stacks }))) = get_perk!(self, Perk::Ethel(EthelPerk::Bruiser(Category_Bruiser::Relentless { stacks }))) {
+					base -= *stacks as isize * 7;
+				}
+
+				self.acc.get()
+			},
 			ModifiableStat::CRIT        => self.crit.get(),
 			ModifiableStat::DODGE       => self.dodge.get(),
-			ModifiableStat::TOUGHNESS   => self.toughness.get(),
+			ModifiableStat::TOUGHNESS   => {
+				let mut base = self.toughness.get();
+				if let Some(Perk::Ethel(EthelPerk::Tank(Category_Tank::ReactiveDefense { stacks }))) = get_perk!(self, Perk::Ethel(EthelPerk::Tank(Category_Tank::ReactiveDefense { .. }))) {
+					base += stacks.get() as isize * 4;
+				}
+				return base;
+			},
 			ModifiableStat::COMPOSURE   => match &self.girl_stats {
 				None => 0,
 				Some(girl) => {girl.composure.get()}
 			},
-			ModifiableStat::POWER       => self.power.get() as isize,
+			ModifiableStat::POWER       => {
+				let mut base = self.power.get() as isize;
+				if let Some(Perk::Ethel(EthelPerk::Tank(Category_Tank::Spikeful))) = get_perk!(self, Perk::Ethel(EthelPerk::Tank(Category_Tank::Spikeful))) {
+					base += isize::clamp(self.toughness.get(), 0, 30); // we care about the base toughness, not the modified one.
+				}
+				if let Some(Perk::Ethel(EthelPerk::Bruiser(Category_Bruiser::EnragingPain { stacks }))) = get_perk!(self, Perk::Ethel(EthelPerk::Bruiser(Category_Bruiser::EnragingPain { .. }))) {
+					base += stacks.get() as isize * 5;
+				}
+				return base;
+			},
 			ModifiableStat::SPD         => self.spd.get() as isize,
 			ModifiableStat::DEBUFF_RATE => self.debuff_rate.get(),
 			ModifiableStat::POISON_RATE => self.poison_rate.get(),
 			ModifiableStat::MOVE_RATE   => self.move_rate.get(),
-			ModifiableStat::STUN_DEF    => self.stun_def.get(),
+			ModifiableStat::STUN_DEF    => {
+				let mut base = self.stun_def.get();
+				if let Some(Perk::Ethel(EthelPerk::Tank(Category_Tank::Vanguard))) = get_perk!(self, Perk::Ethel(EthelPerk::Tank(Category_Tank::Vanguard))) {
+					base += 30;
+				}
+				return base;
+			},
 		};
 	}
 
-	pub fn into_grappled(self) -> Option<GrappledGirl> {
-		if let Some(girl) = self.girl_stats {
-			return Some(GrappledGirl::Alive(AliveGirl_Grappled {
-				guid: self.guid,
-				data_key: self.data_key,
-				stamina_cur: self.stamina_cur,
-				stamina_max: self.stamina_max,
-				toughness: self.toughness,
-				stun_def: self.stun_def,
-				debuff_res: self.debuff_res,
-				debuff_rate: self.debuff_rate,
-				move_res: self.move_res,
-				move_rate: self.move_rate,
-				poison_res: self.poison_res,
-				poison_rate: self.poison_rate,
-				spd: self.spd,
-				acc: self.acc,
-				crit: self.crit,
-				dodge: self.dodge,
-				damage: self.damage,
-				power: self.power,
-				lust: girl.lust,
-				temptation: girl.temptation,
-				composure: girl.composure,
-				orgasm_limit: girl.orgasm_limit,
-				orgasm_count: girl.orgasm_count,
-				position_before_grappled: self.position,
-				on_defeat: self.on_defeat,
-				skill_use_counters: self.skill_use_counters,
-			}));
-		} else { 
+	pub fn get_max_stamina(&self) -> isize {
+		let mut base = self.stamina_max;
+		if let Some(Perk::Ethel(EthelPerk::Tank(Category_Tank::Energetic))) = get_perk!(self, Perk::Ethel(EthelPerk::Tank(Category_Tank::Energetic))) {
+			base = (base * 125) / 100;
+		}
+		return base;
+	}
+
+	pub fn clamp_stamina(current: isize, max: isize) -> isize {
+		return isize::clamp(current, 0, max);
+	}
+
+	pub fn can_be_grappled(&self) -> bool {
+		if let CharacterData::Girl(_) = &self.data {
+			return self.girl_stats.is_some();
+		} else {
+			return false;
+		}
+	}
+
+	/// check "can_be_grappled" before calling this function.
+	pub fn into_grappled_unchecked(self) -> GrappledGirlEnum {
+		let girl = self.girl_stats.unwrap();
+		let CharacterData::Girl(girl_data) = self.data else { panic!("impossible"); };
+
+		return GrappledGirlEnum::Alive(AliveGirl_Grappled {
+			guid: self.guid,
+			data: girl_data,
+			stamina_cur: self.stamina_cur,
+			stamina_max: self.stamina_max,
+			toughness: self.toughness,
+			stun_def: self.stun_def,
+			debuff_res: self.debuff_res,
+			debuff_rate: self.debuff_rate,
+			move_res: self.move_res,
+			move_rate: self.move_rate,
+			poison_res: self.poison_res,
+			poison_rate: self.poison_rate,
+			spd: self.spd,
+			acc: self.acc,
+			crit: self.crit,
+			dodge: self.dodge,
+			damage: self.dmg,
+			power: self.power,
+			lust: girl.lust,
+			temptation: girl.temptation,
+			composure: girl.composure,
+			orgasm_limit: girl.orgasm_limit,
+			orgasm_count: girl.orgasm_count,
+			exhaustion: girl.exhaustion,
+			position_before_grappled: self.position,
+			on_defeat: self.on_defeat,
+			skill_use_counters: self.skill_use_counters,
+			perks: self.perks,
+		});
+	}
+
+	pub fn into_grappled(self) -> Option<GrappledGirlEnum> {
+		if self.can_be_grappled() {
+			return Some(self.into_grappled_unchecked());
+		} else {
 			return None;
 		}
 	}
@@ -110,32 +180,33 @@ impl CombatCharacter {
 		return match self.on_defeat {
 			OnDefeat::Vanish => None,
 			OnDefeat::CorpseOrDefeatedGirl => {
-				match self.girl_stats {
-					Some(girl) => Some(Entity::DefeatedGirl(DefeatedGirl_Entity {
+				match (self.girl_stats, self.data) {
+					(Some(girl), CharacterData::Girl(girl_data)) => Some(Entity::DefeatedGirl(DefeatedGirl_Entity {
 						guid: self.guid,
-						data_key: self.data_key,
+						data: girl_data,
 						lust: girl.lust,
 						temptation: girl.temptation,
 						orgasm_limit: girl.orgasm_limit,
 						orgasm_count: girl.orgasm_count,
+						exhaustion: girl.exhaustion,
 						position: self.position,
 					})),
-					None => Some(Entity::Corpse(Corpse {
+					(_, generic_data) => Some(Entity::Corpse(Corpse {
 						guid: self.guid,
 						position: self.position,
-						data_key: self.data_key,
+						data: EntityData::Character(generic_data),
 					}))
 				}
 			}
 		}
 	}
 
-	pub fn increment_skill_counter(&mut self, skill_key: &Rc<String>) {
-		self.skill_use_counters.entry(skill_key.clone()).and_modify(|c| *c += 1).or_insert(1);
+	pub fn increment_skill_counter(&mut self, skill_name: SkillName) {
+		self.skill_use_counters.entry(skill_name).and_modify(|c| *c += 1).or_insert(1);
 	}
 	
-	pub fn skill_counter_bellow_limit(&self, skill_key: &Rc<String>, limit: usize) -> bool {
-		return match self.skill_use_counters.get(skill_key) {
+	pub fn skill_counter_bellow_limit(&self, skill_name: SkillName, limit: usize) -> bool {
+		return match self.skill_use_counters.get(&skill_name) {
 			None => true,
 			Some(count) => *count < limit,
 		};
@@ -149,6 +220,15 @@ impl CombatCharacter {
 	pub fn is_dead(&self) -> bool {
 		return !self.is_alive();
 	}
+
+	pub fn iter_perks(&self) -> impl Iterator<Item=&Perk> {
+		return self.perks.iter().chain(self.persistent_effects.iter().filter_map(|effect| {
+			match effect {
+				PersistentEffect::TemporaryPerk { perk, .. } => Some(perk),
+				_ => None,
+			}
+		}));
+	}
 }
 
 impl PartialEq<Self> for CombatCharacter {
@@ -159,9 +239,9 @@ impl Eq for CombatCharacter { }
 
 #[derive(Debug, Clone)]
 pub struct State_Grappling {
-	pub victim: GrappledGirl,
+	pub victim: GrappledGirlEnum,
 	pub lust_per_sec: usize,
-	pub temptation_per_sec: usize,
+	pub temptation_per_sec: isize,
 	pub duration_ms: i64,
 	pub accumulated_ms: i64
 }

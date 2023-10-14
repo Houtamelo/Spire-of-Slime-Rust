@@ -246,6 +246,12 @@ macro_rules! bounded_isize {
 		    }
 	    }
 
+	    impl std::ops::DerefMut for BoundISize<$MIN, $MAX> {
+		    fn deref_mut(&mut self) -> &mut Self::Target {
+			    return &mut self.inner_value;
+		    }
+	    }
+
 	    impl PartialEq<Self> for BoundISize<$MIN, $MAX> {
 		    fn eq(&self, other: &Self) -> bool {
 			    return self.inner_value == other.inner_value;
@@ -269,6 +275,24 @@ macro_rules! bounded_isize {
 	    impl From<isize> for BoundISize<$MIN, $MAX> {
 		    fn from(value: isize) -> Self {
 			    return Self::new(value);
+		    }
+	    }
+
+	    impl From<i32> for BoundISize<$MIN, $MAX> {
+		    fn from(value: i32) -> Self {
+			    return Self::new(value as isize);
+		    }
+	    }
+
+	    impl From<usize> for BoundISize<$MIN, $MAX> {
+		    fn from(value: usize) -> Self {
+			    return Self::new(value as isize);
+		    }
+	    }
+
+	    impl From<u32> for BoundISize<$MIN, $MAX> {
+		    fn from(value: u32) -> Self {
+			    return Self::new(value as isize);
 		    }
 	    }
     };

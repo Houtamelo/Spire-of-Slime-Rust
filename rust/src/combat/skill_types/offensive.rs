@@ -1,24 +1,26 @@
-use std::rc::Rc;
 use crate::BoundU32;
 use crate::combat::ModifiableStat;
 use crate::combat::effects::onSelf::SelfApplier;
 use crate::combat::effects::onTarget::TargetApplier;
 use crate::util::I_Range;
 use crate::combat::entity::character::*;
-use crate::combat::skills::*;
+use crate::combat::skill_types::*;
 
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct OffensiveSkill {
-	pub can_be_riposted: bool,
-	pub acc_mode: ACCMode,
-	pub dmg: DMGMode,
-	pub crit: CRITMode,
-	pub effects_self: Vec<SelfApplier>,
-	pub effects_target: Vec<TargetApplier>,
-	pub allowed_enemy_positions: PositionMatrix,
-	pub multi_target: bool,
-	pub use_counter: UseCounter,
-	pub data_key: Rc<String>,
+	pub skill_name: SkillName,
+	pub recovery_ms     : i64,
+	pub charge_ms       : i64,
+	pub can_be_riposted : bool,
+	pub acc_mode        : ACCMode,
+	pub dmg             : DMGMode,
+	pub crit            : CRITMode,
+	pub effects_self    : Vec<SelfApplier>,
+	pub effects_target  : Vec<TargetApplier>,
+	pub caster_positions: PositionMatrix,
+	pub target_positions: PositionMatrix,
+	pub multi_target    : bool,
+	pub use_counter     : UseCounter,
 }
 
 impl OffensiveSkill {
@@ -28,13 +30,13 @@ impl OffensiveSkill {
 			DMGMode::NoDamage => { return None; }
 		};
 		
-		let (mut dmg_min, mut dmg_max) = (caster.damage.min, caster.damage.max);
+		let (mut dmg_min, mut dmg_max) = (caster.dmg.min, caster.dmg.max);
 		
-		let base_toughness = target.stat(ModifiableStat::TOUGHNESS);
+		let base_toughness = target.get_stat(ModifiableStat::TOUGHNESS);
 		let min_toughness = isize::min(base_toughness, 0);
 		let final_toughness = isize::max(min_toughness, base_toughness - toughness_reduction);
 		
-		let total_power = power * caster.stat(ModifiableStat::POWER) * (100 - final_toughness);
+		let total_power = power * caster.get_stat(ModifiableStat::POWER) * (100 - final_toughness);
 
 		dmg_max = (dmg_max * total_power) / 1000000;
 		dmg_min = isize::min((dmg_min * total_power) / 1000000, dmg_max);
@@ -48,13 +50,13 @@ impl OffensiveSkill {
 	}
 	
 	pub fn calc_dmg_independent(power: isize, toughness_reduction: isize, caster: &CombatCharacter, target: &CombatCharacter, crit: bool) -> I_Range {
-		let (mut dmg_min, mut dmg_max) = (caster.damage.min, caster.damage.max);
+		let (mut dmg_min, mut dmg_max) = (caster.dmg.min, caster.dmg.max);
 		
-		let base_toughness = target.stat(ModifiableStat::TOUGHNESS);
+		let base_toughness = target.get_stat(ModifiableStat::TOUGHNESS);
 		let min_toughness = isize::min(base_toughness, 0);
 		let final_toughness = isize::max(min_toughness, base_toughness - toughness_reduction);
 		
-		let total_power = power * caster.stat(ModifiableStat::POWER) * (100 - final_toughness);
+		let total_power = power * caster.get_stat(ModifiableStat::POWER) * (100 - final_toughness);
 
 		dmg_max = (dmg_max * total_power) / 1000000;
 		dmg_min = isize::min((dmg_min * total_power) / 1000000, dmg_max);
@@ -77,7 +79,7 @@ impl OffensiveSkill {
 	}
 
 	pub fn final_hit_chance_independent(base_acc: isize, caster: &CombatCharacter, target: &CombatCharacter) -> BoundU32<0, 100> {
-		return (base_acc + caster.stat(ModifiableStat::ACC) - target.stat(ModifiableStat::DODGE)).into();
+		return (base_acc + caster.get_stat(ModifiableStat::ACC) - target.get_stat(ModifiableStat::DODGE)).into();
 	}
 	
 	pub fn final_crit_chance(&self, caster: &CombatCharacter) -> Option<BoundU32<0, 100>> {
@@ -90,6 +92,19 @@ impl OffensiveSkill {
 	}
 	
 	pub fn final_crit_chance_independent(base_crit: isize, caster: &CombatCharacter) -> BoundU32<0, 100> {
-		return (base_crit + caster.stat(ModifiableStat::CRIT)).into();
+		return (base_crit + caster.get_stat(ModifiableStat::CRIT)).into();
 	}
+}
+
+impl SkillTrait for OffensiveSkill {
+	fn name            (&self) -> SkillName           { return self.skill_name       ; }
+	fn recovery_ms     (&self) -> &i64                { return &self.recovery_ms     ; }
+	fn charge_ms       (&self) -> &i64                { return &self.charge_ms       ; }
+	fn crit            (&self) -> &CRITMode           { return &self.crit            ; }
+	fn effects_self    (&self) -> &Vec<SelfApplier>   { return &self.effects_self    ; }
+	fn effects_target  (&self) -> &Vec<TargetApplier> { return &self.effects_target  ; }
+	fn caster_positions(&self) -> &PositionMatrix     { return &self.caster_positions; }
+	fn target_positions(&self) -> &PositionMatrix     { return &self.target_positions; }
+	fn multi_target    (&self) -> &bool               { return &self.multi_target    ; }
+	fn use_counter     (&self) -> &UseCounter         { return &self.use_counter     ; }
 }

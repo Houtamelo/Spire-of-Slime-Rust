@@ -1,6 +1,6 @@
-use crate::combat::skills::defensive::DefensiveSkill;
-use crate::combat::skills::lewd::LewdSkill;
-use crate::combat::skills::offensive::OffensiveSkill;
+use crate::combat::skill_types::defensive::DefensiveSkill;
+use crate::combat::skill_types::lewd::LewdSkill;
+use crate::combat::skill_types::offensive::OffensiveSkill;
 use crate::util::TrackedTicks;
 
 #[derive(Debug, Clone)]

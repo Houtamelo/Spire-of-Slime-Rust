@@ -1,5 +1,6 @@
 pub mod bounded_isize;
 pub mod bounded_u32;
+pub mod set_macro;
 
 use std::ops::Deref;
 use rand::prelude::StdRng;
