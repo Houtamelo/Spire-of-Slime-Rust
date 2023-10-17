@@ -4,7 +4,6 @@ use crate::combat::effects::onTarget::TargetApplier;
 use crate::combat::entity::data::skill_name::SkillName;
 use crate::combat::skill_types::*;
 use crate::combat::skill_types::lewd::LewdSkill;
-use crate::combat::skill_types::offensive::*;
 use crate::combat::skill_types::defensive::*;
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]

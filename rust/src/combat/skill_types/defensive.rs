@@ -5,7 +5,7 @@ use crate::combat::entity::character::CombatCharacter;
 use crate::combat::ModifiableStat;
 use crate::combat::skill_types::*;
 
-#[derive(Debug, Clone, PartialEq, Eq)]
+#[derive(Debug, Clone)]
 pub struct DefensiveSkill {
 	pub skill_name: SkillName,
 	pub recovery_ms     : i64,

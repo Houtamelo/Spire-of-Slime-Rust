@@ -5,10 +5,10 @@ use rand::Rng;
 use proc_macros::get_perk;
 use crate::{iter_allies_of, iter_mut_allies_of};
 use crate::combat::effects::MoveDirection;
-use crate::combat::effects::persistent::PersistentEffect;
+use crate::combat::effects::persistent::{PersistentDebuff, PersistentEffect};
 use crate::combat::entity::character::*;
 use crate::combat::entity::data::character::CharacterData;
-use crate::combat::entity::data::girls::ethel::perks::{Category_Bruiser, EthelPerk};
+use crate::combat::entity::data::girls::ethel::perks::{Category_Bruiser, Category_Debuffer, Category_Duelist, Category_Poison, EthelPerk};
 use crate::combat::entity::Entity;
 use crate::combat::entity::position::Position;
 use crate::combat::ModifiableStat;
@@ -22,7 +22,7 @@ pub(super) const CRIT_EFFECT_MULTIPLIER: usize = 150;
 pub(super) const CRIT_EFFECT_MULTIPLIER_I: isize = CRIT_EFFECT_MULTIPLIER as isize;
 pub(super) const CRIT_CHANCE_MODIFIER  : isize = 50;
 
-#[derive(Debug, Clone, PartialEq, Eq)]
+#[derive(Debug, Clone)]
 pub enum TargetApplier {
 	Arouse {
 		duration_ms: i64,
@@ -31,9 +31,9 @@ pub enum TargetApplier {
 	Buff {
 		duration_ms: i64,
 		stat: ModifiableStat,
-		modifier: isize,
-		apply_chance: Option<isize>,
+		stat_increase: usize,
 	},
+	Debuff(DebuffApplier),
 	ChangeExhaustion {
 		delta: isize,
 	},
@@ -83,6 +83,20 @@ pub enum TargetApplier {
 	},
 }
 
+#[derive(Debug, Clone)]
+pub enum DebuffApplier {
+	Standard {
+		duration_ms: i64,
+		stat: ModifiableStat,
+		stat_decrease: usize,
+		apply_chance: Option<isize>,
+	},
+	StaggeringForce {
+		duration_ms: i64,
+		apply_chance: Option<isize>,
+	},
+}
+
 impl TargetApplier {
 
 	/// returns target if it's still standing
@@ -92,12 +106,18 @@ impl TargetApplier {
 			TargetApplier::Arouse { duration_ms, mut lust_per_sec } => {
 				if is_crit { lust_per_sec = (lust_per_sec * CRIT_EFFECT_MULTIPLIER) / 100; }
 				
-				target.persistent_effects.push(PersistentEffect::new_arousal(*duration_ms, lust_per_sec));
+				target.persistent_effects.push(PersistentEffect::Arousal { duration_ms: *duration_ms, accumulated_ms: 0, lust_per_sec });
 				return Some(target);
 			},
-			TargetApplier::Buff{ duration_ms, mut stat, mut modifier, apply_chance } => {
+			TargetApplier::Buff{ duration_ms, stat, mut stat_increase } => {
+				if is_crit { stat_increase = (stat_increase * CRIT_EFFECT_MULTIPLIER) / 100; }
+
+				target.persistent_effects.push(PersistentEffect::Buff { duration_ms:*duration_ms, stat: *stat, stat_increase });
+				return Some(target);
+			},
+			TargetApplier::Debuff(DebuffApplier::Standard { duration_ms, mut stat, mut stat_decrease, apply_chance }) => {
 				match apply_chance {
-					Some(mut chance) if Position::opposite_side(&caster.position, &target.position) => { //apply chance is only used when the caster and target are enemies
+					Some(mut chance) if Position::is_opposite_side(&caster.position, &target.position) => { //apply chance is only used when the caster and target are enemies
 						if is_crit { chance += CRIT_CHANCE_MODIFIER;  }
 
 						let final_chance = chance + caster.get_stat(DEBUFF_RATE) - target.get_stat(DEBUFF_RES);
@@ -107,17 +127,43 @@ impl TargetApplier {
 					},
 					_ => { }
 				}
-				
-				if is_crit { modifier = (modifier * CRIT_EFFECT_MULTIPLIER_I) / 100; }
 
-				if let Some(Perk::Ethel(EthelPerk::Bruiser(Category_Bruiser::DisruptiveManeuvers))) = get_perk!(&target, Perk::Ethel(EthelPerk::Bruiser(Category_Bruiser::DisruptiveManeuvers))) {
-					stat = ModifiableStat::get_random_except(seed, stat);
+				if is_crit { stat_decrease = (stat_decrease * CRIT_EFFECT_MULTIPLIER) / 100; }
 
-					let apply_to_caster = ModifiableStat::get_random_except(seed, stat);
-					caster.persistent_effects.push(PersistentEffect::new_buff(*duration_ms, apply_to_caster, modifier));
+				if let Some(Perk::Ethel(EthelPerk::Bruiser(Category_Bruiser::DisruptiveManeuvers))) = get_perk!(target, Perk::Ethel(EthelPerk::Bruiser(Category_Bruiser::DisruptiveManeuvers))) {
+					stat = ModifiableStat::get_non_girl_random_except(seed, stat);
+
+					let apply_to_caster = ModifiableStat::get_non_girl_random_except(seed, stat);
+					caster.persistent_effects.push(PersistentEffect::Debuff(PersistentDebuff::Standard { duration_ms: *duration_ms, stat: apply_to_caster, stat_decrease }));
 				}
 
-				target.persistent_effects.push(PersistentEffect::new_buff(*duration_ms, stat, modifier));
+				if let Some(Perk::Ethel(EthelPerk::Debuffer(Category_Debuffer::WhatDoesntKillYou))) = get_perk!(target, Perk::Ethel(EthelPerk::Debuffer(Category_Debuffer::WhatDoesntKillYou))) {
+					let random_buff = PersistentEffect::Buff {
+						duration_ms: *duration_ms,
+						stat: ModifiableStat::get_non_girl_random_except(seed,stat),
+						stat_increase: stat_decrease,
+					};
+
+					target.persistent_effects.push(random_buff);
+				}
+
+				target.persistent_effects.push(PersistentEffect::Debuff(PersistentDebuff::Standard { duration_ms: *duration_ms, stat, stat_decrease }));
+				return Some(target);
+			},
+			TargetApplier::Debuff(DebuffApplier::StaggeringForce { duration_ms, apply_chance }) => {
+				match apply_chance {
+					Some(mut chance) if Position::is_opposite_side(&caster.position, &target.position) => { //apply chance is only used when the caster and target are enemies
+						if is_crit { chance += CRIT_CHANCE_MODIFIER;  }
+
+						let final_chance = chance + caster.get_stat(DEBUFF_RATE) - target.get_stat(DEBUFF_RES);
+						if seed.base100_chance(final_chance.into()) == false {
+							return Some(target);
+						}
+					},
+					_ => { }
+				}
+
+				target.persistent_effects.push(PersistentEffect::Debuff(PersistentDebuff::StaggeringForce { duration_ms: *duration_ms }));
 				return Some(target);
 			},
 			TargetApplier::ChangeExhaustion { delta } => { // ignores crit
@@ -141,7 +187,7 @@ impl TargetApplier {
 					healAmount = (seed.gen_range(min..=max) * base_multiplier) / 100;
 				}
 
-				target.stamina_cur = CombatCharacter::clamp_stamina(target.stamina_cur + healAmount, target.get_stat(ModifiableStat::MAX_STAMINA));
+				target.stamina_cur = CombatCharacter::clamp_stamina(target.stamina_cur + healAmount, target.get_max_stamina());
 				return Some(target);
 			},
 			TargetApplier::Lust{ mut min, mut max } => {
@@ -161,12 +207,12 @@ impl TargetApplier {
 			TargetApplier::Mark{ mut duration_ms } => {
 				if is_crit { duration_ms = (duration_ms * CRIT_DURATION_MULTIPLIER) / 100; }
 				
-				target.persistent_effects.push(PersistentEffect::new_marked(duration_ms));
+				target.persistent_effects.push(PersistentEffect::Marked { duration_ms });
 				return Some(target);
 			},
 			TargetApplier::Move{ direction, apply_chance } => {
 				match apply_chance {
-					Some(mut chance) if Position::opposite_side(&caster.position, &target.position) => { //apply chance is only used when the caster and target are enemies
+					Some(mut chance) if Position::is_opposite_side(&caster.position, &target.position) => { //apply chance is only used when the caster and target are enemies
 						if is_crit { chance += CRIT_CHANCE_MODIFIER;  }
 						
 						let final_chance = chance + caster.get_stat(MOVE_RATE) - target.get_stat(MOVE_RES);
@@ -203,17 +249,25 @@ impl TargetApplier {
 			TargetApplier::PersistentHeal{ duration_ms, mut heal_per_sec } => {
 				if is_crit { heal_per_sec = (heal_per_sec * CRIT_EFFECT_MULTIPLIER) / 100; }
 				
-				target.persistent_effects.push(PersistentEffect::new_heal(*duration_ms, heal_per_sec));
+				target.persistent_effects.push(PersistentEffect::Heal { duration_ms: *duration_ms, accumulated_ms: 0, heal_per_sec });
 				return Some(target);
 			},
-			TargetApplier::Poison{ duration_ms, mut dmg_per_sec } => {
+			TargetApplier::Poison{ mut duration_ms, mut dmg_per_sec } => {
 				if is_crit { dmg_per_sec = (dmg_per_sec * CRIT_EFFECT_MULTIPLIER) / 100; }
+
+				if let Some(Perk::Ethel(EthelPerk::Poison(Category_Poison::LingeringToxins))) = get_perk!(caster, Perk::Ethel(EthelPerk::Poison(Category_Poison::LingeringToxins))) {
+					duration_ms += 1;
+				}
 				
-				target.persistent_effects.push(PersistentEffect::new_poison(*duration_ms, dmg_per_sec, caster));
+				target.persistent_effects.push(PersistentEffect::Poison { duration_ms, accumulated_ms: 0, dmg_per_sec, caster_guid: caster.guid() });
 				return Some(target);
 			},
-			TargetApplier::MakeTargetRiposte{ duration_ms, dmg_multiplier, acc, crit } => { // can't crit!
-				target.persistent_effects.push(PersistentEffect::new_riposte(*duration_ms, *dmg_multiplier, *acc, crit.clone()));
+			TargetApplier::MakeTargetRiposte{ duration_ms, mut dmg_multiplier, acc, crit } => { // can't crit!
+				if let Some(Perk::Ethel(EthelPerk::Duelist(Category_Duelist::EnGarde))) = get_perk!(target, Perk::Ethel(EthelPerk::Duelist(Category_Duelist::EnGarde))) {
+					dmg_multiplier += 30;
+				}
+
+				target.persistent_effects.push(PersistentEffect::Riposte { duration_ms: *duration_ms, dmg_multiplier, acc: *acc, crit: *crit });
 				return Some(target);
 			},
 			TargetApplier::Stun{ mut force } => {
@@ -301,12 +355,26 @@ impl TargetApplier {
 			TargetApplier::Arouse { duration_ms, mut lust_per_sec } => {
 				if is_crit { lust_per_sec = (lust_per_sec * CRIT_EFFECT_MULTIPLIER) / 100; }
 
-				caster.persistent_effects.push(PersistentEffect::new_arousal(*duration_ms, lust_per_sec));
+				caster.persistent_effects.push(PersistentEffect::Arousal { duration_ms: *duration_ms, accumulated_ms: 0, lust_per_sec });
 			},
-			TargetApplier::Buff { duration_ms, stat, mut modifier, .. } => { // apply_chance is ignored when applied to self
-				if is_crit { modifier = (modifier * CRIT_EFFECT_MULTIPLIER_I) / 100; }
+			TargetApplier::Buff { duration_ms, stat, mut stat_increase, .. } => {
+				if is_crit { stat_increase = (stat_increase * CRIT_EFFECT_MULTIPLIER) / 100; }
 
-				caster.persistent_effects.push(PersistentEffect::new_buff(*duration_ms, *stat, modifier));
+				caster.persistent_effects.push(PersistentEffect::Buff { duration_ms: *duration_ms, stat: *stat, stat_increase });
+			},
+			TargetApplier::Debuff(DebuffApplier::Standard { duration_ms, stat, mut stat_decrease, .. }) => { // apply chance is ignored on self
+				if is_crit { stat_decrease = (stat_decrease * CRIT_EFFECT_MULTIPLIER) / 100; }
+
+				caster.persistent_effects.push(PersistentEffect::Debuff(PersistentDebuff::Standard {
+					duration_ms: *duration_ms,
+					stat: *stat,
+					stat_decrease,
+				}))
+			},
+			TargetApplier::Debuff(DebuffApplier::StaggeringForce { duration_ms, .. }) => {
+				caster.persistent_effects.push(PersistentEffect::Debuff(PersistentDebuff::StaggeringForce {
+					duration_ms: *duration_ms,
+				}))
 			},
 			TargetApplier::ChangeExhaustion { delta } => { // ignores crit
 				if let Some(girl) = &mut caster.girl_stats {
@@ -329,7 +397,7 @@ impl TargetApplier {
 					healAmount = (seed.gen_range(min..=max) * base_multiplier) / 100;
 				}
 
-				caster.stamina_cur = (caster.stamina_cur + healAmount).clamp(0, caster.stamina_max);
+				caster.stamina_cur = (caster.stamina_cur + healAmount).clamp(0, caster.get_max_stamina());
 			},
 			TargetApplier::Lust { mut min, mut max } => {
 				if is_crit {
@@ -346,7 +414,7 @@ impl TargetApplier {
 			TargetApplier::Mark { mut duration_ms } => {
 				if is_crit { duration_ms = (duration_ms * CRIT_DURATION_MULTIPLIER) / 100; }
 				
-				caster.persistent_effects.push(PersistentEffect::new_marked(duration_ms));
+				caster.persistent_effects.push(PersistentEffect::Marked { duration_ms });
 			},
 			TargetApplier::Move { direction, .. } => { //apply chance ignored when applied to self
 				let direction: isize = match direction {
@@ -373,15 +441,27 @@ impl TargetApplier {
 			TargetApplier::PersistentHeal { duration_ms, mut heal_per_sec } => {
 				if is_crit { heal_per_sec = (heal_per_sec * CRIT_EFFECT_MULTIPLIER) / 100; }
 
-				caster.persistent_effects.push(PersistentEffect::new_heal(*duration_ms, heal_per_sec));
+				caster.persistent_effects.push(PersistentEffect::Heal{ duration_ms: *duration_ms, accumulated_ms: 0, heal_per_sec });
 			},
-			TargetApplier::Poison { duration_ms, mut dmg_per_sec } => {
+			TargetApplier::Poison { mut duration_ms, mut dmg_per_sec } => {
 				if is_crit { dmg_per_sec = (dmg_per_sec * CRIT_EFFECT_MULTIPLIER) / 100; }
 
-				caster.persistent_effects.push(PersistentEffect::new_poison(*duration_ms, dmg_per_sec, caster));
+				if let Some(Perk::Ethel(EthelPerk::Poison(Category_Poison::LingeringToxins))) = get_perk!(caster, Perk::Ethel(EthelPerk::Poison(Category_Poison::LingeringToxins))) {
+					duration_ms += 1;
+				}
+
+				if let Some(Perk::Ethel(EthelPerk::Poison(Category_Poison::ConcentratedToxins))) = get_perk!(caster, Perk::Ethel(EthelPerk::Poison(Category_Poison::ConcentratedToxins))) {
+					dmg_per_sec = (dmg_per_sec * 125) / 100;
+				}
+
+				caster.persistent_effects.push(PersistentEffect::Poison{ duration_ms, accumulated_ms: 0, dmg_per_sec, caster_guid: caster.guid() });
 			},
-			TargetApplier::MakeTargetRiposte { duration_ms, dmg_multiplier, acc, crit } => {
-				caster.persistent_effects.push(PersistentEffect::new_riposte(*duration_ms, *dmg_multiplier, *acc, crit.clone()));
+			TargetApplier::MakeTargetRiposte { duration_ms, mut dmg_multiplier, acc, crit } => {
+				if let Some(Perk::Ethel(EthelPerk::Duelist(Category_Duelist::EnGarde))) = get_perk!(caster, Perk::Ethel(EthelPerk::Duelist(Category_Duelist::EnGarde))) {
+					dmg_multiplier += 30;
+				}
+
+				caster.persistent_effects.push(PersistentEffect::Riposte{ duration_ms: *duration_ms, dmg_multiplier, acc: *acc, crit: *crit });
 			},
 			TargetApplier::Stun { mut force } => {
 				if is_crit { force += CRIT_CHANCE_MODIFIER; }
@@ -401,6 +481,9 @@ impl TargetApplier {
 					};
 				}
 			},
+			TargetApplier::TemporaryPerk { duration_ms, perk } => { // can't crit
+				caster.persistent_effects.push(PersistentEffect::TemporaryPerk { duration_ms: *duration_ms, perk: perk.clone() });
+			}
 			// we don't use the default case because we want to be warned about any new effects that are not yet implemented
 			TargetApplier::MakeSelfGuardTarget { .. } => godot_warn!("Warning: MakeSelfGuardTarget effect is not applicable to self! Caster: {:?}", caster),
 			TargetApplier::MakeTargetGuardSelf { .. } => godot_warn!("Warning: MakeTargetGuardSelf effect is not applicable to self! Caster: {:?}", caster),

@@ -5,7 +5,7 @@ use crate::combat::ModifiableStat;
 use crate::combat::skill_types::*;
 use crate::util::I_Range;
 
-#[derive(Debug, Clone, PartialEq, Eq)]
+#[derive(Debug, Clone)]
 pub struct LewdSkill {
 	pub skill_name: SkillName,
 	pub recovery_ms     : i64,

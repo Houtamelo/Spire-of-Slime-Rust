@@ -6,7 +6,7 @@ use crate::util::I_Range;
 use crate::combat::entity::character::*;
 use crate::combat::skill_types::*;
 
-#[derive(Debug, Clone, PartialEq, Eq)]
+#[derive(Debug, Clone)]
 pub struct OffensiveSkill {
 	pub skill_name: SkillName,
 	pub recovery_ms     : i64,
@@ -15,6 +15,7 @@ pub struct OffensiveSkill {
 	pub acc_mode        : ACCMode,
 	pub dmg             : DMGMode,
 	pub crit            : CRITMode,
+	pub custom_modifiers: Vec<CustomOffensiveModifier>,
 	pub effects_self    : Vec<SelfApplier>,
 	pub effects_target  : Vec<TargetApplier>,
 	pub caster_positions: PositionMatrix,
@@ -107,4 +108,13 @@ impl SkillTrait for OffensiveSkill {
 	fn target_positions(&self) -> &PositionMatrix     { return &self.target_positions; }
 	fn multi_target    (&self) -> &bool               { return &self.multi_target    ; }
 	fn use_counter     (&self) -> &UseCounter         { return &self.use_counter     ; }
+}
+
+#[derive(Debug, Clone)]
+pub enum CustomOffensiveModifier {
+	BonusVsMarked {
+		power: isize,
+		acc: isize,
+		crit: isize,
+	}
 }

@@ -12,16 +12,6 @@ pub struct TimelineEvent {
 	pub character_guid: GUID
 }
 
-impl PartialEq for TimelineEvent {
-	fn eq(&self, other: &Self) -> bool {
-		return self.time_frame_ms == other.time_frame_ms 
-				&& self.event_type == other.event_type
-				&& self.character_guid == other.character_guid;
-	}
-}
-
-impl Eq for TimelineEvent {}
-
 impl TimelineEvent {
 	pub fn register_character(character: &CombatCharacter, events: &mut Vec<TimelineEvent>) {
 		let character_guid = character.guid;
@@ -137,7 +127,7 @@ impl TimelineEvent {
 	}
 	
 	fn register_status(status: &PersistentEffect, owner: &CombatCharacter, events: &mut Vec<TimelineEvent>) {
-		let event_end_ms = status.duration_remaining();
+		let event_end_ms = status.duration();
 		debug_assert!(event_end_ms > 0, "Trying to register an event from status with negative duration: {:?}, duration: {:?}", status, event_end_ms);
 		events.push(TimelineEvent { time_frame_ms: event_end_ms, event_type: EventType::StatusEnd { effect_clone: status.clone() }, character_guid: owner.guid });
 		
@@ -276,7 +266,7 @@ impl TimelineEvent {
 	}
 }
 
-#[derive(Debug, Clone, PartialEq, Eq)]
+#[derive(Debug, Clone)]
 pub enum EventType {
 	TurnBegin,
 	PoisonTick       { amount: usize },

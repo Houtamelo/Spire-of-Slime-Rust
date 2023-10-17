@@ -10,15 +10,35 @@ use crate::combat::entity::*;
 use crate::combat::skill_types::*;
 use crate::combat::skill_types::offensive::OffensiveSkill;
 use crate::{iter_enemies_of, iter_mut_allies_of};
-use crate::combat::effects::onTarget::TargetApplier;
-use crate::combat::entity::data::girls::ethel::perks::{Category_Bruiser, EthelPerk};
+use crate::combat::effects::onSelf::SelfApplier;
+use crate::combat::effects::onTarget::{DebuffApplier, TargetApplier};
+use crate::combat::effects::persistent::{PersistentEffect};
+use crate::combat::entity::data::girls::ethel::perks::{Category_Bruiser, Category_Crit, Category_Debuffer, Category_Duelist, Category_Poison, EthelPerk};
 use crate::combat::entity::data::girls::ethel::skills::EthelSkillName;
 use crate::combat::entity::data::skill_name::SkillName;
 use crate::combat::ModifiableStat;
 use crate::combat::perk::Perk;
 use crate::util::{Base100ChanceGenerator, GUID, TrackedTicks};
 
-pub fn start(mut caster: CombatCharacter, target: CombatCharacter, others: &mut HashMap<GUID, Entity>, skill: OffensiveSkill, seed: &mut StdRng, recover_ms: Option<i64>) {
+pub fn start(mut caster: CombatCharacter, target: CombatCharacter, others: &mut HashMap<GUID, Entity>, mut skill: OffensiveSkill, seed: &mut StdRng, recover_ms: Option<i64>) {
+	let name = skill.skill_name;
+	if name == SkillName::FromEthel(EthelSkillName::Clash) || name == SkillName::FromEthel(EthelSkillName::Pierce) || name == SkillName::FromEthel(EthelSkillName::Sever) {
+		if let Some(Perk::Ethel(EthelPerk::Poison(Category_Poison::PoisonCoating))) = get_perk!(caster, Perk::Ethel(EthelPerk::Poison(Category_Poison::PoisonCoating))) {
+			let debuff = TargetApplier::Debuff(DebuffApplier::Standard {
+				duration_ms: 5000,
+				stat: ModifiableStat::POISON_RES,
+				stat_decrease: 40,
+				apply_chance: Some(120),
+			});
+			skill.effects_target.push(debuff);
+		}
+	}
+	else if name == SkillName::FromEthel(EthelSkillName::Challenge) {
+		if let Some(Perk::Ethel(EthelPerk::Duelist(Category_Duelist::AlluringChallenger))) = get_perk!(caster, Perk::Ethel(EthelPerk::Duelist(Category_Duelist::AlluringChallenger))) {
+			skill.effects_self.push(SelfApplier::Mark { duration_ms: 4000 });
+		}
+	}
+
 	process_self_effects_and_costs(&mut caster, others, &skill, seed, recover_ms);
 
 	if skill.multi_target == false {
@@ -69,7 +89,13 @@ fn process_self_effects_and_costs(caster: &mut CombatCharacter, others: &mut Has
 
 	let crit_chance = skill.final_crit_chance(caster);
 	let is_crit = match crit_chance {
-		Some(chance) if seed.base100_chance(chance) => true,
+		Some(chance) if seed.base100_chance(chance) => {
+			if let Some(Perk::Ethel(EthelPerk::Crit(Category_Crit::Vicious { stacks }))) = get_perk_mut!(caster, Perk::Ethel(EthelPerk::Crit(Category_Crit::Vicious { .. }))) {
+				*stacks -= 2;
+			}
+
+			true
+		},
 		_ => false,
 	};
 
@@ -96,17 +122,45 @@ fn resolve_target(mut caster: CombatCharacter, mut target: CombatCharacter, othe
 		}
 	}
 
+	if let Some(Perk::Ethel(EthelPerk::Crit(Category_Crit::Vicious { stacks }))) = get_perk_mut!(&mut caster, Perk::Ethel(EthelPerk::Crit(Category_Crit::Vicious { .. }))) {
+		*stacks += 1;
+	}
+
 	if let Some(Perk::Ethel(EthelPerk::Bruiser(Category_Bruiser::EnragingPain { stacks }))) = get_perk_mut!(&mut target, Perk::Ethel(EthelPerk::Bruiser(Category_Bruiser::EnragingPain { .. }))) {
 		*stacks += 1;
 	}
+
+	if let Some(Perk::Ethel(EthelPerk::Duelist(Category_Duelist::Release))) = get_perk!(target, Perk::Ethel(EthelPerk::Duelist(Category_Duelist::Release))) {
+		if let Some(girl_stats) = &mut target.girl_stats {
+			girl_stats.lust += 2;
+		}
+	}
 	
 	let crit_chance = skill.final_crit_chance(&caster);
-	let is_crit = match crit_chance {
-		Some(chance) if seed.base100_chance(chance) => true,
+	let mut is_crit = match crit_chance {
+		Some(chance) if seed.base100_chance(chance) => {
+			if let Some(Perk::Ethel(EthelPerk::Crit(Category_Crit::Vicious { stacks }))) = get_perk_mut!(&mut caster, Perk::Ethel(EthelPerk::Crit(Category_Crit::Vicious { .. }))) {
+				*stacks -= 2;
+			}
+			if let Some(Perk::Ethel(EthelPerk::Crit(Category_Crit::StaggeringForce))) = get_perk!(caster, Perk::Ethel(EthelPerk::Crit(Category_Crit::StaggeringForce))) {
+				let staggering_force = TargetApplier::Debuff(DebuffApplier::StaggeringForce { duration_ms: 4000, apply_chance: Some(100) });
+				let Some(target_survived) = staggering_force.apply_target(&mut caster, target, others, seed, false) else { return Some(caster); }; // this should never happen but who knows
+				target = target_survived;
+			}
+
+			true
+		},
 		_ => false
 	};
 
-	if let Some(Perk::BellPlantLure(_)) = get_perk!(&target, Perk::BellPlantLure(_)) {
+	if let Some(Perk::Ethel(EthelPerk::Crit(Category_Crit::Bold { used }))) = get_perk_mut!(&mut caster, Perk::Ethel(EthelPerk::Crit(Category_Crit::Bold { .. }))) {
+		if *used == false {
+			*used = true;
+			is_crit = true;
+		}
+	}
+
+	if let Some(Perk::BellPlantLure(_)) = get_perk!(target, Perk::BellPlantLure(_)) {
 		if let Some(girl_stats) = &mut caster.girl_stats {
 			girl_stats.lust += 12;
 		}
@@ -130,14 +184,38 @@ fn resolve_target(mut caster: CombatCharacter, mut target: CombatCharacter, othe
 		return on_both_survive(caster, target, others);
 	}
 
-	if let Some(Perk::Ethel(EthelPerk::Bruiser(Category_Bruiser::FocusedSwings))) = get_perk!(&caster, Perk::Ethel(EthelPerk::Bruiser(Category_Bruiser::FocusedSwings))) {
+	if let Some(Perk::Ethel(EthelPerk::Debuffer(Category_Debuffer::GoForTheEyes))) = get_perk!(caster, Perk::Ethel(EthelPerk::Debuffer(Category_Debuffer::GoForTheEyes))) {
+		damage = (damage * 90) / 100;
+		let random_debuff = TargetApplier::Debuff(DebuffApplier::Standard {
+			duration_ms: 4000,
+			stat: ModifiableStat::get_non_girl_random(seed),
+			stat_decrease: 10,
+			apply_chance: Some(100),
+		});
+
+		let target_survived = random_debuff.apply_target(&mut caster, target, others, seed, false);
+		if let Some(target_survived) = target_survived {
+			target = target_survived;
+		} else {
+			return Some(caster); // target died and was dropped
+		}
+	}
+
+	// does target have unnerving aura and caster is debuffed?
+	if let Some(Perk::Ethel(EthelPerk::Debuffer(Category_Debuffer::UnnervingAura))) = get_perk!(target, Perk::Ethel(EthelPerk::Debuffer(Category_Debuffer::UnnervingAura))) {
+		if caster.persistent_effects.iter().any(|effect| return if let PersistentEffect::Debuff(_) = effect { true } else { false }) {
+			damage = (damage * 75) / 100;
+		}
+	}
+
+	if let Some(Perk::Ethel(EthelPerk::Bruiser(Category_Bruiser::FocusedSwings))) = get_perk!(caster, Perk::Ethel(EthelPerk::Bruiser(Category_Bruiser::FocusedSwings))) {
 		if skill.name() == SkillName::FromEthel(EthelSkillName::Clash) || skill.name() == SkillName::FromEthel(EthelSkillName::Sever) {
-			let toughness_debuff = TargetApplier::Buff {
+			let toughness_debuff = TargetApplier::Debuff(DebuffApplier::Standard {
 				duration_ms: 4000,
 				stat: ModifiableStat::TOUGHNESS,
-				modifier: -25,
+				stat_decrease: 25,
 				apply_chance: Some(100),
-			};
+			});
 
 			let Some(target_survived) = toughness_debuff.apply_target(&mut caster, target, others, seed, is_crit) else { return Some(caster); }; // this should never happen but who knows
 			target = target_survived;
@@ -154,6 +232,23 @@ fn resolve_target(mut caster: CombatCharacter, mut target: CombatCharacter, othe
 			*active = false;
 			damage = (damage * 130) / 100;
 		}
+	}
+
+	if let Some(Perk::Ethel(EthelPerk::Debuffer(Category_Debuffer::NoQuarters))) = get_perk!(caster, Perk::Ethel(EthelPerk::Debuffer(Category_Debuffer::NoQuarters))) {
+		let mut debuff_count = 0;
+		for effect in target.persistent_effects.iter() {
+			if let PersistentEffect::Debuff(_) = effect {
+				debuff_count += 1;
+			}
+		}
+
+		let mut dmg_modifier = isize::clamp(debuff_count * 50, 0, 250);
+		if let CharacterState::Stunned { .. } = target.state {
+			dmg_modifier += 100;
+		}
+
+		dmg_modifier /= 10;
+		damage = (damage * (100 + dmg_modifier)) / 100;
 	}
 
 	match &target.state {
@@ -209,10 +304,10 @@ fn resolve_target(mut caster: CombatCharacter, mut target: CombatCharacter, othe
 	}
 	
 	fn grappler_attacked(caster: &mut CombatCharacter, mut target: CombatCharacter, others: &mut HashMap<GUID, Entity>, damage: isize) {
-		let target_old_stamina_percent = target.stamina_cur as f64 / target.stamina_max as f64;
+		let target_old_stamina_percent = target.stamina_cur as f64 / target.get_max_stamina() as f64;
 		target.stamina_cur -= damage;
 		target.last_damager_guid = Some(caster.guid);
-		let target_new_stamina_percent = target.stamina_cur as f64 / target.stamina_max as f64;
+		let target_new_stamina_percent = target.stamina_cur as f64 / target.get_max_stamina() as f64;
 		
 		let CharacterState::Grappling(grappling_state) = target.state else { panic!(); };
 
@@ -294,36 +389,58 @@ fn resolve_target(mut caster: CombatCharacter, mut target: CombatCharacter, othe
 
 	// returns caster if alive, target is passed by reference because it can't die here
 	#[must_use]
-	fn check_riposte(mut caster: CombatCharacter, target: &mut CombatCharacter, others: &mut HashMap<GUID, Entity>, skill: &OffensiveSkill, seed: &mut StdRng)
+	fn check_riposte(mut caster: CombatCharacter, target_as_riposter: &mut CombatCharacter, others: &mut HashMap<GUID, Entity>, skill: &OffensiveSkill, seed: &mut StdRng)
 		-> Option<CombatCharacter> {
 		
 		if skill.can_be_riposted == false {
 			return Some(caster);
 		}
 		
-		let found = target.persistent_effects.iter().find(|effect|
+		let found = target_as_riposter.persistent_effects.iter().find_map(|effect|
 				if let Riposte { .. } = effect {
-					return true;
+					return Some(effect.clone());
 				} else {
-					return false;
+					return None;
 				});
 		
 		let Some(Riposte { duration_ms: _, dmg_multiplier, acc, crit } ) = found else {
 			return Some(caster);
 		};
 
-		let final_hit_chance = OffensiveSkill::final_hit_chance_independent(*acc, target, &caster);
+		let final_hit_chance = OffensiveSkill::final_hit_chance_independent(acc, target_as_riposter, &caster);
 
 		if seed.base100_chance(final_hit_chance) == false {
 			return Some(caster);
 		}
 
+		if let Some(Perk::Ethel(EthelPerk::Duelist(Category_Duelist::Release))) = get_perk!(target_as_riposter, Perk::Ethel(EthelPerk::Duelist(Category_Duelist::Release))) {
+			if let Some(girl_stats) = &mut target_as_riposter.girl_stats {
+				if girl_stats.lust > 100 {
+					girl_stats.lust -= 4;
+				}
+			}
+		}
+
+		if let Some(Perk::Ethel(EthelPerk::Crit(Category_Crit::Vicious { stacks }))) = get_perk_mut!(target_as_riposter, Perk::Ethel(EthelPerk::Crit(Category_Crit::Vicious { .. }))) {
+			*stacks += 1;
+		}
+
 		let is_crit: bool = match crit {
-			CRITMode::CanCrit { crit_chance } => seed.base100_chance(OffensiveSkill::final_crit_chance_independent(*crit_chance, target)),
+			CRITMode::CanCrit { crit_chance } => {
+				if seed.base100_chance(OffensiveSkill::final_crit_chance_independent(crit_chance, target_as_riposter)) {
+					if let Some(Perk::Ethel(EthelPerk::Crit(Category_Crit::Vicious { stacks }))) = get_perk_mut!(target_as_riposter, Perk::Ethel(EthelPerk::Crit(Category_Crit::Vicious { .. }))) {
+						*stacks -= 2;
+					}
+
+					true
+				} else {
+					false
+				}
+			},
 			CRITMode::NeverCrit => false,
 		};
 
-		let damage_range = OffensiveSkill::calc_dmg_independent(*dmg_multiplier, 0, target, &caster, is_crit);
+		let damage_range = OffensiveSkill::calc_dmg_independent(dmg_multiplier, 0, target_as_riposter, &caster, is_crit);
 
 		let damage = seed.gen_range(damage_range.min..=damage_range.max);
 		if damage <= 0 {
@@ -331,7 +448,7 @@ fn resolve_target(mut caster: CombatCharacter, mut target: CombatCharacter, othe
 		}
 		
 		caster.stamina_cur -= damage;
-		caster.last_damager_guid = Some(target.guid);
+		caster.last_damager_guid = Some(target_as_riposter.guid);
 		
 		if caster.is_alive() {
 			return Some(caster);

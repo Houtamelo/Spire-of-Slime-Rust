@@ -1,11 +1,11 @@
 use std::collections::HashMap;
 use proc_macros::get_perk;
 use crate::BoundISize;
-use crate::combat::effects::persistent::PersistentEffect;
+use crate::combat::effects::persistent::{PersistentDebuff, PersistentEffect};
 use crate::combat::entity::{Corpse, Entity};
 use crate::combat::entity::data::character::{CharacterData};
 use crate::combat::entity::data::EntityData;
-use crate::combat::entity::data::girls::ethel::perks::{Category_Bruiser, Category_Tank, EthelPerk};
+use crate::combat::entity::data::girls::ethel::perks::{Category_Bruiser, Category_Crit, Category_Debuffer, Category_Duelist, Category_Tank, EthelPerk};
 use crate::combat::entity::data::skill_name::SkillName;
 use crate::combat::entity::girl::*;
 use crate::combat::entity::position::Position;
@@ -56,59 +56,165 @@ impl CombatCharacter {
 	}
 	
 	pub fn get_stat(&self, stat: ModifiableStat) -> isize {
-		return match stat {
-			ModifiableStat::DEBUFF_RES  => self.debuff_res.get(),
-			ModifiableStat::POISON_RES  => self.poison_res.get(),
-			ModifiableStat::MOVE_RES    => {
-				let mut base = self.move_res.get();
-				if let Some(Perk::Ethel(EthelPerk::Tank(Category_Tank::Vanguard))) = get_perk!(self, Perk::Ethel(EthelPerk::Tank(Category_Tank::Vanguard))) {
-					base += 30;
-				}
-				return base;
-			},
-			ModifiableStat::ACC         => {
-				let mut base = self.acc.get();
-				if let Some(Perk::Ethel(EthelPerk::Bruiser(Category_Bruiser::Relentless { stacks }))) = get_perk!(self, Perk::Ethel(EthelPerk::Bruiser(Category_Bruiser::Relentless { stacks }))) {
-					base -= *stacks as isize * 7;
-				}
+		let mut stat_value = (|character: &CombatCharacter, stat: ModifiableStat| -> isize {
+			match stat {
+				ModifiableStat::DEBUFF_RES => {
+					let mut base = character.debuff_res.get();
 
-				self.acc.get()
-			},
-			ModifiableStat::CRIT        => self.crit.get(),
-			ModifiableStat::DODGE       => self.dodge.get(),
-			ModifiableStat::TOUGHNESS   => {
-				let mut base = self.toughness.get();
-				if let Some(Perk::Ethel(EthelPerk::Tank(Category_Tank::ReactiveDefense { stacks }))) = get_perk!(self, Perk::Ethel(EthelPerk::Tank(Category_Tank::ReactiveDefense { .. }))) {
-					base += stacks.get() as isize * 4;
+					if let Some(Perk::Ethel(EthelPerk::Debuffer(Category_Debuffer::HardNogging))) = get_perk!(character, Perk::Ethel(EthelPerk::Debuffer(Category_Debuffer::HardNogging))) {
+						if let CharacterState::Stunned { .. } = character.state {
+							base += 25;
+						}
+					}
+
+					return base;
+				},
+				ModifiableStat::POISON_RES => character.poison_res.get(),
+				ModifiableStat::MOVE_RES => {
+					let mut base = character.move_res.get();
+					if let Some(Perk::Ethel(EthelPerk::Tank(Category_Tank::Vanguard))) = get_perk!(character, Perk::Ethel(EthelPerk::Tank(Category_Tank::Vanguard))) {
+						base += 30;
+					}
+					return base;
+				},
+				ModifiableStat::ACC => {
+					let mut base = character.acc.get();
+					if let Some(Perk::Ethel(EthelPerk::Bruiser(Category_Bruiser::Relentless { stacks }))) = get_perk!(character, Perk::Ethel(EthelPerk::Bruiser(Category_Bruiser::Relentless { stacks }))) {
+						base -= *stacks as isize * 7;
+					}
+
+					if let Some(Perk::AffectedByConcentratedToxins(perk)) = get_perk!(character, Perk::AffectedByConcentratedToxins(_)) {
+						for persistent_effect in character.persistent_effects.iter() {
+							if let PersistentEffect::Poison { caster_guid, .. } = persistent_effect {
+								if *caster_guid == perk.caster_guid {
+									base += 5;
+									break;
+								}
+							}
+						}
+					}
+
+					return base;
+				},
+				ModifiableStat::CRIT => {
+					let real_base = character.crit.get();
+					let mut base = real_base;
+					if let Some(Perk::Ethel(EthelPerk::Crit(Category_Crit::Vicious { stacks }))) = get_perk!(character, Perk::Ethel(EthelPerk::Crit(Category_Crit::Vicious { .. }))) {
+						base += *stacks as isize * 10;
+					}
+
+					if let Some(Perk::Ethel(EthelPerk::Crit(Category_Crit::Reliable))) = get_perk!(character, Perk::Ethel(EthelPerk::Crit(Category_Crit::Reliable))) {
+						base -= real_base;
+					}
+
+					return base;
+				},
+				ModifiableStat::DODGE => {
+					let mut base = character.dodge.get();
+
+					if let Some(Perk::Ethel(EthelPerk::Duelist(Category_Duelist::Anticipation))) = get_perk!(character, Perk::Ethel(EthelPerk::Duelist(Category_Duelist::Anticipation))) {
+						if character.persistent_effects.iter().any(|effect| return if let PersistentEffect::Riposte { .. } = effect { true } else { false }) { // is any riposte active?
+							base += 15;
+						}
+					}
+
+					return base;
+				},
+				ModifiableStat::TOUGHNESS => {
+					let mut base = character.toughness.get();
+					if let Some(Perk::Ethel(EthelPerk::Tank(Category_Tank::ReactiveDefense { stacks }))) = get_perk!(character, Perk::Ethel(EthelPerk::Tank(Category_Tank::ReactiveDefense { .. }))) {
+						base += stacks.get() as isize * 4;
+					}
+					return base;
+				},
+				ModifiableStat::COMPOSURE => match &character.girl_stats {
+					None => 0,
+					Some(girl) => { girl.composure.get() }
+				},
+				ModifiableStat::POWER => {
+					let mut base = character.power.get() as isize;
+					if let Some(Perk::Ethel(EthelPerk::Tank(Category_Tank::Spikeful))) = get_perk!(character, Perk::Ethel(EthelPerk::Tank(Category_Tank::Spikeful))) {
+						base += isize::clamp(character.toughness.get(), 0, 30); // we care about the base toughness, not the modified one.
+					}
+					if let Some(Perk::Ethel(EthelPerk::Bruiser(Category_Bruiser::EnragingPain { stacks }))) = get_perk!(character, Perk::Ethel(EthelPerk::Bruiser(Category_Bruiser::EnragingPain { .. }))) {
+						base += stacks.get() as isize * 5;
+					}
+					if let Some(Perk::Ethel(EthelPerk::Crit(Category_Crit::Reliable))) = get_perk!(character, Perk::Ethel(EthelPerk::Crit(Category_Crit::Reliable))) {
+						let base_crit = character.crit.get();
+						if base_crit > 0 {
+							base += base_crit;
+						}
+					}
+					return base;
+				},
+				ModifiableStat::SPD => {
+					let mut base = character.spd.get() as isize;
+
+					if let Some(Perk::AffectedByParalyzingToxins(perk)) = get_perk!(character, Perk::AffectedByParalyzingToxins(_)) {
+						for persistent_effect in character.persistent_effects.iter() {
+							if let PersistentEffect::Poison { dmg_per_sec, caster_guid, .. } = persistent_effect {
+								if *caster_guid == perk.caster_guid {
+									base -= (*dmg_per_sec as isize) * 3;
+								}
+							}
+						}
+					}
+
+					if let Some(Perk::Ethel(EthelPerk::Duelist(Category_Duelist::EnGarde))) = get_perk!(character, Perk::Ethel(EthelPerk::Duelist(Category_Duelist::EnGarde))) {
+						if character.persistent_effects.iter().any(|effect| return if let PersistentEffect::Riposte { .. } = effect { true } else { false }) { // is any riposte active?
+							base -= 20;
+						}
+					}
+
+					return base;
+				},
+				ModifiableStat::DEBUFF_RATE => character.debuff_rate.get(),
+				ModifiableStat::POISON_RATE => character.poison_rate.get(),
+				ModifiableStat::MOVE_RATE => character.move_rate.get(),
+				ModifiableStat::STUN_DEF => {
+					let mut base = character.stun_def.get();
+					if let Some(Perk::Ethel(EthelPerk::Tank(Category_Tank::Vanguard))) = get_perk!(character, Perk::Ethel(EthelPerk::Tank(Category_Tank::Vanguard))) {
+						base += 30;
+					}
+
+					if let Some(Perk::Ethel(EthelPerk::Debuffer(Category_Debuffer::HardNogging))) = get_perk!(character, Perk::Ethel(EthelPerk::Debuffer(Category_Debuffer::HardNogging))) {
+						if character.persistent_effects.iter().any(|effect| return if let PersistentEffect::Debuff(_) = effect { true } else { false }) {
+							base += 25;
+						}
+					}
+
+					return base;
+				},
+			}
+		})(self, stat);
+
+		for effect in self.persistent_effects.iter() {
+			if let PersistentEffect::Buff { stat: buffed_stat, stat_increase, .. } = effect {
+				if stat == *buffed_stat {
+					stat_value += *stat_increase as isize;
 				}
-				return base;
-			},
-			ModifiableStat::COMPOSURE   => match &self.girl_stats {
-				None => 0,
-				Some(girl) => {girl.composure.get()}
-			},
-			ModifiableStat::POWER       => {
-				let mut base = self.power.get() as isize;
-				if let Some(Perk::Ethel(EthelPerk::Tank(Category_Tank::Spikeful))) = get_perk!(self, Perk::Ethel(EthelPerk::Tank(Category_Tank::Spikeful))) {
-					base += isize::clamp(self.toughness.get(), 0, 30); // we care about the base toughness, not the modified one.
+			}
+			else if let PersistentEffect::Debuff(debuff) = effect {
+				match debuff {
+					PersistentDebuff::Standard { stat: debuff_stat, stat_decrease, .. } => {
+						if stat == *debuff_stat {
+							stat_value -= *stat_decrease as isize;
+						}
+					}
+					PersistentDebuff::StaggeringForce { .. } => {
+						match stat {
+							ModifiableStat::TOUGHNESS  | ModifiableStat::COMPOSURE  | ModifiableStat::STUN_DEF
+						  | ModifiableStat::DEBUFF_RES | ModifiableStat::POISON_RES | ModifiableStat::MOVE_RES => {
+								stat_value -= 10;
+							},
+							_ => {}
+						}
+					}
 				}
-				if let Some(Perk::Ethel(EthelPerk::Bruiser(Category_Bruiser::EnragingPain { stacks }))) = get_perk!(self, Perk::Ethel(EthelPerk::Bruiser(Category_Bruiser::EnragingPain { .. }))) {
-					base += stacks.get() as isize * 5;
-				}
-				return base;
-			},
-			ModifiableStat::SPD         => self.spd.get() as isize,
-			ModifiableStat::DEBUFF_RATE => self.debuff_rate.get(),
-			ModifiableStat::POISON_RATE => self.poison_rate.get(),
-			ModifiableStat::MOVE_RATE   => self.move_rate.get(),
-			ModifiableStat::STUN_DEF    => {
-				let mut base = self.stun_def.get();
-				if let Some(Perk::Ethel(EthelPerk::Tank(Category_Tank::Vanguard))) = get_perk!(self, Perk::Ethel(EthelPerk::Tank(Category_Tank::Vanguard))) {
-					base += 30;
-				}
-				return base;
-			},
-		};
+			}
+		}
+
+		return stat_value;
 	}
 
 	pub fn get_max_stamina(&self) -> isize {

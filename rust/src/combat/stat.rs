@@ -1,5 +1,4 @@
 use rand::prelude::IteratorRandom;
-use rand::Rng;
 
 static AllStats: [ModifiableStat; 14] = [
 	ModifiableStat::ACC,
@@ -37,9 +36,16 @@ pub enum ModifiableStat {
 }
 
 impl ModifiableStat {
-	pub fn get_random_except(rng: &mut StdRng, except: ModifiableStat) -> ModifiableStat {
+	pub fn get_non_girl_random_except(rng: &mut StdRng, except: ModifiableStat) -> ModifiableStat {
 		let mut possibles : HashSet<ModifiableStat> = AllStats.into();
+		possibles.remove(&ModifiableStat::COMPOSURE);
 		possibles.remove(&except);
 		return possibles.iter().choose(rng).unwrap().clone();
+	}
+
+	pub fn get_non_girl_random(rng: &mut StdRng) -> ModifiableStat {
+		let mut possibles : HashSet<ModifiableStat> = AllStats.into();
+		possibles.remove(&ModifiableStat::COMPOSURE);
+		return *possibles.iter().choose(rng).unwrap();
 	}
 }

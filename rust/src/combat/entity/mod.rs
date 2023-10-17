@@ -58,28 +58,28 @@ pub struct Corpse {
 #[macro_export]
 macro_rules! iter_allies_of {
 	($character: expr, $entities: expr) => {
-		$entities.values().filter(|entity| $crate::combat::Position::same_side(entity.position(), $character.position()))
+		$entities.values().filter(|entity| $crate::combat::Position::is_same_side(entity.position(), $character.position()))
 	};
 }
 
 #[macro_export]
 macro_rules! iter_mut_allies_of {
 	($character: expr, $entities: expr) => {
-		$entities.values_mut().filter(|entity| $crate::combat::Position::same_side(entity.position(), $character.position()))
+		$entities.values_mut().filter(|entity| $crate::combat::Position::is_same_side(entity.position(), $character.position()))
 	};
 }   
 
 #[macro_export]
 macro_rules! iter_enemies_of {
 	($character: expr, $entities: expr) => {
-		$entities.values().filter(|entity| $crate::combat::Position::opposite_side(entity.position(), $character.position()))
+		$entities.values().filter(|entity| $crate::combat::Position::is_opposite_side(entity.position(), $character.position()))
 	};
 }
 
 #[macro_export]
 macro_rules! iter_mut_enemies_of {
 	($character: expr, $entities: expr) => {
-		$entities.values_mut().filter(|entity| $crate::combat::Position::opposite_side(entity.position(), $character.position()))
+		$entities.values_mut().filter(|entity| $crate::combat::Position::is_opposite_side(entity.position(), $character.position()))
 	};
 }
 

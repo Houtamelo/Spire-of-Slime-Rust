@@ -13,7 +13,7 @@ pub mod offensive;
 pub mod defensive;
 pub mod lewd;
 
-#[derive(Debug, Clone, PartialEq, Eq)]
+#[derive(Debug, Clone)]
 pub enum Skill {
 	Offensive(OffensiveSkill),
 	Defensive(DefensiveSkill),

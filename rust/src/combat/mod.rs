@@ -71,7 +71,7 @@ impl CombatState {
 					ticks.remaining_ms -= delta_time_ms;
 					if ticks.remaining_ms <= 0 {
 						character.state = CharacterState::Idle;
-						character.stamina_cur = isize::max(character.stamina_cur, (character.stamina_max * 5) / 10)
+						character.stamina_cur = isize::max(character.stamina_cur, (character.get_max_stamina() * 5) / 10)
 					} else {
 						character.state = CharacterState::Downed { ticks };
 					}

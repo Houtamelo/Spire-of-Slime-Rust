@@ -80,7 +80,7 @@ impl Position {
 }
 
 impl Position {
-	pub fn same_side(a: &Position, b: &Position) -> bool {
+	pub fn is_same_side(a: &Position, b: &Position) -> bool {
 		return match (a, b) {
 			(Left  { .. }, Left  { .. }) => true,
 			(Right { .. }, Right { .. }) => true,
@@ -88,7 +88,7 @@ impl Position {
 		};
 	}
 
-	pub fn opposite_side(a: &Position, b: &Position) -> bool {
+	pub fn is_opposite_side(a: &Position, b: &Position) -> bool {
 		return match (a, b) {
 			(Left  { .. }, Right { .. }) => true,
 			(Right { .. }, Left  { .. }) => true,

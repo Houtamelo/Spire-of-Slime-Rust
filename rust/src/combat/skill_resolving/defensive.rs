@@ -1,9 +1,12 @@
 use std::collections::{HashMap, HashSet};
 use gdnative::prelude::*;
 use rand::prelude::StdRng;
+use proc_macros::get_perk_mut;
 use crate::iter_allies_of;
 use crate::combat::entity::*;
 use crate::combat::entity::character::*;
+use crate::combat::entity::data::girls::ethel::perks::*;
+use crate::combat::perk::Perk;
 use crate::combat::skill_types::defensive::DefensiveSkill;
 use crate::util::{Base100ChanceGenerator, GUID, TrackedTicks};
 
@@ -82,7 +85,13 @@ fn process_self_effects_and_costs(caster: &mut CombatCharacter, others: &mut Has
 
 	let crit_chance = skill.calc_crit_chance(caster);
 	let is_crit = match crit_chance {
-		Some(chance) if seed.base100_chance(chance) => true,
+		Some(chance) if seed.base100_chance(chance) => {
+			if let Some(Perk::Ethel(EthelPerk::Crit(Category_Crit::Vicious { stacks }))) = get_perk_mut!(caster, Perk::Ethel(EthelPerk::Crit(Category_Crit::Vicious { .. }))) {
+				*stacks -= 2;
+			}
+
+			true
+		},
 		_ => false
 	};
 
@@ -96,7 +105,13 @@ fn process_self_effects_and_costs(caster: &mut CombatCharacter, others: &mut Has
 fn resolve_target_ally(caster: &mut CombatCharacter, mut target: CombatCharacter, others: &mut HashMap<GUID, Entity>, skill: &DefensiveSkill, seed: &mut StdRng) -> Option<CombatCharacter> {
 	let crit_chance = skill.calc_crit_chance(caster);
 	let is_crit = match crit_chance {
-		Some(chance) if seed.base100_chance(chance) => true,
+		Some(chance) if seed.base100_chance(chance) => {
+			if let Some(Perk::Ethel(EthelPerk::Crit(Category_Crit::Vicious { stacks }))) = get_perk_mut!(caster, Perk::Ethel(EthelPerk::Crit(Category_Crit::Vicious { .. }))) {
+				*stacks -= 2;
+			}
+
+			true
+		},
 		_ => false
 	};
 
@@ -114,7 +129,13 @@ fn resolve_target_ally(caster: &mut CombatCharacter, mut target: CombatCharacter
 fn resolve_target_self(caster: &mut CombatCharacter, others: &mut HashMap<GUID, Entity>, skill: &DefensiveSkill, seed: &mut StdRng) {
 	let crit_chance = skill.calc_crit_chance(caster);
 	let is_crit = match crit_chance {
-		Some(chance) if seed.base100_chance(chance) => true,
+		Some(chance) if seed.base100_chance(chance) => {
+			if let Some(Perk::Ethel(EthelPerk::Crit(Category_Crit::Vicious { stacks }))) = get_perk_mut!(caster, Perk::Ethel(EthelPerk::Crit(Category_Crit::Vicious { .. }))) {
+				*stacks -= 2;
+			}
+
+			true
+		},
 		_ => false
 	};
 

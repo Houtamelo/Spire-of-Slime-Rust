@@ -19,6 +19,7 @@ pub static skill_crabdra_crush: Skill = Skill::Offensive(OffensiveSkill {
 	acc_mode: ACCMode ::CanMiss { acc: 85 },
 	dmg     : DMGMode ::Power   { power: 100, toughness_reduction: 0 },
 	crit    : CRITMode::CanCrit { crit_chance: 7 },
+	custom_modifiers: vec![],
 	effects_self: vec![],
 	effects_target: vec![],
 	caster_positions: PositionMatrix { positions: [true,  true, false, false] },

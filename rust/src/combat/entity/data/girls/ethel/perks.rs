@@ -1,4 +1,5 @@
 use crate::BoundU32;
+use crate::util::GUID;
 
 #[derive(Debug, Clone)]
 pub enum EthelPerk {
@@ -46,11 +47,14 @@ pub enum Category_Duelist {
 
 #[derive(Debug, Clone)]
 pub enum Category_Poison {
-	AggravatedToxins,
+	LingeringToxins, //todo! renamed from "Lingering Toxins", update assets in the future!
 	ConcentratedToxins,
 	ParalyzingToxins,
 	PoisonCoating,
 }
+
+#[derive(Debug, Clone)] pub struct AffectedByParalyzingToxins   { pub caster_guid: GUID, }
+#[derive(Debug, Clone)] pub struct AffectedByConcentratedToxins { pub caster_guid: GUID, }
 
 #[derive(Debug, Clone)]
 pub enum Category_Tank {

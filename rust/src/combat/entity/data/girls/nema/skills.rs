@@ -36,6 +36,7 @@ lazy_static! { pub static ref skill_nema_gawky: Skill = Skill::Offensive(Offensi
 	acc_mode: ACCMode ::CanMiss { acc: 90 },
 	dmg     : DMGMode ::Power   { power: 25, toughness_reduction: 0 },
 	crit    : CRITMode::CanCrit { crit_chance: 15 },
+	custom_modifiers: vec![],
 	effects_self  : vec![SelfApplier::Move { direction: ToEdge(1) }],
 	effects_target: vec![TargetApplier::Stun { force: 40 }],
 	caster_positions: positions!("✔️|✔️|❌|❌"),
