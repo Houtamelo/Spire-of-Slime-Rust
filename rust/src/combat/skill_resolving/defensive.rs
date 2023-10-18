@@ -86,7 +86,7 @@ fn process_self_effects_and_costs(caster: &mut CombatCharacter, others: &mut Has
 	let crit_chance = skill.calc_crit_chance(caster);
 	let is_crit = match crit_chance {
 		Some(chance) if seed.base100_chance(chance) => {
-			if let Some(Perk::Ethel(EthelPerk::Crit(Category_Crit::Vicious { stacks }))) = get_perk_mut!(caster, Perk::Ethel(EthelPerk::Crit(Category_Crit::Vicious { .. }))) {
+			if let Some(Perk::Ethel(EthelPerk::Crit_Vicious { stacks })) = get_perk_mut!(caster, Perk::Ethel(EthelPerk::Crit_Vicious { .. })) {
 				*stacks -= 2;
 			}
 
@@ -106,7 +106,7 @@ fn resolve_target_ally(caster: &mut CombatCharacter, mut target: CombatCharacter
 	let crit_chance = skill.calc_crit_chance(caster);
 	let is_crit = match crit_chance {
 		Some(chance) if seed.base100_chance(chance) => {
-			if let Some(Perk::Ethel(EthelPerk::Crit(Category_Crit::Vicious { stacks }))) = get_perk_mut!(caster, Perk::Ethel(EthelPerk::Crit(Category_Crit::Vicious { .. }))) {
+			if let Some(Perk::Ethel(EthelPerk::Crit_Vicious { stacks })) = get_perk_mut!(caster, Perk::Ethel(EthelPerk::Crit_Vicious { .. })) {
 				*stacks -= 2;
 			}
 
@@ -130,7 +130,7 @@ fn resolve_target_self(caster: &mut CombatCharacter, others: &mut HashMap<GUID, 
 	let crit_chance = skill.calc_crit_chance(caster);
 	let is_crit = match crit_chance {
 		Some(chance) if seed.base100_chance(chance) => {
-			if let Some(Perk::Ethel(EthelPerk::Crit(Category_Crit::Vicious { stacks }))) = get_perk_mut!(caster, Perk::Ethel(EthelPerk::Crit(Category_Crit::Vicious { .. }))) {
+			if let Some(Perk::Ethel(EthelPerk::Crit_Vicious { stacks })) = get_perk_mut!(caster, Perk::Ethel(EthelPerk::Crit_Vicious { .. })) {
 				*stacks -= 2;
 			}
 

@@ -8,7 +8,8 @@ use crate::combat::effects::MoveDirection;
 use crate::combat::effects::persistent::{PersistentDebuff, PersistentEffect};
 use crate::combat::entity::character::*;
 use crate::combat::entity::data::character::CharacterData;
-use crate::combat::entity::data::girls::ethel::perks::{Category_Bruiser, Category_Debuffer, Category_Duelist, Category_Poison, EthelPerk};
+use crate::combat::entity::data::girls::ethel::perks::*;
+use crate::combat::entity::data::girls::nema::perks::*;
 use crate::combat::entity::Entity;
 use crate::combat::entity::position::Position;
 use crate::combat::ModifiableStat;
@@ -130,14 +131,14 @@ impl TargetApplier {
 
 				if is_crit { stat_decrease = (stat_decrease * CRIT_EFFECT_MULTIPLIER) / 100; }
 
-				if let Some(Perk::Ethel(EthelPerk::Bruiser(Category_Bruiser::DisruptiveManeuvers))) = get_perk!(target, Perk::Ethel(EthelPerk::Bruiser(Category_Bruiser::DisruptiveManeuvers))) {
+				if let Some(Perk::Ethel(EthelPerk::Bruiser_DisruptiveManeuvers)) = get_perk!(target, Perk::Ethel(EthelPerk::Bruiser_DisruptiveManeuvers)) {
 					stat = ModifiableStat::get_non_girl_random_except(seed, stat);
 
 					let apply_to_caster = ModifiableStat::get_non_girl_random_except(seed, stat);
 					caster.persistent_effects.push(PersistentEffect::Debuff(PersistentDebuff::Standard { duration_ms: *duration_ms, stat: apply_to_caster, stat_decrease }));
 				}
 
-				if let Some(Perk::Ethel(EthelPerk::Debuffer(Category_Debuffer::WhatDoesntKillYou))) = get_perk!(target, Perk::Ethel(EthelPerk::Debuffer(Category_Debuffer::WhatDoesntKillYou))) {
+				if let Some(Perk::Ethel(EthelPerk::Debuffer_WhatDoesntKillYou)) = get_perk!(target, Perk::Ethel(EthelPerk::Debuffer_WhatDoesntKillYou)) {
 					let random_buff = PersistentEffect::Buff {
 						duration_ms: *duration_ms,
 						stat: ModifiableStat::get_non_girl_random_except(seed,stat),
@@ -177,14 +178,20 @@ impl TargetApplier {
 				let max: isize = caster.dmg.max.max(0);
 				let min: isize = caster.dmg.min.clamp(0, max);
 
-				let healAmount: isize;
+				let mut healAmount: isize;
 
 				if max <= 0 {
 					return Some(target);
 				} else if max == min {
-					healAmount = max;
+					healAmount = (max * base_multiplier) / 100;
 				} else {
 					healAmount = (seed.gen_range(min..=max) * base_multiplier) / 100;
+				}
+
+				if let Some(Perk::Nema(NemaPerk::Healer_Affection)) = get_perk!(caster, Perk::Nema(NemaPerk::Healer_Affection)) {
+					if target.persistent_effects.iter().any(|effect| matches!(effect, PersistentEffect::Debuff(_) | PersistentEffect::Poison { .. })) {
+						healAmount = (healAmount * 130) / 100;
+					}
 				}
 
 				target.stamina_cur = CombatCharacter::clamp_stamina(target.stamina_cur + healAmount, target.get_max_stamina());
@@ -248,6 +255,12 @@ impl TargetApplier {
 			},
 			TargetApplier::PersistentHeal{ duration_ms, mut heal_per_sec } => {
 				if is_crit { heal_per_sec = (heal_per_sec * CRIT_EFFECT_MULTIPLIER) / 100; }
+
+				if let Some(Perk::Nema(NemaPerk::Healer_Affection)) = get_perk!(caster, Perk::Nema(NemaPerk::Healer_Affection)) {
+					if target.persistent_effects.iter().any(|effect| matches!(effect, PersistentEffect::Debuff(_) | PersistentEffect::Poison { .. })) {
+						heal_per_sec = (heal_per_sec * 130) / 100;
+					}
+				}
 				
 				target.persistent_effects.push(PersistentEffect::Heal { duration_ms: *duration_ms, accumulated_ms: 0, heal_per_sec });
 				return Some(target);
@@ -255,7 +268,7 @@ impl TargetApplier {
 			TargetApplier::Poison{ mut duration_ms, mut dmg_per_sec } => {
 				if is_crit { dmg_per_sec = (dmg_per_sec * CRIT_EFFECT_MULTIPLIER) / 100; }
 
-				if let Some(Perk::Ethel(EthelPerk::Poison(Category_Poison::LingeringToxins))) = get_perk!(caster, Perk::Ethel(EthelPerk::Poison(Category_Poison::LingeringToxins))) {
+				if let Some(Perk::Ethel(EthelPerk::Poison_LingeringToxins)) = get_perk!(caster, Perk::Ethel(EthelPerk::Poison_LingeringToxins)) {
 					duration_ms += 1;
 				}
 				
@@ -263,7 +276,7 @@ impl TargetApplier {
 				return Some(target);
 			},
 			TargetApplier::MakeTargetRiposte{ duration_ms, mut dmg_multiplier, acc, crit } => { // can't crit!
-				if let Some(Perk::Ethel(EthelPerk::Duelist(Category_Duelist::EnGarde))) = get_perk!(target, Perk::Ethel(EthelPerk::Duelist(Category_Duelist::EnGarde))) {
+				if let Some(Perk::Ethel(EthelPerk::Duelist_EnGarde)) = get_perk!(target, Perk::Ethel(EthelPerk::Duelist_EnGarde)) {
 					dmg_multiplier += 30;
 				}
 
@@ -387,14 +400,20 @@ impl TargetApplier {
 				let max: isize = caster.dmg.max.max(0);
 				let min: isize = caster.dmg.min.clamp(0, max);
 				
-				let healAmount: isize;
+				let mut healAmount: isize;
 				
 				if max <= 0 {
 					return;
 				} else if max == min {
-					healAmount = max;
+					healAmount = (max * base_multiplier) / 100;
 				} else {
 					healAmount = (seed.gen_range(min..=max) * base_multiplier) / 100;
+				}
+
+				if let Some(Perk::Nema(NemaPerk::Healer_Affection)) = get_perk!(caster, Perk::Nema(NemaPerk::Healer_Affection)) {
+					if caster.persistent_effects.iter().any(|effect| matches!(effect, PersistentEffect::Debuff(_) | PersistentEffect::Poison { .. })) {
+						healAmount = (healAmount * 130) / 100;
+					}
 				}
 
 				caster.stamina_cur = (caster.stamina_cur + healAmount).clamp(0, caster.get_max_stamina());
@@ -441,23 +460,29 @@ impl TargetApplier {
 			TargetApplier::PersistentHeal { duration_ms, mut heal_per_sec } => {
 				if is_crit { heal_per_sec = (heal_per_sec * CRIT_EFFECT_MULTIPLIER) / 100; }
 
+				if let Some(Perk::Nema(NemaPerk::Healer_Affection)) = get_perk!(caster, Perk::Nema(NemaPerk::Healer_Affection)) {
+					if caster.persistent_effects.iter().any(|effect| matches!(effect, PersistentEffect::Debuff(_) | PersistentEffect::Poison { .. })) {
+						heal_per_sec = (heal_per_sec * 130) / 100;
+					}
+				}
+
 				caster.persistent_effects.push(PersistentEffect::Heal{ duration_ms: *duration_ms, accumulated_ms: 0, heal_per_sec });
 			},
 			TargetApplier::Poison { mut duration_ms, mut dmg_per_sec } => {
 				if is_crit { dmg_per_sec = (dmg_per_sec * CRIT_EFFECT_MULTIPLIER) / 100; }
 
-				if let Some(Perk::Ethel(EthelPerk::Poison(Category_Poison::LingeringToxins))) = get_perk!(caster, Perk::Ethel(EthelPerk::Poison(Category_Poison::LingeringToxins))) {
+				if let Some(Perk::Ethel(EthelPerk::Poison_LingeringToxins)) = get_perk!(caster, Perk::Ethel(EthelPerk::Poison_LingeringToxins)) {
 					duration_ms += 1;
 				}
 
-				if let Some(Perk::Ethel(EthelPerk::Poison(Category_Poison::ConcentratedToxins))) = get_perk!(caster, Perk::Ethel(EthelPerk::Poison(Category_Poison::ConcentratedToxins))) {
+				if let Some(Perk::Ethel(EthelPerk::Poison_ConcentratedToxins)) = get_perk!(caster, Perk::Ethel(EthelPerk::Poison_ConcentratedToxins)) {
 					dmg_per_sec = (dmg_per_sec * 125) / 100;
 				}
 
 				caster.persistent_effects.push(PersistentEffect::Poison{ duration_ms, accumulated_ms: 0, dmg_per_sec, caster_guid: caster.guid() });
 			},
 			TargetApplier::MakeTargetRiposte { duration_ms, mut dmg_multiplier, acc, crit } => {
-				if let Some(Perk::Ethel(EthelPerk::Duelist(Category_Duelist::EnGarde))) = get_perk!(caster, Perk::Ethel(EthelPerk::Duelist(Category_Duelist::EnGarde))) {
+				if let Some(Perk::Ethel(EthelPerk::Duelist_EnGarde)) = get_perk!(caster, Perk::Ethel(EthelPerk::Duelist_EnGarde)) {
 					dmg_multiplier += 30;
 				}
 

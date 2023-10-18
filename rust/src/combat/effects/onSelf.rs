@@ -8,7 +8,8 @@ use crate::combat::entity::character::*;
 use crate::combat::effects::MoveDirection;
 use crate::combat::effects::onTarget::{CRIT_DURATION_MULTIPLIER, CRIT_EFFECT_MULTIPLIER, CRIT_EFFECT_MULTIPLIER_I};
 use crate::combat::effects::persistent::PersistentEffect;
-use crate::combat::entity::data::girls::ethel::perks::{Category_Duelist, EthelPerk};
+use crate::combat::entity::data::girls::ethel::perks::*;
+use crate::combat::entity::data::girls::nema::perks::*;
 use crate::combat::entity::Entity;
 use crate::combat::perk::Perk;
 use crate::combat::skill_types::CRITMode;
@@ -71,14 +72,20 @@ impl SelfApplier {
 				let max: isize = caster.dmg.max.max(0);
 				let min: isize = caster.dmg.min.clamp(0, max);
 
-				let healAmount: isize;
+				let mut healAmount: isize;
 
 				if max <= 0 {
 					return;
 				} else if max == min {
-					healAmount = max;
+					healAmount = (max * (base_multiplier)) / 100;
 				} else {
 					healAmount = (seed.gen_range(min..=max) * (base_multiplier)) / 100;
+				}
+
+				if let Some(Perk::Nema(NemaPerk::Healer_Affection)) = get_perk!(caster, Perk::Nema(NemaPerk::Healer_Affection)) {
+					if caster.persistent_effects.iter().any(|effect| matches!(effect, PersistentEffect::Debuff(_) | PersistentEffect::Poison { .. })) {
+						healAmount = (healAmount * 130) / 100;
+					}
 				}
 
 				caster.stamina_cur = (caster.stamina_cur + healAmount).clamp(0, caster.get_max_stamina());
@@ -125,10 +132,16 @@ impl SelfApplier {
 			SelfApplier::PersistentHeal{ duration_ms, mut heal_per_sec } => {
 				if is_crit { heal_per_sec = (heal_per_sec * CRIT_EFFECT_MULTIPLIER) / 100; }
 
+				if let Some(Perk::Nema(NemaPerk::Healer_Affection)) = get_perk!(caster, Perk::Nema(NemaPerk::Healer_Affection)) {
+					if caster.persistent_effects.iter().any(|effect| matches!(effect, PersistentEffect::Debuff(_) | PersistentEffect::Poison { .. })) {
+						heal_per_sec = (heal_per_sec * 130) / 100;
+					}
+				}
+
 				caster.persistent_effects.push(PersistentEffect::Heal { duration_ms: *duration_ms, accumulated_ms: 0, heal_per_sec });
 			}
 			SelfApplier::Riposte{ duration_ms, mut dmg_multiplier, acc, crit } => {
-				if let Some(Perk::Ethel(EthelPerk::Duelist(Category_Duelist::EnGarde))) = get_perk!(caster, Perk::Ethel(EthelPerk::Duelist(Category_Duelist::EnGarde))) {
+				if let Some(Perk::Ethel(EthelPerk::Duelist_EnGarde)) = get_perk!(caster, Perk::Ethel(EthelPerk::Duelist_EnGarde)) {
 					dmg_multiplier += 30;
 				}
 

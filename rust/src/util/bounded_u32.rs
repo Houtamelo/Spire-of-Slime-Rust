@@ -576,4 +576,12 @@ fn add_instance_and_overflowing_isize_value() {
 	assert_eq!(result.get(), 300);
 }
 
+#[test]
+fn add_deref() {
+	let mut bound_u32 = BoundU32::<20, 300>::new(250);
+	let mut_ref = &mut bound_u32;
+	*mut_ref += 100;
+	assert_eq!(bound_u32.get(), 300);
+}
+
 
