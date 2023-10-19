@@ -21,7 +21,8 @@ pub enum EthelPerk {
 	Duelist_Anticipation,
 	Duelist_EnGarde,
 	Duelist_Release,
-	Poison_LingeringToxins, //todo! renamed from "Lingering Toxins", update assets in the future!
+	Poison_PoisonousSkin, //todo! needs lewd skill resolving implementation
+	Poison_LingeringToxins, //todo! renamed from "Lingering Toxins", update assets in the future! Needs implementation
 	Poison_ConcentratedToxins,
 	Poison_ParalyzingToxins,
 	Poison_PoisonCoating,
@@ -29,7 +30,7 @@ pub enum EthelPerk {
 	Tank_Energetic,
 	Tank_ReactiveDefense { stacks: BoundU32<0, 6> },
 	Tank_Spikeful,
-	Tank_Vanguard,
+	Tank_Vanguard { cooldown_ms: i64},
 }
 
 #[derive(Debug, Clone)] pub struct AffectedByParalyzingToxins   { pub caster_guid: GUID, }

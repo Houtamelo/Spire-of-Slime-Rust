@@ -2,11 +2,11 @@ use std::collections::HashMap;
 use rand::prelude::StdRng;
 use rand::Rng;
 use combat::ModifiableStat;
-use proc_macros::get_perk;
+use proc_macros::{get_perk, get_perk_mut};
 use crate::{iter_allies_of, iter_mut_allies_of, combat};
 use crate::combat::entity::character::*;
 use crate::combat::effects::MoveDirection;
-use crate::combat::effects::onTarget::{CRIT_DURATION_MULTIPLIER, CRIT_EFFECT_MULTIPLIER, CRIT_EFFECT_MULTIPLIER_I};
+use crate::combat::effects::onTarget::{CRIT_DURATION_MULTIPLIER, CRIT_EFFECT_MULTIPLIER, TargetApplier};
 use crate::combat::effects::persistent::PersistentEffect;
 use crate::combat::entity::data::girls::ethel::perks::*;
 use crate::combat::entity::data::girls::nema::perks::*;
@@ -66,18 +66,19 @@ impl SelfApplier {
 					girl.exhaustion += *delta;
 				}
 			},
-			SelfApplier::Heal{ mut base_multiplier } => {
-				if is_crit { base_multiplier = (base_multiplier * CRIT_EFFECT_MULTIPLIER_I) / 100; }
+			SelfApplier::Heal{ base_multiplier } => {
+				let mut base_multiplier = isize::max(*base_multiplier, 0) as usize;
+				if is_crit { base_multiplier = (base_multiplier * CRIT_EFFECT_MULTIPLIER) / 100; }
 
-				let max: isize = caster.dmg.max.max(0);
-				let min: isize = caster.dmg.min.clamp(0, max);
+				let max: usize = isize::max(caster.dmg.max, 0) as usize;
+				let min: usize = isize::clamp(caster.dmg.min, 0, max as isize) as usize;
 
-				let mut healAmount: isize;
+				let mut healAmount: usize;
 
 				if max <= 0 {
 					return;
 				} else if max == min {
-					healAmount = (max * (base_multiplier)) / 100;
+					healAmount = (max * base_multiplier) / 100;
 				} else {
 					healAmount = (seed.gen_range(min..=max) * (base_multiplier)) / 100;
 				}
@@ -88,7 +89,35 @@ impl SelfApplier {
 					}
 				}
 
-				caster.stamina_cur = (caster.stamina_cur + healAmount).clamp(0, caster.get_max_stamina());
+				if let Some(Perk::Nema(NemaPerk::Healer_Awe { accumulated_ms })) = get_perk_mut!(caster, Perk::Nema(NemaPerk::Healer_Awe {..})) {
+					let stacks = i64::clamp(*accumulated_ms / 1000, 0, 8) as usize;
+					healAmount = (healAmount * (100 + stacks * 5)) / 100;
+					*accumulated_ms = 0;
+				}
+
+				if let Some(Perk::Nema(NemaPerk::Healer_Adoration)) = get_perk!(caster, Perk::Nema(NemaPerk::Healer_Adoration)) {
+					let toughness_buff = TargetApplier::Buff {
+						duration_ms: 4000,
+						stat: ModifiableStat::TOUGHNESS,
+						stat_increase: 10,
+					};
+
+					toughness_buff.apply_self(caster, others, seed, false);
+
+					if let Some(girl) = &mut caster.girl_stats {
+						girl.lust -= 4;
+
+						let composure_buff = TargetApplier::Buff {
+							duration_ms: 4000,
+							stat: ModifiableStat::COMPOSURE,
+							stat_increase: 10,
+						};
+
+						composure_buff.apply_self(caster, others, seed, false);
+					}
+				}
+
+				caster.stamina_cur = isize::clamp(caster.stamina_cur + healAmount as isize,0, caster.get_max_stamina());
 			}
 			SelfApplier::Lust{ mut min, mut max } => {
 				if is_crit {
@@ -136,6 +165,12 @@ impl SelfApplier {
 					if caster.persistent_effects.iter().any(|effect| matches!(effect, PersistentEffect::Debuff(_) | PersistentEffect::Poison { .. })) {
 						heal_per_sec = (heal_per_sec * 130) / 100;
 					}
+				}
+
+				if let Some(Perk::Nema(NemaPerk::Healer_Awe { accumulated_ms })) = get_perk_mut!(caster, Perk::Nema(NemaPerk::Healer_Awe {..})) {
+					let stacks = i64::clamp(*accumulated_ms / 1000, 0, 8) as usize;
+					heal_per_sec = (heal_per_sec * (100 + stacks * 5)) / 100;
+					*accumulated_ms = 0;
 				}
 
 				caster.persistent_effects.push(PersistentEffect::Heal { duration_ms: *duration_ms, accumulated_ms: 0, heal_per_sec });

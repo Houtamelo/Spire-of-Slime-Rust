@@ -1,11 +1,11 @@
-use std::collections::HashMap;
+use std::collections::{HashMap, HashSet};
 use gdnative::log::godot_warn;
 use rand::prelude::StdRng;
 use rand::Rng;
-use proc_macros::get_perk;
+use proc_macros::{get_perk, get_perk_mut};
 use crate::{iter_allies_of, iter_mut_allies_of};
 use crate::combat::effects::MoveDirection;
-use crate::combat::effects::persistent::{PersistentDebuff, PersistentEffect};
+use crate::combat::effects::persistent::{PersistentDebuff, PersistentEffect, PoisonAdditive};
 use crate::combat::entity::character::*;
 use crate::combat::entity::data::character::CharacterData;
 use crate::combat::entity::data::girls::ethel::perks::*;
@@ -64,7 +64,9 @@ pub enum TargetApplier {
 	},
 	Poison {
 		duration_ms: i64,
-		dmg_per_sec: usize,
+		dmg_per_interval: usize,
+		apply_chance: Option<isize>,
+		additives: HashSet<PoisonAdditive>,
 	},
 	MakeTargetRiposte {
 		duration_ms: i64,
@@ -172,13 +174,14 @@ impl TargetApplier {
 				girl.exhaustion += *delta;
 				return Some(target);
 			},
-			TargetApplier::Heal{ mut base_multiplier } => {
-				if is_crit { base_multiplier = (base_multiplier * CRIT_EFFECT_MULTIPLIER_I) / 100;  }
+			TargetApplier::Heal{ base_multiplier } => {
+				let mut base_multiplier = *base_multiplier as usize;
+				if is_crit { base_multiplier = (base_multiplier * CRIT_EFFECT_MULTIPLIER) / 100;  }
 				
-				let max: isize = caster.dmg.max.max(0);
-				let min: isize = caster.dmg.min.clamp(0, max);
+				let max = isize::max(caster.dmg.max, 0) as usize;
+				let min = isize::clamp(caster.dmg.min, 0, max as isize) as usize;
 
-				let mut healAmount: isize;
+				let mut healAmount: usize;
 
 				if max <= 0 {
 					return Some(target);
@@ -194,7 +197,45 @@ impl TargetApplier {
 					}
 				}
 
-				target.stamina_cur = CombatCharacter::clamp_stamina(target.stamina_cur + healAmount, target.get_max_stamina());
+				if let Some(Perk::Nema(NemaPerk::Healer_Awe { accumulated_ms })) = get_perk_mut!(caster, Perk::Nema(NemaPerk::Healer_Awe {..})) {
+					let stacks = i64::clamp(*accumulated_ms / 1000, 0, 8) as usize;
+					healAmount = (healAmount * (100 + stacks * 5)) / 100;
+					*accumulated_ms = 0;
+				}
+
+				if let Some(Perk::Nema(NemaPerk::Healer_Adoration)) = get_perk!(caster, Perk::Nema(NemaPerk::Healer_Adoration)) {
+					let toughness_buff = TargetApplier::Buff {
+						duration_ms: 4000,
+						stat: ModifiableStat::TOUGHNESS,
+						stat_increase: 10,
+					};
+
+					let target_survived = toughness_buff.apply_target(caster, target, others, seed, false);
+					if let Some(target_survived) = target_survived {
+						target = target_survived;
+					} else {
+						return None;
+					}
+
+					if let Some(girl) = &mut caster.girl_stats {
+						girl.lust -= 4;
+
+						let composure_buff = TargetApplier::Buff {
+							duration_ms: 4000,
+							stat: ModifiableStat::COMPOSURE,
+							stat_increase: 10,
+						};
+
+						let target_survived = composure_buff.apply_target(caster, target, others, seed, false);
+						if let Some(target_survived) = target_survived {
+							target = target_survived;
+						} else {
+							return None;
+						}
+					}
+				}
+
+				target.stamina_cur = CombatCharacter::clamp_stamina(target.stamina_cur + healAmount as isize, target.get_max_stamina());
 				return Some(target);
 			},
 			TargetApplier::Lust{ mut min, mut max } => {
@@ -218,16 +259,21 @@ impl TargetApplier {
 				return Some(target);
 			},
 			TargetApplier::Move{ direction, apply_chance } => {
-				match apply_chance {
-					Some(mut chance) if Position::is_opposite_side(&caster.position, &target.position) => { //apply chance is only used when the caster and target are enemies
-						if is_crit { chance += CRIT_CHANCE_MODIFIER;  }
-						
-						let final_chance = chance + caster.get_stat(MOVE_RATE) - target.get_stat(MOVE_RES);
-						if seed.base100_chance(final_chance.into()) == false {
+				if apply_chance.is_some() && Position::is_opposite_side(&caster.position, &target.position) { //apply chance is only used when the caster and target are enemies
+					let mut chance = apply_chance.unwrap();
+					if is_crit { chance += CRIT_CHANCE_MODIFIER; }
+
+					if let Some(Perk::Ethel(EthelPerk::Tank_Vanguard { cooldown_ms })) = get_perk_mut!(target, Perk::Ethel(EthelPerk::Tank_Vanguard { .. })) {
+						if *cooldown_ms <= 0 {
+							*cooldown_ms = 10000;
 							return Some(target);
 						}
 					}
-					_ => {}
+
+					let final_chance = chance + caster.get_stat(MOVE_RATE) - target.get_stat(MOVE_RES);
+					if seed.base100_chance(final_chance.into()) == false {
+						return Some(target);
+					}
 				}
 
 				let direction: isize = match direction {
@@ -261,18 +307,71 @@ impl TargetApplier {
 						heal_per_sec = (heal_per_sec * 130) / 100;
 					}
 				}
+
+				if let Some(Perk::Nema(NemaPerk::Healer_Awe { accumulated_ms })) = get_perk_mut!(caster, Perk::Nema(NemaPerk::Healer_Awe {..})) {
+					let stacks = i64::clamp(*accumulated_ms / 1000, 0, 8) as usize;
+					heal_per_sec = (heal_per_sec * (100 + stacks * 5)) / 100;
+					*accumulated_ms = 0;
+				}
+
+				if let Some(Perk::Nema(NemaPerk::Healer_Adoration)) = get_perk!(caster, Perk::Nema(NemaPerk::Healer_Adoration)) {
+					let toughness_buff = TargetApplier::Buff {
+						duration_ms: 4000,
+						stat: ModifiableStat::TOUGHNESS,
+						stat_increase: 10,
+					};
+
+					let target_survived = toughness_buff.apply_target(caster, target, others, seed, false);
+					if let Some(target_survived) = target_survived {
+						target = target_survived;
+					} else {
+						return None;
+					}
+
+					if let Some(girl) = &mut target.girl_stats {
+						girl.lust -= 4;
+
+						let composure_buff = TargetApplier::Buff {
+							duration_ms: 4000,
+							stat: ModifiableStat::COMPOSURE,
+							stat_increase: 10,
+						};
+
+						let target_survived = composure_buff.apply_target(caster, target, others, seed, false);
+						if let Some(target_survived) = target_survived {
+							target = target_survived;
+						} else {
+							return None;
+						}
+					}
+				}
 				
 				target.persistent_effects.push(PersistentEffect::Heal { duration_ms: *duration_ms, accumulated_ms: 0, heal_per_sec });
 				return Some(target);
 			},
-			TargetApplier::Poison{ mut duration_ms, mut dmg_per_sec } => {
-				if is_crit { dmg_per_sec = (dmg_per_sec * CRIT_EFFECT_MULTIPLIER) / 100; }
+			TargetApplier::Poison{ mut duration_ms, mut dmg_per_interval, apply_chance, additives } => {
+				if apply_chance.is_some() && Position::is_opposite_side(&caster.position, &target.position) { //apply chance is only used when the caster and target are enemies
+					let mut apply_chance = apply_chance.unwrap();
+					apply_chance += caster.get_stat(ModifiableStat::POISON_RATE) - target.get_stat(ModifiableStat::POISON_RES);
 
-				if let Some(Perk::Ethel(EthelPerk::Poison_LingeringToxins)) = get_perk!(caster, Perk::Ethel(EthelPerk::Poison_LingeringToxins)) {
-					duration_ms += 1;
+					if is_crit { apply_chance += CRIT_CHANCE_MODIFIER; }
+
+					if seed.base100_chance(apply_chance.into()) == false {
+						return Some(target);
+					}
+				}
+
+				if is_crit { dmg_per_interval = (dmg_per_interval * CRIT_EFFECT_MULTIPLIER) / 100; }
+
+				let interval_ms: i64;
+				if additives.iter().any(|add| matches!(add, PoisonAdditive::Nema_Madness)) {
+					interval_ms = 500;
+					duration_ms /= 2;
+				} else {
+					interval_ms = 1000;
 				}
 				
-				target.persistent_effects.push(PersistentEffect::Poison { duration_ms, accumulated_ms: 0, dmg_per_sec, caster_guid: caster.guid() });
+				target.persistent_effects.push(PersistentEffect::Poison { duration_ms, accumulated_ms: 0, interval_ms, dmg_per_interval, caster_guid: caster.guid(), additives: additives.clone() });
 				return Some(target);
 			},
 			TargetApplier::MakeTargetRiposte{ duration_ms, mut dmg_multiplier, acc, crit } => { // can't crit!
@@ -394,13 +493,14 @@ impl TargetApplier {
 					girl.exhaustion += *delta;
 				}
 			},
-			TargetApplier::Heal { mut base_multiplier } => {
-				if is_crit { base_multiplier = (base_multiplier * CRIT_EFFECT_MULTIPLIER_I) / 100; }
+			TargetApplier::Heal { base_multiplier } => {
+				let mut base_multiplier = isize::max(*base_multiplier, 0) as usize;
+				if is_crit { base_multiplier = (base_multiplier * CRIT_EFFECT_MULTIPLIER) / 100; }
 				
-				let max: isize = caster.dmg.max.max(0);
-				let min: isize = caster.dmg.min.clamp(0, max);
+				let max = isize::max(caster.dmg.max, 0) as usize;
+				let min = isize::clamp(caster.dmg.min, 0, max as isize) as usize;
 				
-				let mut healAmount: isize;
+				let mut healAmount: usize;
 				
 				if max <= 0 {
 					return;
@@ -416,7 +516,35 @@ impl TargetApplier {
 					}
 				}
 
-				caster.stamina_cur = (caster.stamina_cur + healAmount).clamp(0, caster.get_max_stamina());
+				if let Some(Perk::Nema(NemaPerk::Healer_Awe { accumulated_ms })) = get_perk_mut!(caster, Perk::Nema(NemaPerk::Healer_Awe {..})) {
+					let stacks = i64::clamp(*accumulated_ms / 1000, 0, 8) as usize;
+					healAmount = (healAmount * (100 + stacks * 5)) / 100;
+					*accumulated_ms = 0;
+				}
+
+				if let Some(Perk::Nema(NemaPerk::Healer_Adoration)) = get_perk!(caster, Perk::Nema(NemaPerk::Healer_Adoration)) {
+					let toughness_buff = TargetApplier::Buff {
+						duration_ms: 4000,
+						stat: ModifiableStat::TOUGHNESS,
+						stat_increase: 10,
+					};
+
+					toughness_buff.apply_self(caster, others, seed, false);
+
+					if let Some(girl) = &mut caster.girl_stats {
+						girl.lust -= 4;
+
+						let composure_buff = TargetApplier::Buff {
+							duration_ms: 4000,
+							stat: ModifiableStat::COMPOSURE,
+							stat_increase: 10,
+						};
+
+						composure_buff.apply_self(caster, others, seed, false);
+					}
+				}
+
+				caster.stamina_cur = (caster.stamina_cur + healAmount as isize).clamp(0, caster.get_max_stamina());
 			},
 			TargetApplier::Lust { mut min, mut max } => {
 				if is_crit {
@@ -466,20 +594,52 @@ impl TargetApplier {
 					}
 				}
 
+				if let Some(Perk::Nema(NemaPerk::Healer_Adoration)) = get_perk!(caster, Perk::Nema(NemaPerk::Healer_Adoration)) {
+					let toughness_buff = TargetApplier::Buff {
+						duration_ms: 4000,
+						stat: ModifiableStat::TOUGHNESS,
+						stat_increase: 10,
+					};
+
+					toughness_buff.apply_self(caster, others, seed, false);
+
+					if let Some(girl) = &mut caster.girl_stats {
+						girl.lust -= 4;
+
+						let composure_buff = TargetApplier::Buff {
+							duration_ms: 4000,
+							stat: ModifiableStat::COMPOSURE,
+							stat_increase: 10,
+						};
+
+						composure_buff.apply_self(caster, others, seed, false);
+					}
+				}
+
+				if let Some(Perk::Nema(NemaPerk::Healer_Awe { accumulated_ms })) = get_perk_mut!(caster, Perk::Nema(NemaPerk::Healer_Awe {..})) {
+					let stacks = i64::clamp(*accumulated_ms / 1000, 0, 8) as usize;
+					heal_per_sec = (heal_per_sec * (100 + stacks * 5)) / 100;
+					*accumulated_ms = 0;
+				}
+
 				caster.persistent_effects.push(PersistentEffect::Heal{ duration_ms: *duration_ms, accumulated_ms: 0, heal_per_sec });
 			},
-			TargetApplier::Poison { mut duration_ms, mut dmg_per_sec } => {
-				if is_crit { dmg_per_sec = (dmg_per_sec * CRIT_EFFECT_MULTIPLIER) / 100; }
-
-				if let Some(Perk::Ethel(EthelPerk::Poison_LingeringToxins)) = get_perk!(caster, Perk::Ethel(EthelPerk::Poison_LingeringToxins)) {
-					duration_ms += 1;
-				}
+			TargetApplier::Poison { mut duration_ms, mut dmg_per_interval, additives, .. } => {
+				if is_crit { dmg_per_interval = (dmg_per_interval * CRIT_EFFECT_MULTIPLIER) / 100; }
 
 				if let Some(Perk::Ethel(EthelPerk::Poison_ConcentratedToxins)) = get_perk!(caster, Perk::Ethel(EthelPerk::Poison_ConcentratedToxins)) {
-					dmg_per_sec = (dmg_per_sec * 125) / 100;
+					dmg_per_interval = (dmg_per_interval * 125) / 100;
 				}
 
-				caster.persistent_effects.push(PersistentEffect::Poison{ duration_ms, accumulated_ms: 0, dmg_per_sec, caster_guid: caster.guid() });
+				let interval_ms: i64;
+				if additives.iter().any(|add| matches!(add, PoisonAdditive::Nema_Madness)) {
+					interval_ms = 500;
+					duration_ms /= 2;
+				} else {
+					interval_ms = 1000;
+				}
+
+				caster.persistent_effects.push(PersistentEffect::Poison{ duration_ms, accumulated_ms: 0, interval_ms, dmg_per_interval, caster_guid: caster.guid(), additives: additives.clone() });
 			},
 			TargetApplier::MakeTargetRiposte { duration_ms, mut dmg_multiplier, acc, crit } => {
 				if let Some(Perk::Ethel(EthelPerk::Duelist_EnGarde)) = get_perk!(caster, Perk::Ethel(EthelPerk::Duelist_EnGarde)) {

@@ -3,7 +3,7 @@ use gdnative::prelude::*;
 use rand::prelude::StdRng;
 use entity::position::Position;
 use crate::combat::entity::*;
-use crate::{CONVERT_STANDARD_INTERVAL_TO_UNITCOUNT, iter_mut_allies_of, STANDARD_INTERVAL_MS};
+use crate::{iter_mut_allies_of};
 use crate::combat::effects::persistent::PersistentEffect;
 use crate::combat::entity::character::*;
 use crate::combat::entity::girl::*;
@@ -42,7 +42,7 @@ impl CombatState {
 
 		for guid in guids_to_tick.iter() {
 			if let Some(Entity::Character(character)) = self.entities.remove(guid) {
-				PersistentEffect::tick_all(character, &mut self.entities, delta_time_ms);
+				PersistentEffect::tick_all(character, &mut self.entities, &mut self.seed, delta_time_ms);
 			}
 		}
 
@@ -165,16 +165,16 @@ impl CombatState {
 					g_state.accumulated_ms += delta_time_ms;
 
 					// early return
-					if g_state.accumulated_ms < STANDARD_INTERVAL_MS {
+					if g_state.accumulated_ms < 1000 {
 						g_state.victim = GrappledGirlEnum::Alive(girl_alive);
 						grappler.state = CharacterState::Grappling(g_state);
 						others.insert(grappler.guid, Entity::Character(grappler));
 						return;
 					}
 
-					let interval_count = g_state.accumulated_ms / STANDARD_INTERVAL_MS;
-					g_state.accumulated_ms -= interval_count * STANDARD_INTERVAL_MS;
-					let seconds = (interval_count * CONVERT_STANDARD_INTERVAL_TO_UNITCOUNT) as isize;
+					let interval_count = g_state.accumulated_ms / 1000;
+					g_state.accumulated_ms -= interval_count * 1000;
+					let seconds = interval_count as isize;
 					girl_alive.lust += seconds * (g_state.lust_per_sec as isize);
 					girl_alive.temptation += seconds * (g_state.temptation_per_sec as isize);
 
@@ -191,12 +191,9 @@ impl CombatState {
 					girl_alive.temptation -= 40;
 
 					if girl_alive.orgasm_count == girl_alive.orgasm_limit {
-						if let Some(defeated_girl) = girl_alive.to_defeated() {
-							g_state.victim = defeated_girl;
-							grappler.state = CharacterState::Grappling(g_state);
-						} else { // if None then the girl should vanish and the monster get back to idle
-							grappler.state = CharacterState::Idle;
-						}
+						let defeated_girl = girl_alive.to_defeated();
+						g_state.victim = defeated_girl;
+						grappler.state = CharacterState::Grappling(g_state);
 					} else {
 						g_state.victim = GrappledGirlEnum::Alive(girl_alive);
 						grappler.state = CharacterState::Grappling(g_state);
@@ -207,10 +204,10 @@ impl CombatState {
 				GrappledGirlEnum::Defeated(mut girl_defeated) => {
 					g_state.accumulated_ms += delta_time_ms;
 					
-					if g_state.accumulated_ms >= STANDARD_INTERVAL_MS {
-						let interval_count = g_state.accumulated_ms / STANDARD_INTERVAL_MS;
-						g_state.accumulated_ms -= interval_count * STANDARD_INTERVAL_MS;
-						let seconds = (interval_count * CONVERT_STANDARD_INTERVAL_TO_UNITCOUNT) as isize;
+					if g_state.accumulated_ms >= 1000 {
+						let interval_count = g_state.accumulated_ms / 1000;
+						g_state.accumulated_ms -= interval_count * 1000;
+						let seconds = interval_count as isize;
 						girl_defeated.lust += seconds * (g_state.lust_per_sec as isize);
 						girl_defeated.temptation += seconds * (g_state.temptation_per_sec as isize);
 					}

@@ -3,7 +3,6 @@ pub struct BoundU32<const MIN: u32, const MAX: u32> { inner_value: u32 }
 
 macro_rules! bounded_u32 {
     ($MIN: literal, $MAX: literal) => {
-
 	    impl BoundU32<$MIN, $MAX> {
 		    pub fn new(inner_value: u32) -> Self {
 			    return Self { inner_value: inner_value.clamp($MIN, $MAX) };
@@ -11,6 +10,10 @@ macro_rules! bounded_u32 {
 
 		    pub fn get(&self) -> u32 {
 			    return self.inner_value;
+		    }
+
+		    pub fn set(&mut self, value: u32) {
+			    self.inner_value = value;
 		    }
 	    }
 
@@ -43,19 +46,6 @@ macro_rules! bounded_u32 {
 		    }
 	    }
 
-	    impl std::ops::Add<i32> for BoundU32<$MIN, $MAX> {
-		    type Output = Self;
-
-		    fn add(self, other: i32) -> Self {
-			    let mut result = self.inner_value as i32 + other;
-			    if result < 0 {
-				    result = 0;
-			    }
-
-			    return Self::new(result as u32);
-		    }
-	    }
-
 	    impl std::ops::AddAssign for BoundU32<$MIN, $MAX> {
 		    fn add_assign(&mut self, other: Self) {
 			    self.inner_value = (self.inner_value + other.inner_value).clamp($MIN, $MAX);
@@ -71,17 +61,6 @@ macro_rules! bounded_u32 {
 	    impl std::ops::AddAssign<isize> for BoundU32<$MIN, $MAX> {
 		    fn add_assign(&mut self, other: isize) {
 			    let mut result = self.inner_value as isize + other;
-			    if result < 0 {
-				    result = 0;
-			    }
-
-			    self.inner_value = (result as u32).clamp($MIN, $MAX);
-		    }
-	    }
-
-	    impl std::ops::AddAssign<i32> for BoundU32<$MIN, $MAX> {
-		    fn add_assign(&mut self, other: i32) {
-			    let mut result = self.inner_value as i32 + other;
 			    if result < 0 {
 				    result = 0;
 			    }
@@ -119,19 +98,6 @@ macro_rules! bounded_u32 {
 		    }
 	    }
 
-	    impl std::ops::Sub<i32> for BoundU32<$MIN, $MAX> {
-		    type Output = Self;
-
-		    fn sub(self, other: i32) -> Self {
-			    let mut result = self.inner_value as i32 - other;
-			    if result < 0 {
-				    result = 0;
-			    }
-
-			    return Self::new(result as u32);
-		    }
-	    }
-
 	    impl std::ops::SubAssign for BoundU32<$MIN, $MAX> {
 		    fn sub_assign(&mut self, other: Self) {
 			    self.inner_value = (self.inner_value - other.inner_value).clamp($MIN, $MAX);
@@ -147,17 +113,6 @@ macro_rules! bounded_u32 {
 	    impl std::ops::SubAssign<isize> for BoundU32<$MIN, $MAX> {
 		    fn sub_assign(&mut self, other: isize) {
 			    let mut result = self.inner_value as isize - other;
-			    if result < 0 {
-				    result = 0;
-			    }
-
-			    self.inner_value = (result as u32).clamp($MIN, $MAX);
-		    }
-	    }
-
-	    impl std::ops::SubAssign<i32> for BoundU32<$MIN, $MAX> {
-		    fn sub_assign(&mut self, other: i32) {
-			    let mut result = self.inner_value as i32 - other;
 			    if result < 0 {
 				    result = 0;
 			    }
@@ -195,19 +150,6 @@ macro_rules! bounded_u32 {
 		    }
 	    }
 
-	    impl std::ops::Div<i32> for BoundU32<$MIN, $MAX> {
-		    type Output = Self;
-
-		    fn div(self, other: i32) -> Self {
-			    let mut result = self.inner_value as i32 / other;
-			    if result < 0 {
-				    result = 0;
-			    }
-
-			    return Self::new(result as u32);
-		    }
-	    }
-
 	    impl std::ops::DivAssign for BoundU32<$MIN, $MAX> {
 		    fn div_assign(&mut self, other: Self) {
 			    self.inner_value = (self.inner_value / other.inner_value).clamp($MIN, $MAX);
@@ -223,17 +165,6 @@ macro_rules! bounded_u32 {
 	    impl std::ops::DivAssign<isize> for BoundU32<$MIN, $MAX> {
 		    fn div_assign(&mut self, other: isize) {
 			    let mut result = self.inner_value as isize / other;
-			    if result < 0 {
-				    result = 0;
-			    }
-
-			    self.inner_value = (result as u32).clamp($MIN, $MAX);
-		    }
-	    }
-
-	    impl std::ops::DivAssign<i32> for BoundU32<$MIN, $MAX> {
-		    fn div_assign(&mut self, other: i32) {
-			    let mut result = self.inner_value as i32 / other;
 			    if result < 0 {
 				    result = 0;
 			    }
@@ -271,19 +202,6 @@ macro_rules! bounded_u32 {
 		    }
 	    }
 
-	    impl std::ops::Mul<i32> for BoundU32<$MIN, $MAX> {
-		    type Output = Self;
-
-		    fn mul(self, other: i32) -> Self {
-			    let mut result = self.inner_value as i32 * other;
-			    if result < 0 {
-				    result = 0;
-			    }
-
-			    return Self::new(result as u32);
-		    }
-	    }
-
 	    impl std::ops::MulAssign for BoundU32<$MIN, $MAX> {
 		    fn mul_assign(&mut self, other: Self) {
 			    self.inner_value = (self.inner_value * other.inner_value).clamp($MIN, $MAX);
@@ -299,17 +217,6 @@ macro_rules! bounded_u32 {
 		impl std::ops::MulAssign<isize> for BoundU32<$MIN, $MAX> {
 		    fn mul_assign(&mut self, other: isize) {
 			    let mut result = self.inner_value as isize * other;
-			    if result < 0 {
-				    result = 0;
-			    }
-
-			    self.inner_value = (result as u32).clamp($MIN, $MAX);
-		    }
-	    }
-
-	    impl std::ops::MulAssign<i32> for BoundU32<$MIN, $MAX> {
-		    fn mul_assign(&mut self, other: i32) {
-			    let mut result = self.inner_value as i32 * other;
 			    if result < 0 {
 				    result = 0;
 			    }
@@ -354,16 +261,6 @@ macro_rules! bounded_u32 {
 		    }
 	    }
 
-	    impl PartialEq<i32> for BoundU32<$MIN, $MAX> {
-		    fn eq(&self, other: &i32) -> bool {
-			    if *other < 0 {
-				    return false;
-			    }
-
-			    return self.inner_value == *other as u32;
-		    }
-	    }
-
 	    impl PartialEq<BoundU32<$MIN, $MAX>> for u32 {
 		    fn eq(&self, other: &BoundU32<$MIN, $MAX>) -> bool {
 			    return *self == other.inner_value;
@@ -394,16 +291,6 @@ macro_rules! bounded_u32 {
 		    }
 	    }
 
-	    impl PartialOrd<i32> for BoundU32<$MIN, $MAX> {
-		    fn partial_cmp(&self, other: &i32) -> Option<std::cmp::Ordering> {
-			    if *other < 0 {
-				    return Some(std::cmp::Ordering::Less);
-			    }
-
-			    return self.inner_value.partial_cmp(&(*other as u32));
-		    }
-	    }
-
 	    impl From<u32> for BoundU32<$MIN, $MAX> {
 		    fn from(value: u32) -> Self {
 			    return Self::new(value);
@@ -426,8 +313,250 @@ macro_rules! bounded_u32 {
 		    }
 	    }
 
+	    impl std::ops::Add<i32> for BoundU32<$MIN, $MAX> {
+		    type Output = Self;
+
+		    fn add(self, other: i32) -> Self {
+			    let mut result = self.inner_value as i32 + other;
+			    if result < 0 {
+				    result = 0;
+			    }
+
+			    return Self::new(result as u32);
+		    }
+	    }
+
+	    impl std::ops::AddAssign<i32> for BoundU32<$MIN, $MAX> {
+		    fn add_assign(&mut self, other: i32) {
+			    let mut result = self.inner_value as i32 + other;
+			    if result < 0 {
+				    result = 0;
+			    }
+
+			    self.inner_value = (result as u32).clamp($MIN, $MAX);
+		    }
+	    }
+
+	    impl std::ops::Sub<i32> for BoundU32<$MIN, $MAX> {
+		    type Output = Self;
+
+		    fn sub(self, other: i32) -> Self {
+			    let mut result = self.inner_value as i32 - other;
+			    if result < 0 {
+				    result = 0;
+			    }
+
+			    return Self::new(result as u32);
+		    }
+	    }
+
+	    impl std::ops::SubAssign<i32> for BoundU32<$MIN, $MAX> {
+		    fn sub_assign(&mut self, other: i32) {
+			    let mut result = self.inner_value as i32 - other;
+			    if result < 0 {
+				    result = 0;
+			    }
+
+			    self.inner_value = (result as u32).clamp($MIN, $MAX);
+		    }
+	    }
+
+	    impl std::ops::Div<i32> for BoundU32<$MIN, $MAX> {
+		    type Output = Self;
+
+		    fn div(self, other: i32) -> Self {
+			    let mut result = self.inner_value as i32 / other;
+			    if result < 0 {
+				    result = 0;
+			    }
+
+			    return Self::new(result as u32);
+		    }
+	    }
+
+	    impl std::ops::DivAssign<i32> for BoundU32<$MIN, $MAX> {
+		    fn div_assign(&mut self, other: i32) {
+			    let mut result = self.inner_value as i32 / other;
+			    if result < 0 {
+				    result = 0;
+			    }
+
+			    self.inner_value = (result as u32).clamp($MIN, $MAX);
+		    }
+	    }
+
+	    impl std::ops::Mul<i32> for BoundU32<$MIN, $MAX> {
+		    type Output = Self;
+
+		    fn mul(self, other: i32) -> Self {
+			    let mut result = self.inner_value as i32 * other;
+			    if result < 0 {
+				    result = 0;
+			    }
+
+			    return Self::new(result as u32);
+		    }
+	    }
+
+	    impl std::ops::MulAssign<i32> for BoundU32<$MIN, $MAX> {
+		    fn mul_assign(&mut self, other: i32) {
+			    let mut result = self.inner_value as i32 * other;
+			    if result < 0 {
+				    result = 0;
+			    }
+
+			    self.inner_value = (result as u32).clamp($MIN, $MAX);
+		    }
+	    }
+
+	    impl PartialEq<i32> for BoundU32<$MIN, $MAX> {
+		    fn eq(&self, other: &i32) -> bool {
+			    if *other < 0 {
+				    return false;
+			    }
+
+			    return self.inner_value == *other as u32;
+		    }
+	    }
+
+	    impl PartialOrd<i32> for BoundU32<$MIN, $MAX> {
+		    fn partial_cmp(&self, other: &i32) -> Option<std::cmp::Ordering> {
+			    if *other < 0 {
+				    return Some(std::cmp::Ordering::Less);
+			    }
+
+			    return self.inner_value.partial_cmp(&(*other as u32));
+		    }
+	    }
+
 	    impl From<i32> for BoundU32<$MIN, $MAX> {
 		    fn from(value: i32) -> Self {
+			    if value < 0 {
+				    return Self::new(0);
+			    } else {
+				    return Self::new(value as u32);
+			    }
+		    }
+	    }
+
+	    impl std::ops::Add<i64> for BoundU32<$MIN, $MAX> {
+		    type Output = Self;
+
+		    fn add(self, other: i64) -> Self {
+			    let mut result = self.inner_value as i64 + other;
+			    if result < 0 {
+				    result = 0;
+			    }
+
+			    return Self::new(result as u32);
+		    }
+	    }
+
+	    impl std::ops::AddAssign<i64> for BoundU32<$MIN, $MAX> {
+		    fn add_assign(&mut self, other: i64) {
+			    let mut result = self.inner_value as i64 + other;
+			    if result < 0 {
+				    result = 0;
+			    }
+
+			    self.inner_value = (result as u32).clamp($MIN, $MAX);
+		    }
+	    }
+
+	    impl std::ops::Sub<i64> for BoundU32<$MIN, $MAX> {
+		    type Output = Self;
+
+		    fn sub(self, other: i64) -> Self {
+			    let mut result = self.inner_value as i64 - other;
+			    if result < 0 {
+				    result = 0;
+			    }
+
+			    return Self::new(result as u32);
+		    }
+	    }
+
+	    impl std::ops::SubAssign<i64> for BoundU32<$MIN, $MAX> {
+		    fn sub_assign(&mut self, other: i64) {
+			    let mut result = self.inner_value as i64 - other;
+			    if result < 0 {
+				    result = 0;
+			    }
+
+			    self.inner_value = (result as u32).clamp($MIN, $MAX);
+		    }
+	    }
+
+	    impl std::ops::Div<i64> for BoundU32<$MIN, $MAX> {
+		    type Output = Self;
+
+		    fn div(self, other: i64) -> Self {
+			    let mut result = self.inner_value as i64 / other;
+			    if result < 0 {
+				    result = 0;
+			    }
+
+			    return Self::new(result as u32);
+		    }
+	    }
+
+	    impl std::ops::DivAssign<i64> for BoundU32<$MIN, $MAX> {
+		    fn div_assign(&mut self, other: i64) {
+			    let mut result = self.inner_value as i64 / other;
+			    if result < 0 {
+				    result = 0;
+			    }
+
+			    self.inner_value = (result as u32).clamp($MIN, $MAX);
+		    }
+	    }
+
+	    impl std::ops::Mul<i64> for BoundU32<$MIN, $MAX> {
+		    type Output = Self;
+
+		    fn mul(self, other: i64) -> Self {
+			    let mut result = self.inner_value as i64 * other;
+			    if result < 0 {
+				    result = 0;
+			    }
+
+			    return Self::new(result as u32);
+		    }
+	    }
+
+	    impl std::ops::MulAssign<i64> for BoundU32<$MIN, $MAX> {
+		    fn mul_assign(&mut self, other: i64) {
+			    let mut result = self.inner_value as i64 * other;
+			    if result < 0 {
+				    result = 0;
+			    }
+
+			    self.inner_value = (result as u32).clamp($MIN, $MAX);
+		    }
+	    }
+
+	    impl PartialEq<i64> for BoundU32<$MIN, $MAX> {
+		    fn eq(&self, other: &i64) -> bool {
+			    if *other < 0 {
+				    return false;
+			    }
+
+			    return self.inner_value == *other as u32;
+		    }
+	    }
+
+	    impl PartialOrd<i64> for BoundU32<$MIN, $MAX> {
+		    fn partial_cmp(&self, other: &i64) -> Option<std::cmp::Ordering> {
+			    if *other < 0 {
+				    return Some(std::cmp::Ordering::Less);
+			    }
+
+			    return self.inner_value.partial_cmp(&(*other as u32));
+		    }
+	    }
+
+	    impl From<i64> for BoundU32<$MIN, $MAX> {
+		    fn from(value: i64) -> Self {
 			    if value < 0 {
 				    return Self::new(0);
 			    } else {
@@ -443,11 +572,12 @@ bounded_u32!( 0, 500);
 bounded_u32!( 0, 200);
 bounded_u32!( 0, 100);
 bounded_u32!( 1, 500);
-bounded_u32!( 1, 4);
-bounded_u32!( 1, 8);
-bounded_u32!( 0, 4);
-bounded_u32!( 0, 5);
-bounded_u32!( 0, 6);
+bounded_u32!(1, 4);
+bounded_u32!(1, 8);
+bounded_u32!(0, 4);
+bounded_u32!(0, 5);
+bounded_u32!(0, 6);
+bounded_u32!(0, 7);
 
 // Creating a new BoundU32 instance with a valid inner value should return the instance with the same inner value.
 #[test]

@@ -8,6 +8,8 @@
 #![allow(clippy::neg_multiply)]
 #![allow(clippy::enum_variant_names)]
 #![allow(clippy::match_like_matches_macro)]
+#![allow(clippy::never_loop)]
+#![allow(clippy::clone_on_copy)]
 #![feature(step_trait)]
 #![feature(const_trait_impl)]
 
@@ -15,9 +17,6 @@ mod combat;
 mod util;
 
 pub const MAX_CHARACTERS_PER_TEAM: usize = 4;
-pub const STANDARD_INTERVAL_MS: i64 = 1000;
-pub const STANDARD_INTERVAL_S: i64 = STANDARD_INTERVAL_MS / 1000;
-pub const CONVERT_STANDARD_INTERVAL_TO_UNITCOUNT: i64 = STANDARD_INTERVAL_MS / 1000;
 
 pub use crate::util::bounded_isize::*;
 pub use crate::util::bounded_u32::*;

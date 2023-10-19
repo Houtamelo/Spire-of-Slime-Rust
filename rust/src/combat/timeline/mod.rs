@@ -1,5 +1,4 @@
-use crate::combat::effects::persistent::PersistentEffect;
-use crate::{CONVERT_STANDARD_INTERVAL_TO_UNITCOUNT, STANDARD_INTERVAL_MS};
+use crate::combat::effects::persistent::{PersistentEffect, PoisonAdditive};
 use crate::combat::entity::character::*;
 use crate::combat::entity::skill_intention::SkillIntention;
 use crate::combat::ModifiableStat::SPD;
@@ -23,7 +22,7 @@ impl TimelineEvent {
 				events.push(TimelineEvent { time_frame_ms: g.duration_ms, event_type: EventType::GrapplingEnd, character_guid });
 				
 				let total_time_ms: i64 = g.duration_ms + g.accumulated_ms;
-				let total_intervals_count: i64 = total_time_ms / STANDARD_INTERVAL_MS;
+				let total_intervals_count: i64 = total_time_ms / 1000;
 
 				if total_intervals_count < 1 {
 					let lust: i64 = (total_time_ms * (g.lust_per_sec as i64)) / 1000;
@@ -41,32 +40,32 @@ impl TimelineEvent {
 
 				let mut current_ms: i64 = 0;
 
-				if g.accumulated_ms >= STANDARD_INTERVAL_MS {
-					let standard_interval_count: i64 = g.accumulated_ms / STANDARD_INTERVAL_MS;
+				if g.accumulated_ms >= 1000 {
+					let interval_count: i64 = g.accumulated_ms / 1000;
 					
-					let lust: i64 = (standard_interval_count * CONVERT_STANDARD_INTERVAL_TO_UNITCOUNT) * (g.lust_per_sec as i64);
+					let lust: i64 = interval_count * (g.lust_per_sec as i64);
 					if lust > 0 {
 						events.push(TimelineEvent { time_frame_ms: current_ms, event_type: EventType::LustTick { amount: lust as usize }, character_guid: g.victim.guid() });
 					}
 					
-					let temptation: i64 = (standard_interval_count * CONVERT_STANDARD_INTERVAL_TO_UNITCOUNT) * (g.temptation_per_sec as i64);
+					let temptation: i64 = interval_count * (g.temptation_per_sec as i64);
 					if temptation > 0 {
 						events.push(TimelineEvent { time_frame_ms: current_ms, event_type: EventType::TemptationTick { amount: temptation as usize }, character_guid: g.victim.guid() });
 					}
 
-					current_ms = -1 * (g.accumulated_ms - standard_interval_count * 1000);
+					current_ms = -1 * (g.accumulated_ms - interval_count * 1000);
 				}
 				else {
 					current_ms = -1 * g.accumulated_ms;
 				}
 
 				for _ in 0..total_intervals_count {
-					current_ms += STANDARD_INTERVAL_MS;
-					let lust: i64 = CONVERT_STANDARD_INTERVAL_TO_UNITCOUNT * (g.lust_per_sec as i64);
+					current_ms += 1000;
+					let lust: i64 = g.lust_per_sec as i64;
 					events.push(TimelineEvent { time_frame_ms: current_ms, event_type: EventType::LustTick { amount: lust as usize }, character_guid });
 				}
 
-				let remaining_ms = total_time_ms - (total_intervals_count * CONVERT_STANDARD_INTERVAL_TO_UNITCOUNT * 1000);
+				let remaining_ms = total_time_ms - (total_intervals_count * 1000);
 				if remaining_ms > 0 {
 					current_ms += remaining_ms;
 					let lust: i64 = (remaining_ms * (g.lust_per_sec as i64)) / 1000;
@@ -132,14 +131,20 @@ impl TimelineEvent {
 		events.push(TimelineEvent { time_frame_ms: event_end_ms, event_type: EventType::StatusEnd { effect_clone: status.clone() }, character_guid: owner.guid });
 		
 		match status {
-			PersistentEffect::Poison  { duration_ms, accumulated_ms, dmg_per_sec, .. } => {
+			PersistentEffect::Poison { duration_ms, accumulated_ms, dmg_per_interval: dmg_per_sec, additives, .. } => {
 				let total_time_ms: i64 = duration_ms + accumulated_ms;
-				let total_intervals_count: i64 = total_time_ms / STANDARD_INTERVAL_MS;
+				let total_intervals_count: i64 = total_time_ms / 1000;
 				
 				if total_intervals_count < 1 {
 					let dmg: i64 = (total_time_ms * (*dmg_per_sec as i64)) / 1000;
+					let mut event_ms = *duration_ms;
+
+					if additives.iter().any(|add| matches!(add, PoisonAdditive::Nema_Madness)) {
+						event_ms = (event_ms * 100) / 150;
+					}
+
 					if dmg > 0 {
-						events.push(TimelineEvent { time_frame_ms: *duration_ms, event_type: EventType::PoisonTick { amount: dmg as usize }, character_guid: owner.guid });
+						events.push(TimelineEvent { time_frame_ms: event_ms, event_type: EventType::PoisonTick { amount: dmg as usize }, character_guid: owner.guid });
 					}
 					
 					return;
@@ -147,26 +152,26 @@ impl TimelineEvent {
 				
 				let mut current_ms: i64;
 				
-				if *accumulated_ms >= STANDARD_INTERVAL_MS {
-					let standard_interval_count: i64 = accumulated_ms / STANDARD_INTERVAL_MS;
-					let dmg: i64 = (standard_interval_count * CONVERT_STANDARD_INTERVAL_TO_UNITCOUNT) * (*dmg_per_sec as i64);
+				if *accumulated_ms >= 1000 {
+					let interval_count: i64 = accumulated_ms / 1000;
+					let dmg: i64 = interval_count * (*dmg_per_sec as i64);
 					if dmg > 0 {
 						events.push(TimelineEvent { time_frame_ms: 0, event_type: EventType::PoisonTick { amount: dmg as usize }, character_guid: owner.guid });
 					}
 					
-					current_ms = -1 * (accumulated_ms - standard_interval_count * 1000);
+					current_ms = -1 * (accumulated_ms - interval_count * 1000);
 				}
 				else { 
 					current_ms = -1 * accumulated_ms;
 				}
 
 				for _ in 0..total_intervals_count {
-					current_ms += STANDARD_INTERVAL_MS;
-					let dmg: i64 = CONVERT_STANDARD_INTERVAL_TO_UNITCOUNT * (*dmg_per_sec as i64);
+					current_ms += 1000;
+					let dmg: i64 = *dmg_per_sec as i64;
 					events.push(TimelineEvent { time_frame_ms: current_ms, event_type: EventType::PoisonTick { amount: dmg as usize }, character_guid: owner.guid });
 				}
 				
-				let remaining_ms = total_time_ms - (total_intervals_count * CONVERT_STANDARD_INTERVAL_TO_UNITCOUNT * 1000);
+				let remaining_ms = total_time_ms - (total_intervals_count * 1000);
 				if remaining_ms > 0 {
 					current_ms += remaining_ms;
 					let dmg: i64 = (remaining_ms * (*dmg_per_sec as i64)) / 1000;
@@ -177,7 +182,7 @@ impl TimelineEvent {
 			}
 			PersistentEffect::Heal { duration_ms, accumulated_ms, heal_per_sec, .. } => {
 				let total_time_ms: i64 = duration_ms + accumulated_ms;
-				let total_intervals_count: i64 = total_time_ms / STANDARD_INTERVAL_MS;
+				let total_intervals_count: i64 = total_time_ms / 1000;
 				
 				if total_intervals_count < 1 {
 					let heal: i64 = (total_time_ms * (*heal_per_sec as i64)) / 1000;
@@ -190,26 +195,26 @@ impl TimelineEvent {
 				
 				let mut current_ms: i64;
 				
-				if *accumulated_ms >= STANDARD_INTERVAL_MS {
-					let standard_interval_count: i64 = accumulated_ms / STANDARD_INTERVAL_MS;
-					let heal: i64 = (standard_interval_count * CONVERT_STANDARD_INTERVAL_TO_UNITCOUNT) * (*heal_per_sec as i64);
+				if *accumulated_ms >= 1000 {
+					let interval_count: i64 = accumulated_ms / 1000;
+					let heal: i64 = interval_count * (*heal_per_sec as i64);
 					if heal > 0 {
 						events.push(TimelineEvent { time_frame_ms: 0, event_type: EventType::HealTick { amount: heal as usize }, character_guid: owner.guid });
 					}
 					
-					current_ms = -1 * (accumulated_ms - standard_interval_count * 1000);
+					current_ms = -1 * (accumulated_ms - interval_count * 1000);
 				}
 				else { 
 					current_ms = -1 * accumulated_ms;
 				}
 				
 				for _ in 0..total_intervals_count {
-					current_ms += STANDARD_INTERVAL_MS;
-					let heal: i64 = CONVERT_STANDARD_INTERVAL_TO_UNITCOUNT * (*heal_per_sec as i64);
+					current_ms += 1000;
+					let heal: i64 = *heal_per_sec as i64;
 					events.push(TimelineEvent { time_frame_ms: current_ms, event_type: EventType::HealTick { amount: heal as usize }, character_guid: owner.guid });
 				}
 				
-				let remaining_ms = total_time_ms - (total_intervals_count * CONVERT_STANDARD_INTERVAL_TO_UNITCOUNT * 1000);
+				let remaining_ms = total_time_ms - (total_intervals_count * 1000);
 				if remaining_ms > 0 {
 					current_ms += remaining_ms;
 					let heal: i64 = (remaining_ms * (*heal_per_sec as i64)) / 1000;
@@ -220,7 +225,7 @@ impl TimelineEvent {
 			}
 			PersistentEffect::Arousal { duration_ms, accumulated_ms, lust_per_sec, .. } => {
 				let total_time_ms: i64 = duration_ms + accumulated_ms;
-				let total_intervals_count: i64 = total_time_ms / STANDARD_INTERVAL_MS;
+				let total_intervals_count: i64 = total_time_ms / 1000;
 				
 				if total_intervals_count < 1 {
 					let lust: i64 = (total_time_ms * (*lust_per_sec as i64)) / 1000;
@@ -233,26 +238,26 @@ impl TimelineEvent {
 				
 				let mut current_ms: i64;
 				
-				if *accumulated_ms >= STANDARD_INTERVAL_MS {
-					let standard_interval_count: i64 = accumulated_ms / STANDARD_INTERVAL_MS;
-					let lust: i64 = (standard_interval_count * CONVERT_STANDARD_INTERVAL_TO_UNITCOUNT) * (*lust_per_sec as i64);
+				if *accumulated_ms >= 1000 {
+					let interval_count: i64 = accumulated_ms / 1000;
+					let lust: i64 = interval_count * (*lust_per_sec as i64);
 					if lust > 0 {
 						events.push(TimelineEvent { time_frame_ms: 0, event_type: EventType::LustTick { amount: lust as usize }, character_guid: owner.guid });
 					}
 					
-					current_ms = -1 * (accumulated_ms - standard_interval_count * 1000);
+					current_ms = -1 * (accumulated_ms - interval_count * 1000);
 				}
 				else { 
 					current_ms = -1 * accumulated_ms;
 				}
 				
 				for _ in 0..total_intervals_count {
-					current_ms += STANDARD_INTERVAL_MS;
-					let lust: i64 = CONVERT_STANDARD_INTERVAL_TO_UNITCOUNT * (*lust_per_sec as i64);
+					current_ms += 1000;
+					let lust: i64 = *lust_per_sec as i64;
 					events.push(TimelineEvent { time_frame_ms: current_ms, event_type: EventType::LustTick { amount: lust as usize }, character_guid: owner.guid });
 				}
 				
-				let remaining_ms = total_time_ms - (total_intervals_count * CONVERT_STANDARD_INTERVAL_TO_UNITCOUNT * 1000);
+				let remaining_ms = total_time_ms - (total_intervals_count * 1000);
 				if remaining_ms > 0 {
 					current_ms += remaining_ms;
 					let lust: i64 = (remaining_ms * (*lust_per_sec as i64)) / 1000;

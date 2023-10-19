@@ -77,6 +77,30 @@ impl Position {
 		
 		entity_allies.insert(entity.guid(), entity);
 	}
+
+	// returns direction from source
+	pub fn is_adjacent(source: &Position, other: &Position) -> Option<Direction> {
+		if Position::is_opposite_side(source, other) {
+			return None;
+		}
+
+		let (a_order, a_size) = source.deconstruct();
+		let (b_order, b_size) = other.deconstruct();
+
+		if a_order + a_size == b_order {
+			return Some(Direction::Edge);
+		} else if b_order + b_size == a_order {
+			return Some(Direction::Center);
+		} else {
+			return None;
+		}
+	}
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum Direction {
+	Center,
+	Edge,
 }
 
 impl Position {

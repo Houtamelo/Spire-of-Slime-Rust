@@ -1,9 +1,13 @@
+use std::ops::{RangeInclusive};
+use proc_macros::get_perk;
 use crate::BoundU32;
 use crate::combat::ModifiableStat;
 use crate::combat::effects::onSelf::SelfApplier;
 use crate::combat::effects::onTarget::TargetApplier;
-use crate::util::I_Range;
+use crate::combat::effects::persistent::PersistentEffect;
 use crate::combat::entity::character::*;
+use crate::combat::entity::data::girls::nema::perks::NemaPerk;
+use crate::combat::perk::Perk;
 use crate::combat::skill_types::*;
 
 #[derive(Debug, Clone)]
@@ -25,7 +29,7 @@ pub struct OffensiveSkill {
 }
 
 impl OffensiveSkill {
-	pub fn calc_dmg(&self, caster: &CombatCharacter, target: &CombatCharacter, crit: bool) -> Option<I_Range> {
+	pub fn calc_dmg(&self, caster: &CombatCharacter, target: &CombatCharacter, crit: bool) -> Option<RangeInclusive<isize>> {
 		let (power, toughness_reduction) = match self.dmg {
 			DMGMode::Power { power, toughness_reduction } => { (power, toughness_reduction) } 
 			DMGMode::NoDamage => { return None; }
@@ -47,10 +51,10 @@ impl OffensiveSkill {
 			dmg_min = (dmg_min * 150) / 100;
 		}
 		
-		return Some(I_Range::new(dmg_min, dmg_max));
+		return Some(dmg_min..=dmg_max);
 	}
 	
-	pub fn calc_dmg_independent(power: isize, toughness_reduction: isize, caster: &CombatCharacter, target: &CombatCharacter, crit: bool) -> I_Range {
+	pub fn calc_dmg_independent(power: isize, toughness_reduction: isize, caster: &CombatCharacter, target: &CombatCharacter, crit: bool) -> RangeInclusive<isize> {
 		let (mut dmg_min, mut dmg_max) = (caster.dmg.min, caster.dmg.max);
 		
 		let base_toughness = target.get_stat(ModifiableStat::TOUGHNESS);
@@ -67,7 +71,7 @@ impl OffensiveSkill {
 			dmg_min = (dmg_min * 150) / 100;
 		}
 		
-		return I_Range { min: dmg_min, max: dmg_max };
+		return dmg_min..=dmg_max;
 	}
 	
 	pub fn final_hit_chance(&self, caster: &CombatCharacter, target: &CombatCharacter) -> Option<BoundU32<0, 100>> {
@@ -79,7 +83,13 @@ impl OffensiveSkill {
 		return Some(OffensiveSkill::final_hit_chance_independent(acc, caster, target));
 	}
 
-	pub fn final_hit_chance_independent(base_acc: isize, caster: &CombatCharacter, target: &CombatCharacter) -> BoundU32<0, 100> {
+	pub fn final_hit_chance_independent(mut base_acc: isize, caster: &CombatCharacter, target: &CombatCharacter) -> BoundU32<0, 100> {
+		if let Some(Perk::Nema(NemaPerk::Poison_Disbelief)) = get_perk!(target, Perk::Nema(NemaPerk::Poison_Disbelief)) {
+			if caster.persistent_effects.iter().any(|effect| matches!(effect, PersistentEffect::Poison {..})) {
+				base_acc -= 20;
+			}
+		}
+
 		return (base_acc + caster.get_stat(ModifiableStat::ACC) - target.get_stat(ModifiableStat::DODGE)).into();
 	}
 	
