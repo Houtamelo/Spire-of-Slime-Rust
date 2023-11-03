@@ -2,10 +2,10 @@ use crate::BoundU32;
 
 #[derive(Debug, Clone)]
 pub enum NemaPerk {
-	AOE_Grumpiness,
+	Grumpiness, //todo! Needs lewd resolving implementation
 	AOE_Hatred { stacks: BoundU32<0, 4> },
 	AOE_Loneliness,
-	AOE_Regret,
+	Regret,
 	BattleMage_Agitation,
 	BattleMage_Carefree,
 	BattleMage_Triumph,

@@ -10,13 +10,14 @@ config_version=4
 
 [application]
 
-config/name="project-revenge"
-run/main_scene="res://scenes/home/scene_home.tscn"
+config/name="Spire of Slime"
+run/main_scene="res://Core/Main Menu/scene_main_menu.tscn"
 config/use_hidden_project_data_directory=false
 
-[autoload]
+[debug]
 
-game_manager="*res://game_manager.gdns"
+settings/fps/force_fps=144
+settings/stdout/verbose_stdout=true
 
 [display]
 
@@ -28,9 +29,17 @@ window/size/test_height=720
 window/stretch/mode="2d"
 window/stretch/aspect="keep_height"
 
-[global]
+[editor]
 
-full=false
+scene_naming=2
+
+[gui]
+
+common/drop_mouse_on_gui_input_disabled=true
+
+[locale]
+
+translations=PoolStringArray( "res://localization/english.csv" )
 
 [node]
 

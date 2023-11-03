@@ -1,0 +1,74 @@
+[color=#950093]Programming[/color]
+Houtamelo
+
+[color=#950093]Game Design[/color]
+Houtamelo
+Ayzunote
+Kattlarv
+Sr.Up
+CrazyPerson
+
+[color=#950093]World Design[/color]
+Sr.Up
+Kattlarv
+Houtamelo
+
+[color=#950093]Story Design[/color]
+Sr.Up
+Kattlarv
+Houtamelo
+
+[color=#950093]Art - Combat Idle Animations[/color]
+Egor "darkpilot96"  Khritov
+
+[color=#950093]Art - Combat Characters[/color]
+Akaonimir - [u][i][color=#00D7FF][url="https://twitter.com/Akaonimir"]Twitter[/url][/color][/i][/u]
+
+[color=#950093]Art - Combat Backgrounds[/color]
+Moisesf - [u][i][color=#00D7FF][url="https://twitter.com/mgmdzn"]Twitter[/url][/color][/i][/u]
+
+[color=#950093]Art - Combat Visual Effects[/color]
+Ayzunote
+Moisesf - [u][i][color=#00D7FF][url="https://twitter.com/mgmdzn"]Twitter[/url][/color][/i][/u]
+Houtamelo
+
+[color=#950093]Art - CGs[/color]
+Akaonimir - [u][i][color=#00D7FF][url="https://twitter.com/Akaonimir"]Twitter[/url][/color][/i][/u]
+
+[color=#950093]Art - Dialogue Portraits[/color]
+Akaonimir - [u][i][color=#00D7FF][url="https://twitter.com/Akaonimir"]Twitter[/url][/color][/i][/u]
+
+[color=#950093]Art - UI[/color]
+Moisesf - [u][i][color=#00D7FF][url="https://twitter.com/mgmdzn"]Twitter[/url][/color][/i][/u]
+Houtamelo
+Yue
+
+[color=#950093]Art - Concept Design[/color]
+N__u__t
+Akaonimir - [u][i][color=#00D7FF][url="https://twitter.com/Akaonimir"]Twitter[/url][/color][/i][/u]
+Moisesf - [u][i][color=#00D7FF][url="https://twitter.com/mgmdzn"]Twitter[/url][/color][/i][/u]
+
+[color=#950093]Music[/color]
+Wellington "ZheroMusic" J. Zhune - [u][i][color=#00D7FF][url="https://twitter.com/MusicZhero"]Twitter[/url][/color][/i][/u] - [u][i][color=#00D7FF][url="https://www.youtube.com/ZheroMusic"]Youtube[/url][/color][/i][/u]
+
+[color=#950093]Sound Effects[/color]
+Wellington "ZheroMusic" J. Zhune - [u][i][color=#00D7FF][url="https://twitter.com/MusicZhero"]Twitter[/url][/color][/i][/u] - [u][i][color=#00D7FF][url="https://www.youtube.com/ZheroMusic"]Youtube[/url][/color][/i][/u]
+TheMaskedMan
+Sounds from Zapsplat.com
+
+[color=#950093]Writing - Scene dialogues[/color]
+Kattlarv
+Elizabeth violet/elizzyviolet - [u][i][color=#00D7FF][url="https://www.patreon.com/ElizzyViolet"]Patreon[/url][/color][/i][/u] - [u][i][color=#00D7FF][url="https://www.literotica.com/stories/memberpage.php?uid=3935448&page=submissions"]Literotica[/url][/color][/i][/u] - [u][i][color=#00D7FF][url="https://elizzyviolet.itch.io/"]Itch.io[/url][/color][/i][/u]
+
+[color=#950093]Writing - Everything else[/color]
+Kattlarv
+
+[color=#950093]Quality Assurance[/color]
+Ayzunote
+
+[color=#950093]Fonts[/color]
+Yue
+
+Some sound Effects from "https://pixabay.com/sound-effects/"
+
+

@@ -1,0 +1,23 @@
+[gd_resource type="Theme" load_steps=6 format=2]
+
+[ext_resource path="res://Fonts/font_mr-darcy_32_outline.tres" type="DynamicFont" id=1]
+[ext_resource path="res://Core/Main Menu/UI/style-box_menu-button.tres" type="StyleBox" id=2]
+
+[sub_resource type="StyleBoxEmpty" id=1]
+
+[sub_resource type="StyleBoxEmpty" id=2]
+
+[sub_resource type="StyleBoxEmpty" id=3]
+
+[resource]
+default_font = ExtResource( 1 )
+Button/colors/font_color = Color( 0.88, 0.88, 0.88, 1 )
+Button/colors/font_color_disabled = Color( 0.9, 0.9, 0.9, 0.2 )
+Button/colors/font_color_focus = Color( 0.698039, 0, 0.313726, 1 )
+Button/colors/font_color_hover = Color( 0.698039, 0, 0.219608, 1 )
+Button/colors/font_color_pressed = Color( 0.698039, 0, 0.219608, 1 )
+Button/styles/disabled = SubResource( 1 )
+Button/styles/focus = ExtResource( 2 )
+Button/styles/hover = ExtResource( 2 )
+Button/styles/normal = SubResource( 2 )
+Button/styles/pressed = SubResource( 3 )

@@ -1,0 +1,65 @@
+[gd_scene load_steps=12 format=2]
+
+[ext_resource path="res://Fonts/font_treasure-map-dead-hand_24.tres" type="DynamicFont" id=1]
+[ext_resource path="res://Fonts/font_treasure-map-dead-hand_16.tres" type="DynamicFont" id=2]
+[ext_resource path="res://Core/Main Menu/UI/Load Game Panel/style-box_load-button_focus.tres" type="StyleBox" id=3]
+[ext_resource path="res://Core/Main Menu/UI/Load Game Panel/style-box_delete-save-button_focus.tres" type="StyleBox" id=4]
+[ext_resource path="res://Core/Main Menu/UI/Load Game Panel/style-box_delete-save-button_hover.tres" type="StyleBox" id=5]
+[ext_resource path="res://Core/Main Menu/UI/Load Game Panel/style-box_load-button_hover.tres" type="StyleBox" id=6]
+[ext_resource path="res://Core/Main Menu/UI/Load Game Panel/style-box_load-button_normal.tres" type="StyleBox" id=7]
+[ext_resource path="res://Core/Main Menu/UI/Load Game Panel/style-box_delete-save-button_normal.tres" type="StyleBox" id=8]
+[ext_resource path="res://Core/Main Menu/UI/Load Game Panel/style-box_confirm-delete-save_focus.tres" type="StyleBox" id=9]
+[ext_resource path="res://Core/Main Menu/UI/Load Game Panel/style-box_confirm-delete-save_hover.tres" type="StyleBox" id=10]
+[ext_resource path="res://Core/Main Menu/UI/Load Game Panel/style-box_confirm-delete-save_normal.tres" type="StyleBox" id=11]
+
+[node name="button_save-slot" type="Button"]
+margin_right = 300.0
+margin_bottom = 24.125
+rect_min_size = Vector2( 300, 24 )
+custom_fonts/font = ExtResource( 1 )
+custom_styles/hover = ExtResource( 6 )
+custom_styles/pressed = ExtResource( 6 )
+custom_styles/focus = ExtResource( 3 )
+custom_styles/disabled = ExtResource( 7 )
+custom_styles/normal = ExtResource( 7 )
+shortcut_in_tooltip = false
+action_mode = 0
+clip_text = true
+icon_align = 1
+
+[node name="label_save-name" type="Label" parent="."]
+anchor_left = 0.02
+anchor_top = 0.085
+anchor_right = 0.98
+anchor_bottom = 1.0
+custom_fonts/font = ExtResource( 2 )
+text = "Save name here"
+align = 1
+valign = 1
+clip_text = true
+
+[node name="button_delete" type="Button" parent="."]
+margin_left = 305.0
+margin_right = 338.0
+margin_bottom = 39.25
+rect_scale = Vector2( 0.6, 0.6 )
+custom_styles/hover = ExtResource( 5 )
+custom_styles/pressed = ExtResource( 5 )
+custom_styles/focus = ExtResource( 4 )
+custom_styles/disabled = ExtResource( 8 )
+custom_styles/normal = ExtResource( 8 )
+clip_text = true
+
+[node name="button_delete_confirm" type="Button" parent="."]
+visible = false
+margin_left = 328.834
+margin_top = -1.20001
+margin_right = 387.834
+margin_bottom = 54.8
+rect_scale = Vector2( 0.45, 0.45 )
+custom_styles/hover = ExtResource( 10 )
+custom_styles/pressed = ExtResource( 10 )
+custom_styles/focus = ExtResource( 9 )
+custom_styles/disabled = ExtResource( 11 )
+custom_styles/normal = ExtResource( 11 )
+clip_text = true

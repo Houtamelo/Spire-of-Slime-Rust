@@ -12,4 +12,6 @@ gdnative = "0.11.3"
 rand = "0.8.5"
 proc_macros = { path = "proc_macros" }
 lazy_static = "1.4.0"
+serde = { version = "1.0.180", features = ["derive"] }
+ron = "0.8.1"
 

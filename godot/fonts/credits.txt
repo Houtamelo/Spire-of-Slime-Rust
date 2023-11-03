@@ -1,0 +1,79 @@
+<size=150%><color=#950093>Programming</size></color>
+Houtamelo
+
+<size=150%><color=#950093>Game Design</size></color>
+Houtamelo
+Ayzunote
+Kattlarv
+Sr.Up
+CrazyPerson
+
+<size=150%><color=#950093>World Design</size></color>
+Sr.Up
+Kattlarv
+Houtamelo
+
+<size=150%><color=#950093>Story Design</size></color>
+Sr.Up
+Kattlarv
+Houtamelo
+
+<size=150%><color=#950093>Art - Combat Idle Animations</size></color>
+Egor "darkpilot96"  Khritov
+
+<size=150%><color=#950093>Art - Combat Characters</size></color>
+Akaonimir - <u><i><color=#00D7FF><link="https://twitter.com/Akaonimir">Twitter</link></color></i></u>
+
+<size=150%><color=#950093>Art - Combat Backgrounds</size></color>
+Moisesf - <u><i><color=#00D7FF><link="https://twitter.com/mgmdzn">Twitter</link></color></i></u>
+
+<size=150%><color=#950093>Art - Combat Visual Effects</size></color>
+Ayzunote
+Moisesf - <u><i><color=#00D7FF><link="https://twitter.com/mgmdzn">Twitter</link></color></i></u>
+Houtamelo
+
+<size=150%><color=#950093>Art - CGs</size></color>
+Akaonimir - <u><i><color=#00D7FF><link="https://twitter.com/Akaonimir">Twitter</link></color></i></u>
+
+<size=150%><color=#950093>Art - Dialogue Portraits</size></color>
+Akaonimir - <u><i><color=#00D7FF><link="https://twitter.com/Akaonimir">Twitter</link></color></i></u>
+
+<size=150%><color=#950093>Art - UI</size></color>
+Moisesf - <u><i><color=#00D7FF><link="https://twitter.com/mgmdzn">Twitter</link></color></i></u>
+Houtamelo
+Yue
+
+<size=150%><color=#950093>Art - Concept Design</size></color>
+N__u__t
+Akaonimir - <u><i><color=#00D7FF><link="https://twitter.com/Akaonimir">Twitter</link></color></i></u>
+Moisesf - <u><i><color=#00D7FF><link="https://twitter.com/mgmdzn">Twitter</link></color></i></u>
+
+<size=150%><color=#950093>Music</size></color>
+Wellington "ZheroMusic" J. Zhune - <u><i><color=#00D7FF><link="https://twitter.com/MusicZhero">Twitter</link></color></i></u> - <u><i><color=#00D7FF><link="https://www.youtube.com/ZheroMusic">Youtube</link></color></i></u>
+
+<size=150%><color=#950093>Sound Effects</size></color>
+Wellington "ZheroMusic" J. Zhune - <u><i><color=#00D7FF><link="https://twitter.com/MusicZhero">Twitter</link></color></i></u> - <u><i><color=#00D7FF><link="https://www.youtube.com/ZheroMusic">Youtube</link></color></i></u>
+TheMaskedMan
+Sounds from Zapsplat.com
+
+<size=150%><color=#950093>Writing - Scene dialogues</size></color>
+Kattlarv
+Elizabeth violet/elizzyviolet - <u><i><color=#00D7FF><link="https://www.patreon.com/ElizzyViolet">Patreon</link></color></i></u> - <u><i><color=#00D7FF><link="https://www.literotica.com/stories/memberpage.php?uid=3935448&page=submissions">Literotica</link></color></i></u> - <u><i><color=#00D7FF><link="https://elizzyviolet.itch.io/">Itch.io</link></color></i></u>
+
+<size=150%><color=#950093>Writing - Everything else</size></color>
+Kattlarv
+
+<size=150%><color=#950093>Quality Assurance</size></color>
+Ayzunote
+
+<size=150%><color=#950093>Fonts</size></color>
+Yue
+
+Sound Effect from "https://pixabay.com/sound-effects/?utm_source=link-attribution&amp;utm_medium=referral&amp;utm_campaign=music&amp;utm_content=29626"
+Sound Effect from "https://pixabay.com/sound-effects/?utm_source=link-attribution&amp;utm_medium=referral&amp;utm_campaign=music&amp;utm_content=61998"
+Sound Effect from "https://pixabay.com/sound-effects/?utm_source=link-attribution&amp;utm_medium=referral&amp;utm_campaign=music&amp;utm_content=55056"
+Sound Effect from "https://pixabay.com/?utm_source=link-attribution&amp;utm_medium=referral&amp;utm_campaign=music&amp;utm_content=59207"
+Sound Effect from "https://pixabay.com/sound-effects/?utm_source=link-attribution&amp;utm_medium=referral&amp;utm_campaign=music&amp;utm_content=6038"
+Sound Effect from "https://pixabay.com/?utm_source=link-attribution&amp;utm_medium=referral&amp;utm_campaign=music&amp;utm_content=41055"
+
+

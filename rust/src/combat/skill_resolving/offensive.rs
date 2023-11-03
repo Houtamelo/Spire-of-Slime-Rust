@@ -149,6 +149,31 @@ fn resolve_target(mut caster: CombatCharacter, mut target: CombatCharacter, othe
 				girl_stats.lust += 12;
 			}
 		}
+
+		if let Some(Perk::Nema(NemaPerk::Grumpiness)) = get_perk!(target, Perk::Nema(NemaPerk::Grumpiness)) {
+			let spd_buff = TargetApplier::Buff {
+				duration_ms: 3000,
+				stat: ModifiableStat::SPD,
+				stat_increase: 15,
+			};
+
+			let toughness_debuff = TargetApplier::Buff {
+				duration_ms: 4000,
+				stat: ModifiableStat::TOUGHNESS,
+				stat_increase: 15,
+			};
+
+			let composure_debuff = TargetApplier::Debuff(DebuffApplier::Standard {
+				duration_ms: 4000,
+				stat: ModifiableStat::COMPOSURE,
+				stat_decrease: 15,
+				apply_chance: None,
+			});
+
+			spd_buff.apply_self(&mut target, others, seed, false);
+			toughness_debuff.apply_self(&mut target, others, seed, false);
+			composure_debuff.apply_self(&mut target, others, seed, false);
+		}
 	}
 	
 	let crit_chance = skill.final_crit_chance(&caster);
@@ -285,7 +310,7 @@ fn resolve_target(mut caster: CombatCharacter, mut target: CombatCharacter, othe
 			target.last_damager_guid = Some(caster.guid);
 
 			if target.stamina_dead() {
-				target.do_zero_stamina(Some(&mut caster), others, seed);
+				target.do_on_zero_stamina(Some(&mut caster), others, seed);
 				return None;
 			} else {
 				return on_both_survive(caster, target, others);
@@ -310,7 +335,7 @@ fn resolve_target(mut caster: CombatCharacter, mut target: CombatCharacter, othe
 		let target_new_stamina_percent = target.stamina_cur as f64 / target.get_max_stamina() as f64;
 
 		if target.stamina_dead() {
-			target.do_zero_stamina(Some(caster), others, seed);
+			target.do_on_zero_stamina(Some(caster), others, seed);
 			return;
 		}
 
@@ -417,7 +442,7 @@ fn resolve_target(mut caster: CombatCharacter, mut target: CombatCharacter, othe
 		caster.last_damager_guid = Some(target_as_riposter.guid);
 
 		if caster.stamina_dead() {
-			caster.do_zero_stamina(Some(target_as_riposter), others, seed);
+			caster.do_on_zero_stamina(Some(target_as_riposter), others, seed);
 			return None;
 		} else {
 			return Some(caster);

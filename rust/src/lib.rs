@@ -12,20 +12,34 @@
 #![allow(clippy::clone_on_copy)]
 #![feature(step_trait)]
 #![feature(const_trait_impl)]
+#![feature(let_chains)]
+#![feature(result_option_inspect)]
 
 mod combat;
 mod util;
+mod main_menu;
+pub mod save;
 
 pub const MAX_CHARACTERS_PER_TEAM: usize = 4;
+pub const config_path: &str = "user://config.cfg";
 
 pub use crate::util::bounded_isize::*;
 pub use crate::util::bounded_u32::*;
+pub use crate::util::tref_acquirer::*;
+pub use crate::util::inspectors::*;
 
 use gdnative::prelude::*;
+use crate::main_menu::MainMenu;
+use crate::util::disallow_click_focus::DisallowClickFocus;
+use crate::util::panel_are_you_sure::PanelAreYouSure;
+
 
 // Function that registers all exposed classes to Godot
 fn init(handle: InitHandle) {
 	handle.add_class::<GameManager>();
+	handle.add_class::<DisallowClickFocus>();
+	handle.add_class::<PanelAreYouSure>();
+	handle.add_class::<MainMenu>();
 }
 
 godot_init!(init);

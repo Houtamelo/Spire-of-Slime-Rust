@@ -1,11 +1,14 @@
 use std::collections::{HashMap, HashSet};
 use gdnative::prelude::*;
 use rand::prelude::StdRng;
-use proc_macros::get_perk_mut;
+use proc_macros::{get_perk, get_perk_mut};
+use crate::combat::effects::onTarget::{DebuffApplier, TargetApplier};
 use crate::iter_allies_of;
 use crate::combat::entity::*;
 use crate::combat::entity::character::*;
 use crate::combat::entity::data::girls::ethel::perks::*;
+use crate::combat::entity::data::girls::nema::perks::NemaPerk;
+use crate::combat::ModifiableStat;
 use crate::combat::perk::Perk;
 use crate::combat::skill_types::defensive::DefensiveSkill;
 use crate::util::{Base100ChanceGenerator, GUID, TrackedTicks};
@@ -123,6 +126,35 @@ fn resolve_target_ally(caster: &mut CombatCharacter, mut target: CombatCharacter
 		}
 	}
 
+	// Perks
+	{
+		if let Some(Perk::Nema(NemaPerk::Grumpiness)) = get_perk!(target, Perk::Nema(NemaPerk::Grumpiness)) {
+			let spd_buff = TargetApplier::Buff {
+				duration_ms: 3000,
+				stat: ModifiableStat::SPD,
+				stat_increase: 25,
+			};
+
+			let toughness_debuff = TargetApplier::Debuff(DebuffApplier::Standard {
+				duration_ms: 4000,
+				stat: ModifiableStat::TOUGHNESS,
+				stat_decrease: 15,
+				apply_chance: None,
+			});
+
+			let composure_debuff = TargetApplier::Debuff(DebuffApplier::Standard {
+				duration_ms: 4000,
+				stat: ModifiableStat::COMPOSURE,
+				stat_decrease: 15,
+				apply_chance: None,
+			});
+
+			spd_buff.apply_self(&mut target, others, seed, false);
+			toughness_debuff.apply_self(&mut target, others, seed, false);
+			composure_debuff.apply_self(&mut target, others, seed, false);
+		}
+	}
+
 	return Some(target);
 }
 
@@ -141,5 +173,34 @@ fn resolve_target_self(caster: &mut CombatCharacter, others: &mut HashMap<GUID, 
 
 	for target_applier in skill.effects_target.iter() {
 		target_applier.apply_self(caster, others, seed, is_crit);
+	}
+
+	// Perks
+	{
+		if let Some(Perk::Nema(NemaPerk::Grumpiness)) = get_perk!(caster, Perk::Nema(NemaPerk::Grumpiness)) {
+			let spd_buff = TargetApplier::Buff {
+				duration_ms: 3000,
+				stat: ModifiableStat::SPD,
+				stat_increase: 25,
+			};
+
+			let toughness_debuff = TargetApplier::Debuff(DebuffApplier::Standard {
+				duration_ms: 4000,
+				stat: ModifiableStat::TOUGHNESS,
+				stat_decrease: 15,
+				apply_chance: None,
+			});
+
+			let composure_debuff = TargetApplier::Debuff(DebuffApplier::Standard {
+				duration_ms: 4000,
+				stat: ModifiableStat::COMPOSURE,
+				stat_decrease: 15,
+				apply_chance: None,
+			});
+
+			spd_buff.apply_self(caster, others, seed, false);
+			toughness_debuff.apply_self(caster, others, seed, false);
+			composure_debuff.apply_self(caster, others, seed, false);
+		}
 	}
 }

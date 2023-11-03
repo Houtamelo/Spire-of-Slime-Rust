@@ -133,7 +133,7 @@ impl PersistentEffect {
 							}
 						}
 
-						owner.do_zero_stamina(killer_option.as_mut(), others, seed);
+						owner.do_on_zero_stamina(killer_option.as_mut(), others, seed);
 
 						if let Some(killer) = killer_option {
 							others.insert(killer.guid, Entity::Character(killer));

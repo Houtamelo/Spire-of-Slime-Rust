@@ -1,0 +1,362 @@
+keys,en
+charactermenubutton_levelup,Level Up!
+charactername_nema,Nema
+charactername_ethel,Ethel
+charactername_bellplant,Bell Plant
+charactername_crabdra,Crabdra
+charactername_wolfhydra,Wolfhydra
+charactername_jellycrown,Jelly Crown
+charactername_trent,Trent
+charactername_beezador,Beezador
+characterpanel_assigned,Assigned
+characterpanel_available,Available
+characterpanel_availablepoints,Available Points
+characterpanel_positioning,Positioning
+characterpanel_perks,Perks
+characterpanel_resume,Resume
+characterpanel_skills,Skills
+characterpanel_stats,Stats
+characterpanel_experiencebar_tonextlevel,To next level: {0}
+characterpanel_message_areyousureunlock,Are you sure you wish to unlock {0}?
+perkpanel_availablepoints,Available Points: 
+blackscreen_loading,Loading
+combat_highlighted_composure,Composure
+combat_highlighted_debuffresistance,Debuff RES
+combat_highlighted_dodge,Dodge
+combat_highlighted_moveresistance,Move RES
+combat_highlighted_poisonresistance,Poison RES
+combat_highlighted_resilience,Resilience
+combat_highlighted_stunrecoveryspeed,Stun Mitigation
+combat_selected_accuracy,ACC
+combat_selected_composure,Composure
+combat_selected_criticalchance,CRIT
+combat_selected_damage,DMG
+combat_selected_debuffresistance,Debuff RES
+combat_selected_dodge,Dodge
+combat_selected_moveresistance,Move RES
+combat_selected_poisonresistance,Poison RES
+combat_selected_resilience,Resilience
+combat_selected_speed,SPD
+combat_selected_stunmitigation,Stun Mitigation
+combat_targeting_criticalchance,CRIT:
+combat_targeting_damage,DMG:
+combat_targeting_hitchance,HIT:
+combat_targeting_redirected,!Redirected to {0}!
+combat_cue_ethelcantreachnema,I can't reach Nema!
+combat_cue_dodge,Dodge!
+combat_cue_miss,Miss!
+combat_cue_critical,Critical!
+combat_cue_knockeddown,Knocked Down!
+combat_cue_recovered,Recovered!
+combat_cue_resist,Resist!
+combat_clicknema_clearmist,"Nema, clear the mist!"
+combat_clicknema_stopclearingmist,"Nema, stop clearing the mist!"
+combat_event_turn,Turn,
+combat_event_poisontick,{0} Poison,
+combat_event_lusttick,{0} Lust,
+combat_event_healtick,{0} Heal,
+combat_event_stunend,Stun ends,
+combat_event_downedend,Stands up,
+combat_event_statusend,{0} ends,
+combat_event_action,Acts,
+combatstat_power,Power
+combatstat_tooltip_power,"Multiplier to base damage.\nMin: 0; Max: 2^31\nA skill's damage is calculated by the formula: Damage = base_damage * caster_power * skill_power * (1 - target_resilience)."
+experiencescreen_continue,Continue
+experiencescreen_earnedexperience,Earned Exp:
+mainmenu_exit,Exit
+mainmenu_credits,Credits
+mainmenu_credits_close,Close
+mainmenu_loadgame,Load Game
+mainmenu_newgame,New Game
+mainmenu_options,Options
+mainmenu_startgame,Start Game
+mainmenu_irongauntlet,Iron Gauntlet
+mainmenu_savename,Save name
+mainmenu_warning_saveoverwrite_cancel,Cancel
+mainmenu_warning_saveoverwrite_label,Are you sure you wish to overwrite your existing save?
+mainmenu_warning_saveoverwrite_yes,Yes
+mainmenu_pleaseentersavename,Please enter a save name
+pausemenu_mainvolume,Main Volume
+pausemenu_musicvolume,Music Volume
+pausemenu_return,Return
+pausemenu_saveandexit,Save & Exit
+pausemenu_saveandreturntomainmenu,Save & Return to Main Menu
+pausemenu_sfxvolume,SFX Volume
+pausemenu_typewritersound,Type Writer Sound
+pausemenu_typewritersound_tooltip,The click sfx that is played when dialogue is appearing
+pausemenu_voicevolume,Voice Volume
+pausemenu_vsync,Vsync
+pausemenu_language_tooltip,Translations made using machine translation
+pausemenu_text-delay,Text Delay
+pausemenu_text-delay_tooltip,"Delay between each letter, in seconds"
+pausemenu_action-speed,Action Speed
+pausemenu_action-speed_tooltip,The speed of the action animations in combat.\nDefault: 1.0x
+pausemenu_combat-tick-rate,Combat Tick Rate
+pausemenu_combat-tick-rate_tooltip,How many times per second combat state is evaluated.\nHigher values lead to more precise time-based calculations.\nReduce this if you're experiencing lag while time is running during combat.\nDefault: 40
+pausemenu_framerate,Frame Rate
+pausemenu_skilloverlaymode,Skill Overlay mode
+pausemenu_skilloverlaymode_tooltip,Automatic: overlays will automatically fade out after the duration set in "Skill Overlay Duration".\nWait For Input: overlays will only fade out when you press to continue.
+pausemenu_skilloverlayautoduration,Skill Overlay Duration
+race_beast,Beast
+race_human,Human
+race_mutation,Mutation
+race_plant,Plant
+screenbuttons_nemaexhaustion,"Nema's exhaustion: "
+screenbuttons_tooltip_lust,Lust:
+screenbuttons_tooltip_temptation,Temptation:
+screenbuttons_tooltip_nemaclearingmist,"Nema is clearing the mist, she will get exhausted as time passes."
+screenbuttons_tooltip_nemaexhausted,Nema is too exhausted to clear the mist.
+screenbuttons_tooltip_nemanotclearingmist,"Nema is not clearing the mist, she won't get more exhausted but who knows what will happen to us..."
+screenbuttons_unspentpoints,You have unspent points
+nemaexhaustion_none_tooltip,"Nema is energetic, no negative combat modifiers."
+nemaexhaustion_low_tooltip,"Nema is starting to get tired.\nCombat modifiers:\n<line-indent=10%>-5 Speed\n-10 Stun Mitigation\n-3 Accuracy\n-5 Debuff, Move and Poison Resistances</line-indent>"
+nemaexhaustion_medium_tooltip,"Nema is visibly weary.\nCombat modifiers:\n<line-indent=10%>-10 Speed\n-20 Stun Mitigation\n-5 Dodge\n-7 Accuracy\n-10 Debuff, Move and Poison Resistances\n-5 Composure</line-indent>"
+nemaexhaustion_high_tooltip,"Nema is at her limit, she can't clear the mist anymore.\nCombat modifiers:\n<line-indent=10%>-20 Speed\n-35 Stun Mitigation\n-20 Dodge\n-12 Accuracy\n-20 Debuff, Move and Poison Resistances\n-10 Composure</line-indent>"
+mist_none_tooltip,"There's not mist here, we're unaffected."
+mist_low_tooltip,"The mist is thin here.\nMap modifiers:\n<line-indent=10%>+0 ~ 2 lust per tile.</line-indent>\nCombat modifiers:\n<line-indent=10%>-5 Composure\n+0.75 Lust per second</line-indent>"
+mist_medium_tooltip,"The mist is thick here.\nMap modifiers:\n<line-indent=10%>+2 ~ 4 lust per tile.</line-indent>\nCombat modifiers:\n<line-indent=10%>-10 Composure\n+1.5 Lust per second</line-indent>"
+mist_high_tooltip,"The mist is very thick here.\nMap modifiers:\n<line-indent=10%>+4 ~ 6 lust per tile.</line-indent> \nCombat modifiers:\n<line-indent=10%>-20 Composure\n+3.0 Lust per second</line-indent>"
+screenmode_exclusivefullscreen,[Windows only] Exclusive Full Screen
+screenmode_fullscreenwindow,[All] Full Screen Window
+screenmode_maximizedwindow,[MacOS only] Maximized Window
+screenmode_windowed,[Desktop only] Windowed
+skill-overlay-mode_Auto,"Automatic"
+skill-overlay-mode_WaitForInput,"Wait for Input"
+skilltooltip_accuracy,ACC:
+skilltooltip_charge,CHARGE:
+skilltooltip_criticalchance,CRIT:
+skilltooltip_power,POWER:
+skilltooltip_recovery,RECOVERY:
+startscreen_disclaimer_1,"This work of fiction contains content of a sexual nature and is inappropriate for minors. All characters depicted are at least 21 years old. Everything is consensual role play and any animals are actually people in costumes. \n \nIf you are under 21 years of age please close this application immediately, you may do so by pressing the ""Esc"" key."
+startscreen_demowarning,"This build is a demo; many of the systems are likely going to change as development progresses. \n \nConsider checking out the ""Planned Features"" section on the main menu."
+startscreen_pressanybutton,Press any button to continue.
+startscreen_thankyousupporters,Thank you to all the supporters who have helped making this game a reality!
+startscreen_warning,WARNING
+stat_accuracy,Accuracy
+stat_tooltip_accuracy,Chance for skills cast by this character to succesfully hit enemies.\nFinal chance to hit is calculated by the formula: caster_accuracy + skill_accuracy - target_dodge.
+stat_basedamage,Base Damage
+stat_tooltip_basedamage,"Base value for calculating damage dealt with skills that <b>can</b> deal damage.\nMin: 0; Max: 2^31\nA skill's damage is calculated by the formula: Damage = base_damage * caster_power * skill_power * (1 - target_resilience)."
+stat_criticalchance,Critical Chance
+stat_tooltip_criticalchance,"Chance to score critical hits, which applies the following modifiers to the skill cast:\n<line-indent=10%>Damage dealt is set to 1.5x of the character's upper damage threshold.\nEffects have a +50 chance to be applied.\nEffects are stronger or last longer.</line-indent>\n\nFinal chance to crit is calculated by the formula: caster_critical.chance + skill_critical.chance."
+stat_damagelower,Damage Lower
+stat_damageupper,Damage Upper
+stat_dodge,Dodge
+stat_tooltip_dodge,"Flat reduction(or increase, if negative) to the chance of being hit by skills that enemies cast.\nThere are exceptions, some skills cannot be dodged.\nFinal chance to hit is calculated by the formula: caster_accuracy + skill_accuracy - target_dodge."
+stat_debuffresistance,Debuff Resistance
+stat_tooltip_debuffresistance,"Flat reduction(or increase, if negative) to the chance of enemies applying Debuffs to this character.\nCannot resist Debuffs applied by allies or self.\nFinal chance for a Debuff to be applied is calculated by the formula: caster_debuff.apply.chance + skill_debuff.apply.chance - target_debuff.resistance."
+stat_tooltip_debuffapplychance,"Flat increase(or decrease, if negative) to the chance of this character applying Debuffs on enemies.\nApplying Debuffs on allies or self always has 100 chance.\nFinal chance for a Debuff to be applied is calculated by the formula: caster_debuff.apply.chance + skill_debuff.apply.chance - target_debuff.resistance."
+stat_moveresistance,Move Resistance
+stat_tooltip_moveresistance,"Flat reduction(or increase, if negative) to the chance of enemies changing the Position of this character.\nCannot resist moving through skills cast by allies or self.\nFinal chance for success is calculated by the formula: caster_move.apply.chance + skill_move.apply.chance - target_move.resistance."
+stat_tooltip_moveapplychance,"Flat increase(or decrease, if negative) to the chance of this character changing the Position of enemies.\Moving through skills cast by allies or self always has 100 chance.\nFinal chance for success is calculated by the formula: caster_move.apply.chance + skill_move.apply.chance - target_move.resistance."
+stat_poisonresistance,Poison Resistance
+stat_tooltip_poisonresistance,"Flat reduction(or increase, if negative) to the chance of enemies applying Poison on this character.\nCannot resist Poison applied by allies or self.\nFinal chance for a Poison to be applied is calculated by the formula: caster_poison.apply.chance + skill_poison.apply.chance - target_poison.resistance."
+stat_poisonapplychance,Poison Apply Chance
+stat_tooltip_poisonapplychance,"Flat increase(or decrease, if negative) to the chance of this character applying Poison on enemies.\nApplying Poison on allies or self always has 100 chance.\nFinal chance for a Poison to be applied is calculated by the formula: caster_poison.apply.chance + skill_poison.apply.chance - target_poison.resistance."
+stat_arousalapplychance,Arousal Apply Chance
+stat_tooltip_arousalapplychance,"Flat increase(or decrease, if negative) to the chance of this character applying Arousal on enemies.\nApplying Arousal on allies or self always has 100 chance.\nFinal chance for Arousal to be applied is calculated by the formula: caster_arousal.apply.chance + skill_arousal.apply.chance."
+stat_orgasmlimit,Orgasm Limit
+stat_tooltip_orgasmlimit,"The maximum number of times the character can orgasm before being unable to continue fighting.\nCan be restored by resting at campfires.\nIf the party wins despite a character reaching their limit, that character's orgasm count will be reduced by 1. (Thus always allowing them to participate on the next fight.)"
+stat_orgasmcount,Orgasm count
+stat_tooltip_orgasmcount,"How many times the character has orgasmed, reaching the limit will render the character unable to fight.\nCan be reduced by resting at campfires.\nIf the party wins despite a character reaching their limit, that character's orgasm count will be reduced by 1. (Thus allowing them to always participate on the next fight)"
+stat_composure,Composure
+stat_tooltip_composure,"Defense against Temptation effects, reduces Temptation received from enemies, will completely deny Temptations with Power less than this character's Composure. An enemy skill's Temptation Power increases based on this character's lust. \nMin: -100; Max: 300"
+stat_experience,Experience
+stat_tooltip_experience,"Knowledge, Wisdom, anything that can be remembered."
+stat_lust,Lust
+stat_tooltip_lust,"How horny the character is, affects Temptation received by skills that increase Temptation.\nA character will orgasm if they reach 200 lust while having sex."
+stat_perkpoints,Perk points
+stat_primarypoints,Primary points
+stat_secondarypoints,Secondary points
+stat_speed,Speed
+stat_tooltip_speed,How fast this character can Charge and Recover from skills. The Charge and Recovery times displayed on the skill's tooltip assumes a normal speed of 100.\nMin: 20; Max: 300
+stat_stamina,Stamina
+stat_tooltip_stamina,"How much damage this character can receive before being downed. This amount is restored after each combat.\nWhen a character is Downed they will be vulnerable, receiving a -40 debuff to Composure and being unable to cast skills. Downed characters will get back up after a while."
+stat_resilience,Resilience
+stat_tooltip_resilience,"Percentage reduction(or increase, if negative) to Stamina damage received from skills cast by enemies.\nMin: -100; Max: 100"
+stat_stunmitigation,Stun Mitigation
+stat_tooltip_stunmitigation,"Defense against Stun effects, reduces the duration and will completely deny Stuns with Power less than this character's mitigation.\nMin: -100; Max: 300\n A Stun with Power 100 against a character with 0 Mitigation will result in 1 second of Stun. The formula is not linear and it favors Mitigation, 100 Power vs 50 Mitigation ~= 0.4s of Stun."
+stat_temptation,Temptation
+stat_tooltip_temptation,How close this character is of <b>succumbing</b> to Desire.\nBeing Tempted at 100 will lead to [REDACTED].
+stat_corruption,Corruption
+stat_tooltip_corruption,[REDACTED]
+visualnovel_auto,Auto
+visualnovel_skip,Skip
+worldlocation_bellplantgrove,Grove
+worldlocation_chapel,Chapel
+perkbutton_worldcue_prerequisitesnotmet,Prerequisites aren't met!
+perkbutton_worldcue_notduringcombat,Not during combat!
+perkbutton_worldcue_notenoughpoints,Not enough points!
+skillname_trent_spread_1,Compelling Fondle
+skillname_trent_spread_2,Inviting Fondle
+skillname_trent_spread_3,Tempting Fondle
+skillname_trent_spread_4,S  P  R  E  A  D
+skill_trent_summonbellplant_displayname,Bell-a-Lujah
+skill_trent_spores_displayname,Spore-adic Weaking
+skill_trent_spread_displayname,Spread
+skill_trent_vinewhip_displayname,Vine Whip
+skillname_crabdra_glare_1,Captivating Glare
+skillname_crabdra_glare_2,Enticing Glare
+skillname_crabdra_glare_3,Tempting Glare
+skillname_crabdra_glare_4,Enthralling Glare
+skill_crabdra_claw_displayname,Crush the Meek
+skill_crabdra_glare_displayname,Glare
+skillname_bellplant_engorge_1,Savor
+skillname_bellplant_engorge_2,Slurp
+skillname_bellplant_engorge_3,Swallow
+skillname_bellplant_engorge_4,Overindulge
+skill_bellplant_invigoratingfluids_displayname,Revigorate
+skill_bellplant_lure_displayname,Honey Time~
+skill_bellplant_vapors_displayname,Sweet Vapors
+skill_bell_plant_engorge_displayname,Engorge
+skillname_wolfhydra_subjugate_1,Coerce
+skillname_wolfhydra_subjugate_2,Subdue
+skillname_wolfhydra_subjugate_3,Subjugate
+skillname_wolfhydra_subjugate_4,Conquer
+skill_wolfhydra_lunge_displayname,Lunge
+skill_wolfhydra_roar_displayname,Roar
+skill_wolfhydra_subjugate_displayname,Subjugate
+skillname_jellycrown_entrance_1,Fascinate
+skillname_jellycrown_entrance_2,Mesmerize
+skillname_jellycrown_entrance_3,Entrance
+skillname_jellycrown_entrance_4,Enrapture
+skillname_jellycrown_temptinginsertion_1,Sudden Insertion
+skillname_jellycrown_temptinginsertion_2,Endearing Insertion
+skillname_jellycrown_temptinginsertion_3,Tempting Insertion
+skillname_jellycrown_temptinginsertion_4,Irresistible Insertion
+status_name_uppercase_buff,Buff
+status_name_uppercase_debuff,Debuff
+status_name_uppercase_poison,Poison
+status_name_uppercase_arousal,Arousal
+status_name_uppercase_riposte,Riposte
+status_name_uppercase_overtimeheal,Overtime Heal
+status_name_uppercase_marked,Marked
+status_name_uppercase_stun,Stun
+status_name_uppercase_guarded,Guarded
+status_name_uppercase_move,Move
+status_name_uppercase_lustgrappled,Lust Grappled
+status_name_uppercase_perk,Perk
+status_name_uppercase_hiddenperk,Hidden Perk
+status_name_uppercase_heal,Heal
+status_name_uppercase_lust,Lust
+status_name_uppercase_nemaexhaustion,Nema's Exhaustion
+status_name_uppercase_mist,Mist
+status_name_uppercase_summon,Summon
+status_name_uppercase_temptation,Temptation
+status_duration_string_permanent,"<color=#7BFBFE>until the end of combat</color>"
+status_duration_string_seconds,"<sprite name=icon_time><color=#7BFBFE>{0}s</color>"
+status_instance_description_arousal,"<color=#FE1BB3><sprite name=icon_lust>{0}/s</color>"
+status_instance_description_buff,"<color=#4c9cff><sprite name=icon_buff>{0} {1}</color>"
+status_instance_description_debuff,"<color=#e29b43><sprite name=icon_debuff>{0} {1}</color>"
+status_instance_description_lustgrappled,<color=#FE1BB3><i>Having a good time<b>time</b></i></color>
+status_instance_description_guarded,"<color=#5ca1eb><sprite name=icon_guard>Guarded by {0}</color>"
+status_instance_description_marked,"<color=#8a4343><sprite name=icon_mark>Marked</color>"
+status_instance_description_overtimeheal,"<color=#50db5e><sprite name=icon_stamina>{0}/s</color>"
+status_instance_description_hiddenperk,<i>Hidden from curious eyes</i>
+status_instance_description_poison,"<color=#b8f149><sprite name=icon_poison>{0}/s</color>"
+status_instance_description_riposte,"<color=#e42626><sprite name=icon_riposte>{0} (Riposte)</color>"
+status_instance_description_nemaexhaustion_none,"Nema is energetic, no modifiers."
+status_instance_description_nemaexhaustion_low,"Nema is a little tired, penalties: \n"
+status_instance_description_nemaexhaustion_medium,"Nema is exhausted, penalties: \n"
+status_instance_description_nemaexhaustion_high,"Nema is extremely exhausted, penalties: \n"
+status_script_description_arousal,"<color=#FE1BB3>({0}%)<sprite name=icon_lust>{1}/s</color>"
+status_script_description_buff,"<color=#4c9cff>({0}%)<sprite name=icon_buff>{1} {2}</color>"
+status_script_description_debuff,"<color=#e29b43>({0}%)<sprite name=icon_debuff>{1} {2}</color>"
+status_script_description_lustgrappled,"<color=#B20038>Grapple, giving target <color=#FE1BB3><sprite name=icon_lust>{0}/s</color></color>"
+status_script_description_guarded,"<color=#5ca1eb><sprite name=icon_guard>(Guard)</color>"
+status_script_description_heal,"<color=#50db5e>Increase <sprite name=icon_stamina> by {0} * Base Damage</color>"
+status_script_description_lust,"<color=#FE1BB3><sprite name=icon_lust>{0}</color>"
+status_script_description_marked,"<color=#8a4343><sprite name=icon_mark>(Mark)</color>"
+status_script_description_move,"<color=#6fdbdb>({0}%) Move {1}</color>"
+status_script_description_overtimeheal,"<color=#50db5e><sprite name=icon_stamina>{0}/s</color>"
+status_script_description_perk,"Activate {0}<indent=10%>{1}</indent></color>"
+status_script_description_poison,"<color=#b8f149>({0}%)<sprite name=icon_poison>{1}/s</color>"
+status_script_description_riposte,"<color=#e42626><sprite name=icon_riposte>Riposte with {0} base damage multiplier</color>"
+status_script_description_stun,"<color=#fcd74a><sprite name=icon_stun>({0} Force)</color>"
+status_script_description_summon,"Summon {0}</color>"
+status_script_description_tempt,"<color=#B20038><sprite name=icon_temptation>({0} Intensity)</color>"
+status_toapply_description_arousal,"<color=#FE1BB3>({0}%)<sprite name=icon_lust>{1}/s</color>"
+status_toapply_description_buff,"<color=#4c9cff>({0}%)<sprite name=icon_buff>{1} {2}</color>"
+status_toapply_description_debuff,"<color=#e29b43>({0}%)<sprite name=icon_debuff>{1} {2}</color>"
+status_toapply_description_lustgrappled,"<color=#B20038>Grapple, giving {0} <color=#FE1BB3><sprite name=icon_lust>{1}/s</color></color>"
+status_toapply_description_guarded,"<color=#5ca1eb><sprite name=icon_guard>Guard {0}</color>"
+status_toapply_description_heal,"<color=#50db5e><sprite name=icon_stamina>{0}</color>"
+status_toapply_description_lust,"<color=#FE1BB3><sprite name=icon_lust>{0}</color>"
+status_toapply_description_marked,"<color=#8a4343><sprite name=icon_mark>(Mark)</color>"
+status_toapply_description_move,"<color=#6fdbdb>({0}%) Move {1}</color>"
+status_toapply_description_overtimeheal,"<color=#50db5e><sprite name=icon_stamina>{0}/s</color>"
+status_toapply_description_perk,"Activate {0}"
+status_toapply_description_poison,"<color=#b8f149>({0}%)<sprite name=icon_poison>{1}/s</color>"
+status_toapply_description_riposte,"<color=#e42626><sprite name=icon_riposte>{0} (Riposte)</color>"
+status_toapply_description_stun,"<color=#fcd74a><sprite name=icon_stun>({0} Force)</color>"
+status_toapply_description_summon,"Summon {0}"
+status_toapply_description_tempt,"<color=#B20038><sprite name=icon_temptation>({0} Intensity)</color>"
+combatstat_uppercase_debuffresistance,Debuff Resistance
+combatstat_uppercase_poisonresistance,Poison Resistance
+combatstat_uppercase_moveresistance,Move Resistance
+combatstat_uppercase_accuracy,Accuracy
+combatstat_uppercase_criticalchance,Critical Chance
+combatstat_uppercase_dodge,Dodge
+combatstat_uppercase_resilience,Resilience
+combatstat_uppercase_composure,Composure
+combatstat_uppercase_stunmitigation,Stun Mitigation
+combatstat_uppercase_power,Power
+combatstat_uppercase_speed,Speed
+combatstat_uppercase_debuffapplychance,Debuff Apply Chance
+combatstat_uppercase_poisonapplychance,Poison Apply Chance
+combatstat_uppercase_moveapplychance,Move Apply Chance
+combatstat_uppercase_arousalapplychance,Arousal Apply Chance
+combatstat_lowercase_debuffresistance,debuff resistance
+combatstat_lowercase_poisonresistance,poison resistance
+combatstat_lowercase_moveresistance,move resistance
+combatstat_lowercase_accuracy,accuracy
+combatstat_lowercase_criticalchance,critical chance
+combatstat_lowercase_dodge,dodge
+combatstat_lowercase_resilience,resilience
+combatstat_lowercase_composure,composure
+combatstat_lowercase_stunmitigation,stun mitigation
+combatstat_lowercase_power,power
+combatstat_lowercase_speed,speed
+combatstat_lowercase_debuffapplychance,debuff apply chance
+combatstat_lowercase_poisonapplychance,poison apply chance
+combatstat_lowercase_moveapplychance,move apply chance
+combatstat_lowercase_arousalapplychance,arousal apply chance
+combatstat_lowercase_compact_debuffresistance,debuff res
+combatstat_lowercase_compact_poisonresistance,poison res
+combatstat_lowercase_compact_moveresistance,move res
+combatstat_lowercase_compact_accuracy,accuracy
+combatstat_lowercase_compact_criticalchance,critical
+combatstat_lowercase_compact_dodge,dodge
+combatstat_lowercase_compact_resilience,resilience
+combatstat_lowercase_compact_composure,composure
+combatstat_lowercase_compact_stunmitigation,stun mitig.
+combatstat_lowercase_compact_power,pow
+combatstat_lowercase_compact_speed,speed
+combatstat_lowercase_compact_debuffapplychance,debuff apply
+combatstat_lowercase_compact_poisonapplychance,poison apply
+combatstat_lowercase_compact_moveapplychance,move apply
+combatstat_lowercase_compact_arousalapplychance,arousal apply
+race_uppercase_beast,Beast
+race_uppercase_human,Humanoid
+race_uppercase_mutation,Mutation
+race_uppercase_plant,Plant
+race_uppercase_unknown,Unknown
+skill_tooltip_maxusespercombat,Max uses per combat:
+skill_tooltip_resiliencereduction,Resilience Reduction:
+skill_tooltip_criticalchance,Critical Chance:
+skill_tooltip_accuracy,Accuracy:
+skill_tooltip_recovery,Recovery:
+skill_tooltip_power,Power:
+skill_tooltip_charge,Charge:
+skill_tooltip_self,Self:
+customstat_bonusvsmarked_label,Bonus vs Marked:
+customstat_bonusvsmarked_damage,Damage:
+customstat_bonusvsmarked_crit,Critical:
+customstat_bonusvsmarked_accuracy,Accuracy:
+customstat_bonusvsmarked_resiliencereduction,Resilience Reduction:
+winningcondition_defeatall,"Defeat all enemies"
+winningcondition_surviveduration,"Survive for {0} seconds"
+article_consonant,a
+article_vowel,an
+timelineevent_unnervingaura_description,Applies random Debuff
+timelineevent_awe_description,+1 Stack
+timelineevent_acceptance_description,-3 Lust

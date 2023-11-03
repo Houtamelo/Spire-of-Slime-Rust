@@ -3,6 +3,7 @@ use rand::rngs::StdRng;
 use proc_macros::{get_perk};
 use crate::{BoundISize, iter_mut_allies_of};
 use crate::combat::effects::onSelf::SelfApplier;
+use crate::combat::effects::onTarget::{DebuffApplier, TargetApplier};
 use crate::combat::effects::persistent::{PersistentDebuff, PersistentEffect, PoisonAdditive};
 use crate::combat::entity::{Corpse, Entity};
 use crate::combat::entity::character::CharacterState::Grappling;
@@ -73,7 +74,10 @@ impl CombatCharacter {
 
 					return base;
 				},
-				ModifiableStat::POISON_RES => character.poison_res.get(),
+				ModifiableStat::POISON_RES => {
+					let base = character.poison_res.get();
+					return base;
+				},
 				ModifiableStat::MOVE_RES => {
 					let base = character.move_res.get();
 					return base;
@@ -181,9 +185,18 @@ impl CombatCharacter {
 
 					let mut base = character.girl_stats.as_ref().unwrap().composure.get();
 
-					if let Some(Perk::Nema(NemaPerk::BattleMage_Agitation)) = get_perk!(character, Perk::Nema(NemaPerk::BattleMage_Agitation)) {
-						let spd_bellow_100 = isize::min(character.get_stat(ModifiableStat::SPD) - 100, 0);
-						base += spd_bellow_100;
+					//Perks
+					{
+						if let Some(Perk::Nema(NemaPerk::BattleMage_Agitation)) = get_perk!(character, Perk::Nema(NemaPerk::BattleMage_Agitation)) {
+							let spd_bellow_100 = isize::min(character.get_stat(ModifiableStat::SPD) - 100, 0);
+							base += spd_bellow_100;
+						}
+
+						if let Some(Perk::Nema(NemaPerk::Grumpiness)) = get_perk!(character, Perk::Nema(NemaPerk::Grumpiness)) {
+							if matches!(character.state, CharacterState::Downed {..}) {
+								base += 30;
+							}
+						}
 					}
 
 					return base;
@@ -370,7 +383,7 @@ impl CombatCharacter {
 		}
 	}
 
-	pub fn do_zero_stamina(mut self, killer: Option<&mut CombatCharacter>, others: &mut HashMap<GUID, Entity>, seed: &mut StdRng) {
+	pub fn do_on_zero_stamina(mut self, killer: Option<&mut CombatCharacter>, others: &mut HashMap<GUID, Entity>, seed: &mut StdRng) {
 		// Perk::Ethel_LingeringToxins
 		{
 			let mut self_adjacent_center: Option<&mut Entity> = None;
@@ -432,6 +445,17 @@ impl CombatCharacter {
 				if let Some(girl) = &mut killer.girl_stats {
 					girl.lust -= 10;
 				}
+			}
+
+			if let Some(Perk::Nema(NemaPerk::Regret)) = get_perk!(killer, Perk::Nema(NemaPerk::BattleMage_Triumph)) {
+				let composure_debuff = TargetApplier::Debuff(DebuffApplier::Standard {
+					duration_ms: 5000,
+					stat: ModifiableStat::COMPOSURE,
+					stat_decrease: 15,
+					apply_chance: None,
+				});
+
+				composure_debuff.apply_self(killer, others, seed, false);
 			}
 		}
 		
