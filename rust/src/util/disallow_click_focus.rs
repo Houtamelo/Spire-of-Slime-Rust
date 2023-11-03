@@ -1,5 +1,6 @@
 use gdnative::api::InputEventMouseButton;
 use gdnative::prelude::*;
+use crate::SomeInspector;
 
 #[derive(NativeClass)]
 #[inherit(Control)]
@@ -13,11 +14,12 @@ impl DisallowClickFocus {
 
 	#[method]
 	fn _gui_input(&self, #[base] _owner: &Control, event: Ref<InputEvent>) {
-		let event = unsafe { event.assume_safe() };
-		if let Some(mouse_button_event) = event.cast::<InputEventMouseButton>() {
-			if mouse_button_event.is_pressed() {
-				_owner.release_focus();
-			}
+		unsafe {
+			event.assume_safe().cast::<InputEventMouseButton>().on_some(|event| {
+				if event.is_pressed() {
+					_owner.release_focus();
+				}
+			});
 		}
 	}
 }

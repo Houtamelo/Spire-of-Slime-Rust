@@ -11,31 +11,26 @@ use crate::save::*;
 use crate::util::{panel_are_you_sure};
 use crate::util::panel_are_you_sure::PanelAreYouSure;
 
-#[derive(NativeClass)]
+#[derive(NativeClass, Default)]
 #[inherit(Control)]
 pub struct MainMenu {
-	#[property] path_background: NodePath,
-	background: Option<Ref<Control>>,
+	#[property] background: Option<Ref<Control>>,
 
 	// Panel - NEW GAME
-	#[property] path_panel_new_game: NodePath,
-	panel_new_game: Option<Ref<Control>>,
-	#[property] path_fake_toggle_iron_gauntlet: NodePath,
-	fake_toggle_iron_gauntlet: Option<Ref<Button>>,
-	iron_gauntlet_times_pressed: usize,
-	#[property] path_label_easter_egg: NodePath,
-	label_easter_egg: Option<Ref<Label>>,
-	tween_easter_egg_text: Option<Ref<SceneTreeTween>>,
-	#[property] path_button_new_game: NodePath,
-	button_new_game: Option<Ref<Button>>,
-	#[property] path_line_edit_save_name: NodePath,
-	line_edit_save_name: Option<Ref<LineEdit>>,
-	#[property] path_button_start_game: NodePath,
-	button_start_game: Option<Ref<Button>>,
-	#[property] path_panel_are_you_sure_overwrite_save: NodePath,
-	panel_are_you_sure_overwrite_save: Option<Instance<PanelAreYouSure>>,
+	#[property] panel_new_game           : Option<Ref<Control >>,
+	#[property] fake_toggle_iron_gauntlet: Option<Ref<Button  >>, iron_gauntlet_times_pressed: usize,
+	#[property] label_easter_egg         : Option<Ref<Label   >>, tween_easter_egg_text: Option<Ref<SceneTreeTween>>,
+	#[property] button_new_game          : Option<Ref<Button  >>,
+	#[property] line_edit_save_name      : Option<Ref<LineEdit>>,
+	#[property] button_start_game        : Option<Ref<Button  >>,
+	#[property] path_panel_are_you_sure_overwrite_save: NodePath, panel_are_you_sure_overwrite_save: Option<Instance<PanelAreYouSure>>,
 	// Panel - NEW GAME
 
+	// Panel - LOAD GAME
+	#[property] panel_load_game       : Option<Ref<Control    >>,
+	#[property] container_load_buttons: Option<Ref<Control    >>,
+	#[property] prefab_load_button    : Option<Ref<PackedScene>>,
+	// Panel - LOAD GAME
 }
 
 fn crash_game() {
@@ -45,87 +40,52 @@ fn crash_game() {
 #[methods]
 impl MainMenu {
 	fn new(_owner: &Control) -> Self {
-		MainMenu {
-			path_background               : NodePath::default(), background               : None,
-			path_panel_new_game           : NodePath::default(), panel_new_game           : None,
-			path_fake_toggle_iron_gauntlet: NodePath::default(), fake_toggle_iron_gauntlet: None, iron_gauntlet_times_pressed: 0,
-			path_label_easter_egg         : NodePath::default(), label_easter_egg         : None, tween_easter_egg_text: None,
-			path_button_new_game          : NodePath::default(), button_new_game: None,
-			path_line_edit_save_name      : NodePath::default(), line_edit_save_name      : None,
-			path_button_start_game        : NodePath::default(), button_start_game: None,
-			path_panel_are_you_sure_overwrite_save: NodePath::default(), panel_are_you_sure_overwrite_save: None,
-		}
+		MainMenu::default()
 	}
 
 	#[method]
 	fn _ready(&mut self, #[base] owner: &Control) {
 		let owner_ref = unsafe { owner.assume_shared() };
 
+		assert!(self.panel_new_game.is_some());
+		assert!(self.label_easter_egg.is_some());
+		assert!(self.line_edit_save_name.is_some());
+		assert!(self.background.is_some());
+		assert!(self.button_new_game.is_some());
+		assert!(self.button_start_game.is_some());
+
+		self.background.on_sane(|bg| bg.connect("gui_input ", owner_ref, "_on_background_gui_input",
+		                                        VariantArray::new_shared(), ConnectFlags::DEFERRED.into()).report_on_err());
+		self.button_new_game.on_sane(|bt| bt.connect("pressed", owner_ref, "_on_button_clicked_new_game",
+		                                             VariantArray::new_shared(), ConnectFlags::DEFERRED.into()).report_on_err());
+		self.button_start_game.on_sane(|bt| bt.connect("pressed", owner_ref, "_on_button_clicked_start_game",
+		                                               VariantArray::new_shared(), ConnectFlags::DEFERRED.into()).report_on_err());
 		{
-			let Some(background) = (unsafe { owner.get_node_as::<Control>(self.path_background.new_ref()) })
-					else { godot_error!("Failed to get background");return; };
-			self.background = Some(unsafe { background.assume_shared() });
-
-			background.connect("gui_input ", owner_ref, "_on_background_gui_input",
-			                   VariantArray::new_shared(), ConnectFlags::DEFERRED.into()).report_on_err();
-		}
-
-		let Some(panel_new_game) = (unsafe { owner.get_node_as::<Control>(self.path_panel_new_game.new_ref()) })
-				else { godot_error!("Failed to get panel_new_game"); return; };
-		self.panel_new_game = Some( unsafe { panel_new_game.assume_shared() });
-
-		{
-			let Some(fake_toggle_iron_gauntlet) = (unsafe { owner.get_node_as::<Button>(self.path_fake_toggle_iron_gauntlet.new_ref()) })
-					else { godot_error!("Failed to get fake_toggle_iron_gauntlet"); return; };
-			self.fake_toggle_iron_gauntlet = Some(unsafe { fake_toggle_iron_gauntlet.assume_shared() });
+			assert!(self.fake_toggle_iron_gauntlet.is_some());
 
 			let config = ConfigFile::new();
 			config.load(crate::config_path)
-					.on_err(|error| {
-						godot_error!("Failed to load config.cfg: {}", error);
-						config.set_value("iron_gauntlet", "times_pressed", 0);
-						config.save(crate::config_path).report_on_err();
-					});
+			      .on_err(|error| {
+				      godot_error!("Failed to load config.cfg: {}", error);
+				      config.set_value("iron_gauntlet", "times_pressed", 0);
+				      config.save(crate::config_path).report_on_err();
+			      });
 
 			self.iron_gauntlet_times_pressed = config.get_value("iron_gauntlet", "times_pressed", 0).to().unwrap();
+			self.fake_toggle_iron_gauntlet.on_sane(|toggle| toggle.connect("pressed", owner_ref, "_on_fake_toggle_iron_gauntlet_pressed",
+			                                                               VariantArray::new_shared(), ConnectFlags::DEFERRED.into()).report_on_err());
+		}
 
-			fake_toggle_iron_gauntlet.connect("pressed", owner_ref, "_on_fake_toggle_iron_gauntlet_pressed",
+		{
+			let Some(panel_are_you_sure) = (unsafe { owner.get_node_as_instance::<PanelAreYouSure>(self.path_panel_are_you_sure_overwrite_save.new_ref()) })
+					else {
+						godot_error!("Failed to get panel_are_you_sure");
+						return;
+					};
+			self.panel_are_you_sure_overwrite_save = Some(panel_are_you_sure.clone().claim());
+
+			panel_are_you_sure.base().connect(panel_are_you_sure::signal_yes, owner_ref, "_on_panel_are_you_sure_overwrite_save_yes",
 			                                  VariantArray::new_shared(), ConnectFlags::DEFERRED.into()).report_on_err();
-		}
-
-		let Some(label_easter_egg) = (unsafe { owner.get_node_as::<Label>(self.path_label_easter_egg.new_ref()) })
-				else { godot_error!("Failed to get label_easter_egg"); return; };
-		self.label_easter_egg = Some( unsafe { label_easter_egg.assume_shared() });
-
-		{
-			let Some(button_new_game) = (unsafe { owner.get_node_as::<Button>(self.path_button_new_game.new_ref()) })
-					else { godot_error!("Failed to get buton_new_game"); return; };
-			self.button_new_game = Some(unsafe { button_new_game.assume_shared() });
-
-			button_new_game.connect("pressed", owner_ref, "_on_button_clicked_new_game",
-			                        VariantArray::new_shared(), ConnectFlags::DEFERRED.into()).report_on_err();
-		}
-
-		let Some(line_edit_save_name) = (unsafe { owner.get_node_as::<LineEdit>(self.path_line_edit_save_name.new_ref()) })
-				else { godot_error!("Failed to get line_edit_save_name"); return; };
-		self.line_edit_save_name = Some( unsafe { line_edit_save_name.assume_shared() });
-
-		{
-			let Some(buton_start_game) = (unsafe { owner.get_node_as::<Button>(self.path_button_start_game.new_ref()) })
-					else { godot_error!("Failed to get buton_start_game"); return; };
-			self.button_start_game = Some(unsafe { buton_start_game.assume_shared() });
-
-			buton_start_game.connect("pressed", owner_ref, "_on_button_clicked_start_game",
-			                         VariantArray::new_shared(), ConnectFlags::DEFERRED.into()).report_on_err();
-		}
-
-		{
-			let Some(are_you_sure) = (unsafe { owner.get_node_as_instance::<PanelAreYouSure>(self.path_panel_are_you_sure_overwrite_save.new_ref()) })
-					else { godot_error!("Failed to get panel_are_you_sure"); return; };
-			self.panel_are_you_sure_overwrite_save = Some(are_you_sure.clone().claim());
-
-			are_you_sure.base().connect(panel_are_you_sure::signal_yes, owner_ref, "_on_panel_are_you_sure_overwrite_save_yes",
-			                            VariantArray::new_shared(), ConnectFlags::DEFERRED.into()).report_on_err();
 		}
 	}
 

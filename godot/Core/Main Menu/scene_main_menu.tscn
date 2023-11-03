@@ -107,9 +107,10 @@ expand_icon = true
 margin_left = 682.0
 margin_top = 425.0
 margin_right = 1288.0
-margin_bottom = 894.0
+margin_bottom = 762.0
 mouse_filter = 0
 texture = ExtResource( 6 )
+expand = true
 
 [node name="fake-toggle_iron-gauntlet" type="Button" parent="panel_new-game"]
 margin_left = 180.0
@@ -126,11 +127,28 @@ icon = ExtResource( 11 )
 align = 0
 expand_icon = true
 
+[node name="line-edit_save-name" type="LineEdit" parent="panel_new-game"]
+margin_left = 123.0
+margin_top = 167.41
+margin_right = 483.0
+margin_bottom = 217.41
+custom_fonts/font = ExtResource( 10 )
+custom_styles/read_only = SubResource( 1 )
+custom_styles/focus = SubResource( 2 )
+custom_styles/normal = SubResource( 3 )
+align = 1
+max_length = 32
+context_menu_enabled = false
+shortcut_keys_enabled = false
+placeholder_text = "Save Name"
+placeholder_alpha = 1.0
+caret_blink = true
+
 [node name="button_start-game" type="Button" parent="panel_new-game"]
 margin_left = 215.0
-margin_top = 394.0
+margin_top = 282.68
 margin_right = 409.0
-margin_bottom = 433.25
+margin_bottom = 321.93
 custom_colors/font_color_disabled = Color( 1, 1, 1, 1 )
 custom_colors/font_color_focus = Color( 0.698039, 0, 0.313726, 1 )
 custom_colors/font_color = Color( 1, 1, 1, 1 )
@@ -143,23 +161,6 @@ custom_styles/focus = ExtResource( 7 )
 custom_styles/disabled = ExtResource( 8 )
 custom_styles/normal = ExtResource( 8 )
 text = "Start Game"
-
-[node name="line-edit_save-name" type="LineEdit" parent="panel_new-game"]
-margin_left = 123.0
-margin_top = 246.0
-margin_right = 483.0
-margin_bottom = 296.0
-custom_fonts/font = ExtResource( 10 )
-custom_styles/read_only = SubResource( 1 )
-custom_styles/focus = SubResource( 2 )
-custom_styles/normal = SubResource( 3 )
-align = 1
-max_length = 32
-context_menu_enabled = false
-shortcut_keys_enabled = false
-placeholder_text = "Save Name"
-placeholder_alpha = 1.0
-caret_blink = true
 
 [node name="background_easter-egg" type="TextureRect" parent="panel_new-game"]
 margin_left = -8.0
