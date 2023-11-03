@@ -14,4 +14,5 @@ proc_macros = { path = "proc_macros" }
 lazy_static = "1.4.0"
 serde = { version = "1.0.180", features = ["derive"] }
 ron = "0.8.1"
+houta_utils = { package = "houtamelo_utils_gdnative", git = "https://github.com/Houtamelo/houtamelo_utils_gdnative.git", default-features = false }
 

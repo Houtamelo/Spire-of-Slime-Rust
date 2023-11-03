@@ -1,7 +1,7 @@
 use std::collections::HashMap;
 use rand::rngs::StdRng;
 use proc_macros::{get_perk};
-use crate::{BoundISize, iter_mut_allies_of};
+use crate::{BoundISize, iter_mut_allies_of, BoundU32};
 use crate::combat::effects::onSelf::SelfApplier;
 use crate::combat::effects::onTarget::{DebuffApplier, TargetApplier};
 use crate::combat::effects::persistent::{PersistentDebuff, PersistentEffect, PoisonAdditive};
@@ -18,7 +18,6 @@ use crate::combat::entity::skill_intention::SkillIntention;
 use crate::combat::ModifiableStat;
 use crate::combat::perk::Perk;
 use crate::util::{GUID, I_Range, TrackedTicks};
-use crate::util::bounded_u32::*;
 
 #[derive(Debug, Clone)]
 pub struct CombatCharacter {

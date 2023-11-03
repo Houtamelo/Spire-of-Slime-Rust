@@ -5,11 +5,11 @@ use std::ops::Not;
 use gdnative::api::*;
 use gdnative::api::object::ConnectFlags;
 use gdnative::prelude::*;
-use crate::*;
 use crate::save::file::*;
 use crate::save::*;
 use crate::util::{panel_are_you_sure};
 use crate::util::panel_are_you_sure::PanelAreYouSure;
+use crate::*;
 
 #[derive(NativeClass, Default)]
 #[inherit(Control)]

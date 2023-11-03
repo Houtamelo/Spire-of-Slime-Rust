@@ -10,7 +10,7 @@ insert_combat_character_fields!(
 #[derive(Debug, Clone)]
 pub struct EthelData {
 	pub(super) skills: Vec<&'static Skill>,
-	pub(super) composure   : crate::util::bounded_isize::BoundISize< -100, 300>,
+	pub(super) composure   : crate::BoundISize< -100, 300>,
 	pub(super) orgasm_limit: BoundU32<1, 8>,
 });
 

@@ -1,5 +1,4 @@
 use std::collections::{HashMap, HashSet};
-use std::ops::AddAssign;
 use gdnative::godot_error;
 use rand::prelude::StdRng;
 use rand::Rng;
@@ -297,7 +296,7 @@ fn resolve_target(mut caster: CombatCharacter, mut target: CombatCharacter, othe
 		}
 
 		if let Some(Perk::Nema(NemaPerk::AOE_Hatred { stacks })) = get_perk_mut!(target, Perk::Nema(NemaPerk::AOE_Hatred { .. })) {
-			crate::BoundU32::add_assign(stacks, 1);
+			*stacks += 1;
 		}
 	}
 
