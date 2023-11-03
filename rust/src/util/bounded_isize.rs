@@ -1,310 +1,313 @@
-#[derive(Debug, Clone, Copy, Hash)]
-pub struct BoundISize<const MIN: isize, const MAX: isize> { inner_value: isize }
+use std::hash::{Hash, Hasher};
 
-macro_rules! bounded_isize {
-    ($MIN: literal, $MAX: literal) => {
-
-	    impl BoundISize<$MIN, $MAX> {
-		    pub fn new(inner_value: isize) -> Self {
-			    return Self { inner_value: inner_value.clamp($MIN, $MAX) };
-		    }
-
-		    pub fn get(&self) -> isize {
-			    return self.inner_value;
-		    }
-	    }
-
-	    impl std::ops::Add for BoundISize<$MIN, $MAX> {
-		    type Output = Self;
-
-		    fn add(self, other: Self) -> Self {
-			    return Self::new(self.inner_value + other.inner_value);
-		    }
-	    }
-
-	    impl std::ops::Add<isize> for BoundISize<$MIN, $MAX> {
-		    type Output = Self;
-
-		    fn add(self, other: isize) -> Self {
-			    return Self::new(self.inner_value + other);
-		    }
-	    }
-
-	    impl std::ops::AddAssign for BoundISize<$MIN, $MAX> {
-		    fn add_assign(&mut self, other: Self) {
-			    self.inner_value = (self.inner_value + other.inner_value).clamp($MIN, $MAX);
-		    }
-	    }
-
-	    impl std::ops::AddAssign<isize> for BoundISize<$MIN, $MAX> {
-		    fn add_assign(&mut self, other: isize) {
-			    self.inner_value = (self.inner_value + other).clamp($MIN, $MAX);
-		    }
-	    }
-
-	    impl std::ops::Sub for BoundISize<$MIN, $MAX> {
-		    type Output = Self;
-
-		    fn sub(self, other: Self) -> Self {
-			    return Self::new(self.inner_value - other.inner_value);
-		    }
-	    }
-
-	    impl std::ops::Sub<isize> for BoundISize<$MIN, $MAX> {
-		    type Output = Self;
-
-		    fn sub(self, other: isize) -> Self {
-			    return Self::new(self.inner_value - other);
-		    }
-	    }
-
-	    impl std::ops::SubAssign for BoundISize<$MIN, $MAX> {
-		    fn sub_assign(&mut self, other: Self) {
-			    self.inner_value = (self.inner_value - other.inner_value).clamp($MIN, $MAX);
-		    }
-	    }
-
-	    impl std::ops::SubAssign<isize> for BoundISize<$MIN, $MAX> {
-		    fn sub_assign(&mut self, other: isize) {
-			    self.inner_value = (self.inner_value - other).clamp($MIN, $MAX);
-		    }
-	    }
-
-	    impl std::ops::Div for BoundISize<$MIN, $MAX> {
-		    type Output = Self;
-
-		    fn div(self, other: Self) -> Self {
-			    return Self::new(self.inner_value / other.inner_value);
-		    }
-	    }
-
-	    impl std::ops::Div<isize> for BoundISize<$MIN, $MAX> {
-		    type Output = Self;
-
-		    fn div(self, other: isize) -> Self {
-			    return Self::new(self.inner_value / other);
-		    }
-	    }
-
-	    impl std::ops::DivAssign for BoundISize<$MIN, $MAX> {
-		    fn div_assign(&mut self, other: Self) {
-			    self.inner_value = (self.inner_value / other.inner_value).clamp($MIN, $MAX);
-		    }
-	    }
-
-	    impl std::ops::DivAssign<isize> for BoundISize<$MIN, $MAX> {
-		    fn div_assign(&mut self, other: isize) {
-			    self.inner_value = (self.inner_value / other).clamp($MIN, $MAX);
-		    }
-	    }
-
-	    impl std::ops::Mul for BoundISize<$MIN, $MAX> {
-		    type Output = Self;
-
-		    fn mul(self, other: Self) -> Self {
-			    return Self::new(self.inner_value * other.inner_value);
-		    }
-	    }
-
-	    impl std::ops::Mul<isize> for BoundISize<$MIN, $MAX> {
-		    type Output = Self;
-
-		    fn mul(self, other: isize) -> Self {
-			    return Self::new(self.inner_value * other);
-		    }
-	    }
-
-	    impl std::ops::MulAssign for BoundISize<$MIN, $MAX> {
-		    fn mul_assign(&mut self, other: Self) {
-			    self.inner_value = (self.inner_value * other.inner_value).clamp($MIN, $MAX);
-		    }
-	    }
-
-	    impl std::ops::MulAssign<isize> for BoundISize<$MIN, $MAX> {
-		    fn mul_assign(&mut self, other: isize) {
-			    self.inner_value = (self.inner_value * other).clamp($MIN, $MAX);
-		    }
-	    }
-
-	    impl std::ops::Add<i32> for BoundISize<$MIN, $MAX> {
-		    type Output = Self;
-
-		    fn add(self, other: i32) -> Self {
-			    return Self::new(self.inner_value + other as isize);
-		    }
-	    }
-
-	    impl std::ops::AddAssign<i32> for BoundISize<$MIN, $MAX> {
-		    fn add_assign(&mut self, other: i32) {
-			    self.inner_value = (self.inner_value + other as isize).clamp($MIN, $MAX);
-		    }
-	    }
-
-	    impl std::ops::Sub<i32> for BoundISize<$MIN, $MAX> {
-		    type Output = Self;
-
-		    fn sub(self, other: i32) -> Self {
-			    return Self::new(self.inner_value - other as isize);
-		    }
-	    }
-
-	    impl std::ops::SubAssign<i32> for BoundISize<$MIN, $MAX> {
-		    fn sub_assign(&mut self, other: i32) {
-			    self.inner_value = (self.inner_value - other as isize).clamp($MIN, $MAX);
-		    }
-	    }
-
-	    impl std::ops::Div<i32> for BoundISize<$MIN, $MAX> {
-		    type Output = Self;
-
-		    fn div(self, other: i32) -> Self {
-			    return Self::new(self.inner_value / other as isize);
-		    }
-	    }
-
-	    impl std::ops::DivAssign<i32> for BoundISize<$MIN, $MAX> {
-		    fn div_assign(&mut self, other: i32) {
-			    self.inner_value = (self.inner_value / other as isize).clamp($MIN, $MAX);
-		    }
-	    }
-
-	    impl std::ops::Mul<i32> for BoundISize<$MIN, $MAX> {
-		    type Output = Self;
-
-		    fn mul(self, other: i32) -> Self {
-			    return Self::new(self.inner_value * other as isize);
-		    }
-	    }
-
-	    impl std::ops::MulAssign<i32> for BoundISize<$MIN, $MAX> {
-		    fn mul_assign(&mut self, other: i32) {
-			    self.inner_value = (self.inner_value * other as isize).clamp($MIN, $MAX);
-		    }
-	    }
-
-	    impl std::ops::Add<u32> for BoundISize<$MIN, $MAX> {
-		    type Output = Self;
-
-		    fn add(self, other: u32) -> Self {
-			    return Self::new(self.inner_value + other as isize);
-		    }
-	    }
-
-	    impl std::ops::AddAssign<u32> for BoundISize<$MIN, $MAX> {
-		    fn add_assign(&mut self, other: u32) {
-			    self.inner_value = (self.inner_value + other as isize).clamp($MIN, $MAX);
-		    }
-	    }
-
-	    impl std::ops::Sub<u32> for BoundISize<$MIN, $MAX> {
-		    type Output = Self;
-
-		    fn sub(self, other: u32) -> Self {
-			    return Self::new(self.inner_value - other as isize);
-		    }
-	    }
-
-	    impl std::ops::SubAssign<u32> for BoundISize<$MIN, $MAX> {
-		    fn sub_assign(&mut self, other: u32) {
-			    self.inner_value = (self.inner_value - other as isize).clamp($MIN, $MAX);
-		    }
-	    }
-
-	    impl std::ops::Div<u32> for BoundISize<$MIN, $MAX> {
-		    type Output = Self;
-
-		    fn div(self, other: u32) -> Self {
-			    return Self::new(self.inner_value / other as isize);
-		    }
-	    }
-
-	    impl std::ops::DivAssign<u32> for BoundISize<$MIN, $MAX> {
-		    fn div_assign(&mut self, other: u32) {
-			    self.inner_value = (self.inner_value / other as isize).clamp($MIN, $MAX);
-		    }
-	    }
-
-	    impl std::ops::Mul<u32> for BoundISize<$MIN, $MAX> {
-		    type Output = Self;
-
-		    fn mul(self, other: u32) -> Self {
-			    return Self::new(self.inner_value * other as isize);
-		    }
-	    }
-
-	    impl std::ops::MulAssign<u32> for BoundISize<$MIN, $MAX> {
-		    fn mul_assign(&mut self, other: u32) {
-			    self.inner_value = (self.inner_value * other as isize).clamp($MIN, $MAX);
-		    }
-	    }
-
-	    impl std::ops::Deref for BoundISize<$MIN, $MAX> {
-		    type Target = isize;
-
-		    fn deref(&self) -> &Self::Target {
-			    return &self.inner_value;
-		    }
-	    }
-
-	    impl std::ops::DerefMut for BoundISize<$MIN, $MAX> {
-		    fn deref_mut(&mut self) -> &mut Self::Target {
-			    return &mut self.inner_value;
-		    }
-	    }
-
-	    impl PartialEq<Self> for BoundISize<$MIN, $MAX> {
-		    fn eq(&self, other: &Self) -> bool {
-			    return self.inner_value == other.inner_value;
-		    }
-	    }
-
-	    impl PartialEq<isize> for BoundISize<$MIN, $MAX> {
-		    fn eq(&self, other: &isize) -> bool {
-			    return self.inner_value == *other;
-		    }
-	    }
-
-	    impl PartialEq<BoundISize<$MIN, $MAX>> for isize {
-		    fn eq(&self, other: &BoundISize<$MIN, $MAX>) -> bool {
-			    return *self == other.inner_value;
-		    }
-	    }
-
-	    impl Eq for BoundISize<$MIN, $MAX> {}
-
-	    impl From<isize> for BoundISize<$MIN, $MAX> {
-		    fn from(value: isize) -> Self {
-			    return Self::new(value);
-		    }
-	    }
-
-	    impl From<i32> for BoundISize<$MIN, $MAX> {
-		    fn from(value: i32) -> Self {
-			    return Self::new(value as isize);
-		    }
-	    }
-
-	    impl From<usize> for BoundISize<$MIN, $MAX> {
-		    fn from(value: usize) -> Self {
-			    return Self::new(value as isize);
-		    }
-	    }
-
-	    impl From<u32> for BoundISize<$MIN, $MAX> {
-		    fn from(value: u32) -> Self {
-			    return Self::new(value as isize);
-		    }
-	    }
-    };
+#[derive(Debug, Clone, Copy)]
+pub struct BoundISize<const MIN: isize, const MAX: isize> {
+	inner_value: isize
 }
 
-bounded_isize!(-100, 300);
-bounded_isize!(-100, 100);
-bounded_isize!(-300, 300);
-bounded_isize!(  20, 300);
-bounded_isize!(   0, 500);
-bounded_isize!(   0, 200);
-bounded_isize!(   0, 100);
+impl<const MIN: isize, const MAX: isize> BoundISize<MIN, MAX> {
+	pub fn new(inner_value: isize) -> Self {
+		return Self { inner_value: inner_value.clamp(MIN, MAX) };
+	}
+
+	pub fn get(&self) -> isize {
+		return self.inner_value;
+	}
+}
+
+impl<const MIN: isize, const MAX: isize> Default for BoundISize<MIN, MAX> {
+	fn default() -> Self {
+		return Self::new(0);
+	}
+}
+
+impl<const MIN: isize, const MAX: isize> std::ops::Add for BoundISize<MIN, MAX> {
+	type Output = Self;
+
+	fn add(self, other: Self) -> Self {
+		return Self::new(self.inner_value + other.inner_value);
+	}
+}
+
+impl<const MIN: isize, const MAX: isize> std::ops::Add<isize> for BoundISize<MIN, MAX> {
+	type Output = Self;
+
+	fn add(self, other: isize) -> Self {
+		return Self::new(self.inner_value + other);
+	}
+}
+
+impl<const MIN: isize, const MAX: isize> std::ops::AddAssign for BoundISize<MIN, MAX> {
+	fn add_assign(&mut self, other: Self) {
+		self.inner_value = (self.inner_value + other.inner_value).clamp(MIN, MAX);
+	}
+}
+
+impl<const MIN: isize, const MAX: isize> std::ops::AddAssign<isize> for BoundISize<MIN, MAX> {
+	fn add_assign(&mut self, other: isize) {
+		self.inner_value = (self.inner_value + other).clamp(MIN, MAX);
+	}
+}
+
+impl<const MIN: isize, const MAX: isize> std::ops::Sub for BoundISize<MIN, MAX> {
+	type Output = Self;
+
+	fn sub(self, other: Self) -> Self {
+		return Self::new(self.inner_value - other.inner_value);
+	}
+}
+
+impl<const MIN: isize, const MAX: isize> std::ops::Sub<isize> for BoundISize<MIN, MAX> {
+	type Output = Self;
+
+	fn sub(self, other: isize) -> Self {
+		return Self::new(self.inner_value - other);
+	}
+}
+
+impl<const MIN: isize, const MAX: isize> std::ops::SubAssign for BoundISize<MIN, MAX> {
+	fn sub_assign(&mut self, other: Self) {
+		self.inner_value = (self.inner_value - other.inner_value).clamp(MIN, MAX);
+	}
+}
+
+impl<const MIN: isize, const MAX: isize> std::ops::SubAssign<isize> for BoundISize<MIN, MAX> {
+	fn sub_assign(&mut self, other: isize) {
+		self.inner_value = (self.inner_value - other).clamp(MIN, MAX);
+	}
+}
+
+impl<const MIN: isize, const MAX: isize> std::ops::Div for BoundISize<MIN, MAX> {
+	type Output = Self;
+
+	fn div(self, other: Self) -> Self {
+		return Self::new(self.inner_value / other.inner_value);
+	}
+}
+
+impl<const MIN: isize, const MAX: isize> std::ops::Div<isize> for BoundISize<MIN, MAX> {
+	type Output = Self;
+
+	fn div(self, other: isize) -> Self {
+		return Self::new(self.inner_value / other);
+	}
+}
+
+impl<const MIN: isize, const MAX: isize> std::ops::DivAssign for BoundISize<MIN, MAX> {
+	fn div_assign(&mut self, other: Self) {
+		self.inner_value = (self.inner_value / other.inner_value).clamp(MIN, MAX);
+	}
+}
+
+impl<const MIN: isize, const MAX: isize> std::ops::DivAssign<isize> for BoundISize<MIN, MAX> {
+	fn div_assign(&mut self, other: isize) {
+		self.inner_value = (self.inner_value / other).clamp(MIN, MAX);
+	}
+}
+
+impl<const MIN: isize, const MAX: isize> std::ops::Mul for BoundISize<MIN, MAX> {
+	type Output = Self;
+
+	fn mul(self, other: Self) -> Self {
+		return Self::new(self.inner_value * other.inner_value);
+	}
+}
+
+impl<const MIN: isize, const MAX: isize> std::ops::Mul<isize> for BoundISize<MIN, MAX> {
+	type Output = Self;
+
+	fn mul(self, other: isize) -> Self {
+		return Self::new(self.inner_value * other);
+	}
+}
+
+impl<const MIN: isize, const MAX: isize> std::ops::MulAssign for BoundISize<MIN, MAX> {
+	fn mul_assign(&mut self, other: Self) {
+		self.inner_value = (self.inner_value * other.inner_value).clamp(MIN, MAX);
+	}
+}
+
+impl<const MIN: isize, const MAX: isize> std::ops::MulAssign<isize> for BoundISize<MIN, MAX> {
+	fn mul_assign(&mut self, other: isize) {
+		self.inner_value = (self.inner_value * other).clamp(MIN, MAX);
+	}
+}
+
+impl<const MIN: isize, const MAX: isize> std::ops::Add<i32> for BoundISize<MIN, MAX> {
+	type Output = Self;
+
+	fn add(self, other: i32) -> Self {
+		return Self::new(self.inner_value + other as isize);
+	}
+}
+
+impl<const MIN: isize, const MAX: isize> std::ops::AddAssign<i32> for BoundISize<MIN, MAX> {
+	fn add_assign(&mut self, other: i32) {
+		self.inner_value = (self.inner_value + other as isize).clamp(MIN, MAX);
+	}
+}
+
+impl<const MIN: isize, const MAX: isize> std::ops::Sub<i32> for BoundISize<MIN, MAX> {
+	type Output = Self;
+
+	fn sub(self, other: i32) -> Self {
+		return Self::new(self.inner_value - other as isize);
+	}
+}
+
+impl<const MIN: isize, const MAX: isize> std::ops::SubAssign<i32> for BoundISize<MIN, MAX> {
+	fn sub_assign(&mut self, other: i32) {
+		self.inner_value = (self.inner_value - other as isize).clamp(MIN, MAX);
+	}
+}
+
+impl<const MIN: isize, const MAX: isize> std::ops::Div<i32> for BoundISize<MIN, MAX> {
+	type Output = Self;
+
+	fn div(self, other: i32) -> Self {
+		return Self::new(self.inner_value / other as isize);
+	}
+}
+
+impl<const MIN: isize, const MAX: isize> std::ops::DivAssign<i32> for BoundISize<MIN, MAX> {
+	fn div_assign(&mut self, other: i32) {
+		self.inner_value = (self.inner_value / other as isize).clamp(MIN, MAX);
+	}
+}
+
+impl<const MIN: isize, const MAX: isize> std::ops::Mul<i32> for BoundISize<MIN, MAX> {
+	type Output = Self;
+
+	fn mul(self, other: i32) -> Self {
+		return Self::new(self.inner_value * other as isize);
+	}
+}
+
+impl<const MIN: isize, const MAX: isize> std::ops::MulAssign<i32> for BoundISize<MIN, MAX> {
+	fn mul_assign(&mut self, other: i32) {
+		self.inner_value = (self.inner_value * other as isize).clamp(MIN, MAX);
+	}
+}
+
+impl<const MIN: isize, const MAX: isize> std::ops::Add<u32> for BoundISize<MIN, MAX> {
+	type Output = Self;
+
+	fn add(self, other: u32) -> Self {
+		return Self::new(self.inner_value + other as isize);
+	}
+}
+
+impl<const MIN: isize, const MAX: isize> std::ops::AddAssign<u32> for BoundISize<MIN, MAX> {
+	fn add_assign(&mut self, other: u32) {
+		self.inner_value = (self.inner_value + other as isize).clamp(MIN, MAX);
+	}
+}
+
+impl<const MIN: isize, const MAX: isize> std::ops::Sub<u32> for BoundISize<MIN, MAX> {
+	type Output = Self;
+
+	fn sub(self, other: u32) -> Self {
+		return Self::new(self.inner_value - other as isize);
+	}
+}
+
+impl<const MIN: isize, const MAX: isize> std::ops::SubAssign<u32> for BoundISize<MIN, MAX> {
+	fn sub_assign(&mut self, other: u32) {
+		self.inner_value = (self.inner_value - other as isize).clamp(MIN, MAX);
+	}
+}
+
+impl<const MIN: isize, const MAX: isize> std::ops::Div<u32> for BoundISize<MIN, MAX> {
+	type Output = Self;
+
+	fn div(self, other: u32) -> Self {
+		return Self::new(self.inner_value / other as isize);
+	}
+}
+
+impl<const MIN: isize, const MAX: isize> std::ops::DivAssign<u32> for BoundISize<MIN, MAX> {
+	fn div_assign(&mut self, other: u32) {
+		self.inner_value = (self.inner_value / other as isize).clamp(MIN, MAX);
+	}
+}
+
+impl<const MIN: isize, const MAX: isize> std::ops::Mul<u32> for BoundISize<MIN, MAX> {
+	type Output = Self;
+
+	fn mul(self, other: u32) -> Self {
+		return Self::new(self.inner_value * other as isize);
+	}
+}
+
+impl<const MIN: isize, const MAX: isize> std::ops::MulAssign<u32> for BoundISize<MIN, MAX> {
+	fn mul_assign(&mut self, other: u32) {
+		self.inner_value = (self.inner_value * other as isize).clamp(MIN, MAX);
+	}
+}
+
+impl<const MIN: isize, const MAX: isize> std::ops::Deref for BoundISize<MIN, MAX> {
+	type Target = isize;
+
+	fn deref(&self) -> &Self::Target {
+		return &self.inner_value;
+	}
+}
+
+impl<const MIN: isize, const MAX: isize> std::ops::DerefMut for BoundISize<MIN, MAX> {
+	fn deref_mut(&mut self) -> &mut Self::Target {
+		return &mut self.inner_value;
+	}
+}
+
+impl<const MIN: isize, const MAX: isize> PartialEq<Self> for BoundISize<MIN, MAX> {
+	fn eq(&self, other: &Self) -> bool {
+		return self.inner_value == other.inner_value;
+	}
+}
+
+impl<const MIN: isize, const MAX: isize> PartialEq<isize> for BoundISize<MIN, MAX> {
+	fn eq(&self, other: &isize) -> bool {
+		return self.inner_value == *other;
+	}
+}
+
+impl<const MIN: isize, const MAX: isize> PartialEq<BoundISize<MIN, MAX>> for isize {
+	fn eq(&self, other: &BoundISize<MIN, MAX>) -> bool {
+		return *self == other.inner_value;
+	}
+}
+
+impl<const MIN: isize, const MAX: isize> Eq for BoundISize<MIN, MAX> {}
+
+impl<const MIN: isize, const MAX: isize> Hash for BoundISize<MIN, MAX> {
+	fn hash<H: Hasher>(&self, state: &mut H) {
+		self.inner_value.hash(state);
+	}
+}
+
+impl<const MIN: isize, const MAX: isize> From<isize> for BoundISize<MIN, MAX> {
+	fn from(value: isize) -> Self {
+		return Self::new(value);
+	}
+}
+
+impl<const MIN: isize, const MAX: isize> From<i32> for BoundISize<MIN, MAX> {
+	fn from(value: i32) -> Self {
+		return Self::new(value as isize);
+	}
+}
+
+impl<const MIN: isize, const MAX: isize> From<usize> for BoundISize<MIN, MAX> {
+	fn from(value: usize) -> Self {
+		return Self::new(value as isize);
+	}
+}
+
+impl<const MIN: isize, const MAX: isize> From<u32> for BoundISize<MIN, MAX> {
+	fn from(value: u32) -> Self {
+		return Self::new(value as isize);
+	}
+}
 
 
 // Creating a BoundISize instance with a value within the bounds should return the same value when calling get().
