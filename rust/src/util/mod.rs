@@ -1,9 +1,9 @@
 pub mod panel_are_you_sure;
 
+use houta_utils::prelude::*;
 use std::ops::Deref;
 use rand::prelude::StdRng;
 use rand::Rng;
-use crate::BoundU32;
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
 pub struct TrackedTicks {
@@ -18,14 +18,14 @@ impl TrackedTicks {
 			initial_ms: (seconds * 1000.0) as i64,
 		};
 	}
-	
+
 	pub fn from_milliseconds(milliseconds: i64) -> TrackedTicks {
 		return TrackedTicks {
 			remaining_ms: milliseconds,
 			initial_ms: milliseconds,
 		};
 	}
-	
+
 	pub fn seconds(&self) -> f64 {
 		return self.remaining_ms as f64 / 1000.0;
 	}
@@ -35,16 +35,6 @@ impl TrackedTicks {
 pub struct I_Range {
 	pub min: isize,
 	pub max: isize,
-}
-
-impl I_Range {
-	pub fn new(min: isize, max: isize) -> I_Range {
-		return if min > max {
-			I_Range { min, max: min }
-		} else {
-			I_Range { min, max }
-		}
-	}
 }
 
 pub trait Base100ChanceGenerator {

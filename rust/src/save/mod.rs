@@ -1,7 +1,7 @@
 pub mod file;
 
 use file::SaveFile;
-
+use houta_utils::prelude::*;
 use std::collections::HashMap;
 use gdnative::prelude::*;
 use gdnative::api::*;
@@ -90,7 +90,7 @@ impl SavesManager {
 		}
 
 		self.saves.insert(save.name.clone(), save);
-		self.write_saves_to_disk().report_on_err();
+		self.write_saves_to_disk().log_if_err();
 	}
 
 	pub fn delete_save(&mut self, save_name: &str) {
@@ -100,7 +100,7 @@ impl SavesManager {
 
 		let save_path = format!("{save_dir}/{save_name}");
 		let global_save_path = ProjectSettings::godot_singleton().globalize_path(save_path);
-		OS::godot_singleton().move_to_trash(global_save_path).report_on_err();
+		OS::godot_singleton().move_to_trash(global_save_path).log_if_err();
 	}
 
 	pub fn overwrite_save(&mut self, mut save: SaveFile) {
@@ -110,7 +110,7 @@ impl SavesManager {
 
 		save.is_dirty = true;
 		self.saves.insert(save.name.clone(), save);
-		self.write_saves_to_disk().report_on_err();
+		self.write_saves_to_disk().log_if_err();
 	}
 
 	fn write_saves_to_disk(&mut self) -> Result<(), GodotError> {
@@ -128,7 +128,7 @@ impl SavesManager {
 					let save_file_name = "main.ron";
 					let save_file_path = format!("{exclusive_folder_path}/{save_file_name}");
 
-					backup_old_main(exclusive_folder_path.as_str(), &exclusive_folder, save_file_path.as_str()).report_on_err();
+					backup_old_main(exclusive_folder_path.as_str(), &exclusive_folder, save_file_path.as_str()).log_if_err();
 
 					let save_file = File::new();
 					save_file.open(save_file_path, File::WRITE)?;

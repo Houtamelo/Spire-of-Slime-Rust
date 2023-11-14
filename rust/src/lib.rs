@@ -21,20 +21,17 @@ mod main_menu;
 pub mod save;
 
 pub const MAX_CHARACTERS_PER_TEAM: usize = 4;
-pub const config_path: &str = "user://config.cfg";
+pub const config_path: &str              = "user://config.cfg";
 
-pub use houta_utils::prelude::*;
-pub use gdnative::prelude::*;
-
-use crate::main_menu::MainMenu;
-use crate::util::panel_are_you_sure::PanelAreYouSure;
-
+use gdnative::prelude::*;
 
 // Function that registers all exposed classes to Godot
 fn init(handle: InitHandle) {
 	handle.add_class::<GameManager>();
-	handle.add_class::<PanelAreYouSure>();
-	handle.add_class::<MainMenu>();
+	handle.add_class::<util::panel_are_you_sure::PanelAreYouSure>();
+	handle.add_class::<main_menu::MainMenu>();
+	handle.add_class::<main_menu::load_button::LoadButton>();
+	handle.add_class::<save::SavesManager>();
 }
 
 godot_init!(init);
@@ -49,9 +46,9 @@ impl GameManager {
 	fn new(_owner: &Node) -> Self {
 		Self { }
 	}
-	
+
 	#[method]
 	fn time_planner_button_pressed(&mut self) {
-		
+
 	}
 }

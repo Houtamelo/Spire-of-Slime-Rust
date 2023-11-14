@@ -35,3 +35,4 @@ rust/debug/
 target/
 test.sh
 tramp
+.history/*

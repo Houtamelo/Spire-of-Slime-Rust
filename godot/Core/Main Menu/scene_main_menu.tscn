@@ -1,4 +1,4 @@
-[gd_scene load_steps=21 format=2]
+[gd_scene load_steps=22 format=2]
 
 [ext_resource path="res://Core/Main Menu/theme_main-menu.tres" type="Theme" id=1]
 [ext_resource path="res://Core/Main Menu/background.png" type="Texture" id=2]
@@ -16,6 +16,7 @@
 [ext_resource path="res://Core/Main Menu/UI/Load Game Panel/background_load-game.png" type="Texture" id=14]
 [ext_resource path="res://Fonts/font_audimat-mono_16.tres" type="DynamicFont" id=15]
 [ext_resource path="res://Core/Main Menu/UI/New Game Panel/panel_are-you-sure.png" type="Texture" id=16]
+[ext_resource path="res://Core/Main Menu/UI/Load Game Panel/prefab_save-slot.tscn" type="PackedScene" id=17]
 
 [sub_resource type="StyleBoxEmpty" id=1]
 
@@ -104,6 +105,7 @@ action_mode = 0
 expand_icon = true
 
 [node name="panel_new-game" type="TextureRect" parent="."]
+visible = false
 margin_left = 682.0
 margin_top = 425.0
 margin_right = 1288.0
@@ -250,8 +252,12 @@ follow_focus = true
 scroll_horizontal_enabled = false
 
 [node name="v_box_container" type="VBoxContainer" parent="background_load-game/scroll-container_load-game"]
+margin_right = 300.0
+margin_bottom = 24.0
 grow_horizontal = 2
 grow_vertical = 2
+
+[node name="button_save-slot" parent="background_load-game/scroll-container_load-game/v_box_container" instance=ExtResource( 17 )]
 
 [node name="background_credits" type="ColorRect" parent="."]
 visible = false
