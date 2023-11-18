@@ -8,10 +8,10 @@ pub(super) static signal_delete: &str = "delete_save_confirmed";
 #[extends(Control)]
 #[register_with(Self::register)]
 pub struct LoadButton {
-	#[property] button_load          : Option<Ref<Button>>,
-	#[property] button_delete        : Option<Ref<Button>>,
-	#[property] button_confirm_delete: Option<Ref<Button>>,
-	#[property] label                : Option<Ref<Label >>,
+	#[export_path] button_load          : Option<Ref<Button>>,
+	#[export_path] button_delete        : Option<Ref<Button>>,
+	#[export_path] button_confirm_delete: Option<Ref<Button>>,
+	#[export_path] label                : Option<Ref<Label >>,
 }
 
 #[methods]

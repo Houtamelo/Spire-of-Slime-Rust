@@ -1,35 +1,45 @@
 use gdrust_export_nodepath::extends;
 use gdnative::api::*;
 use gdnative::prelude::*;
-use crate::save::file::*;
+use crate::{save::file::*, GameManager};
 use crate::save::*;
 use crate::util::panel_are_you_sure;
 use crate::util::panel_are_you_sure::PanelAreYouSure;
 use houta_utils::prelude::*;
-use load_button::LoadButton;
 
 mod easters_save_name;
 mod easters_iron_gauntlet;
-pub(crate) mod load_button;
+mod load_button;
+
+pub(super) use load_button::LoadButton;
+
+pub(super) static call_main_menu_to_settings : &str = "main_menu_to_settings";
 
 #[extends(Control)]
-pub struct MainMenu {
-	#[property] background: Option<Ref<Control>>,
+pub(super) struct MainMenu {
+	#[export_path] background      : Option<Ref<Control>>,
+	#[export_path] button_new_game : Option<Ref<Button>>,
+	#[export_path] button_load_game: Option<Ref<Button>>,
+	#[export_path] button_settings : Option<Ref<Button>>,
+	#[export_path] button_credit   : Option<Ref<Button>>,
+	#[export_path] button_exit     : Option<Ref<Button>>,
 
-	// Panel - NEW GAME
-	#[property] panel_new_game           : Option<Ref<Control >>,
-	#[property] fake_toggle_iron_gauntlet: Option<Ref<Button  >>, iron_gauntlet_times_pressed: usize,
-	#[property] label_easter_egg         : Option<Ref<Label   >>, tween_easter_egg_text      : Option<Ref<SceneTreeTween>>,
-	#[property] button_new_game          : Option<Ref<Button  >>,
-	#[property] line_edit_save_name      : Option<Ref<LineEdit>>,
-	#[property] button_start_game        : Option<Ref<Button  >>,
-	#[property] path_panel_are_you_sure_overwrite_save: NodePath, panel_are_you_sure_overwrite_save: Option<Instance<PanelAreYouSure>>,
+	  // Panel - NEW GAME
+	#[export_path] panel_new_game           : Option<Ref<Control >>,
+	#[export_path] fake_toggle_iron_gauntlet: Option<Ref<Button  >>, iron_gauntlet_times_pressed: usize,
+	#[export_path] label_easter_egg         : Option<Ref<Label   >>, tween_easter_egg_text      : Option<Ref<SceneTreeTween>>,
+	#[export_path] line_edit_save_name      : Option<Ref<LineEdit>>,
+	#[export_path] button_start_game        : Option<Ref<Button  >>,
+	#[export_path] panel_are_you_sure_overwrite_save: Option<Instance<PanelAreYouSure>>,
 
 	// Panel - LOAD GAME
-	#[property] panel_load_game       : Option<Ref<Control    >>,
-	#[property] container_load_buttons: Option<Ref<Control    >>,
-	#[property] prefab_load_button    : Option<Ref<PackedScene>>,
+	#[export_path] panel_load_game       : Option<Ref<Control>>,
+	#[export_path] container_load_buttons: Option<Ref<Control>>,
+	#[property] prefab_load_button       : Option<Ref<PackedScene>>,
 	spawned_load_buttons: Vec<Instance<LoadButton>>,
+
+	// Panel - CREDITS
+	#[export_path] panel_credits: Option<Ref<Control>>,
 }
 
 fn crash_game() {
@@ -41,21 +51,30 @@ impl MainMenu {
 	#[method]
 	fn _ready(&mut self, #[base] owner: &Control) {
 		self.grab_nodes_by_path(owner);
-
 		let owner_ref = unsafe { owner.assume_shared() };
+
+		self.background.unwrap_manual().connect("gui_input", owner_ref, "_on_background_gui_input", VariantArray::new_shared(), Object::CONNECT_DEFERRED);
+
+		// Menu Buttons
+		{
+			self.button_new_game .unwrap_manual().connect("pressed", owner_ref, "_open_panel_new_game" , VariantArray::new_shared(), Object::CONNECT_DEFERRED);
+			self.button_load_game.unwrap_manual().connect("pressed", owner_ref, "_open_panel_load_game", VariantArray::new_shared(), Object::CONNECT_DEFERRED);
+			self.button_settings .unwrap_manual().connect("pressed", owner_ref, "_open_settings_menu"  , VariantArray::new_shared(), Object::CONNECT_DEFERRED);
+			self.button_credit   .unwrap_manual().connect("pressed", owner_ref, "_open_panel_credits"  , VariantArray::new_shared(), Object::CONNECT_DEFERRED);
+			self.button_exit     .unwrap_manual().connect("pressed", owner_ref, "_exit_game"           , VariantArray::new_shared(), Object::CONNECT_DEFERRED);
+		}
+
 		// Panel - NEW GAME
 		{
-			self.background       .unwrap_manual().connect("gui_input", owner_ref, "_on_background_gui_input"     , VariantArray::new_shared(), Object::CONNECT_DEFERRED);
-			self.button_new_game  .unwrap_manual().connect("pressed"  , owner_ref, "_on_button_clicked_new_game"  , VariantArray::new_shared(), Object::CONNECT_DEFERRED);
 			self.button_start_game.unwrap_manual().connect("pressed"  , owner_ref, "_on_button_clicked_start_game", VariantArray::new_shared(), Object::CONNECT_DEFERRED);
 
 			let config = ConfigFile::new();
 			config.load(crate::config_path)
-			      .touch_if_err(|err| {
-				      godot_error!("Failed to load config.cfg: {}", err);
-				      config.set_value("iron_gauntlet", "times_pressed", 0);
-				      config.save(crate::config_path).log_if_err();
-			      });
+			.touch_if_err(|err| {
+				godot_error!("Failed to load config.cfg: {}", err);
+				config.set_value("iron_gauntlet", "times_pressed", 0);
+				config.save(crate::config_path).log_if_err();
+			});
 
 			self.iron_gauntlet_times_pressed = config.get_value("iron_gauntlet", "times_pressed", 0).to().unwrap();
 			self.fake_toggle_iron_gauntlet.unwrap_manual().connect("pressed", owner_ref, "_on_fake_toggle_iron_gauntlet_pressed", VariantArray::new_shared(), Object::CONNECT_DEFERRED);
@@ -66,11 +85,47 @@ impl MainMenu {
 
 		// Panel - LOAD GAME
 		{
-			if let Some(container) = self.container_load_buttons.assert_tref_if_sane()
-					&& let Some(prefab) = self.prefab_load_button.assert_tref() {
-						//todo!
-			}
+			self.create_and_assign_load_buttons();
 		}
+	}
+
+	fn create_and_assign_load_buttons(&mut self) {
+		let container     = self.container_load_buttons.unwrap_manual();
+		let prefab        = self.prefab_load_button.unwrap_refcount();
+		let saves_manager = SavesManager::godot_singleton();
+		let saves         = saves_manager.map(|sm, _| sm.get_saves()).expect("Failed to get saves from SavesManager.");
+
+		let saves_count = saves.len();
+		let mut spawned_count = self.spawned_load_buttons.len();
+		while spawned_count <= saves_count {
+			let node = unsafe {
+				prefab.instance(PackedScene::GEN_EDIT_STATE_DISABLED).expect("Failed to create LoadButton node from packed scene")
+				.assume_safe_if_sane().expect("Failed to assume safe and sane LoadButton node from packed scene")
+			};
+			let control = unsafe { node.cast::<Control>().expect("Failed to cast LoadButton node to Control") };
+			let instance = control.cast_instance::<LoadButton>().expect("Failed to cast LoadButton control to LoadButton");
+			self.spawned_load_buttons.push(instance.claim());
+			spawned_count += 1;
+		}
+
+		let mut index = 0;
+		for save_name in saves.keys() {
+			self.spawned_load_buttons.get(index).unwrap_inst()
+			.map(|button, base| {
+				button.set_save_name(save_name);
+				base.set_visible(true);
+			});
+			index += 1;
+		}
+
+		self.spawned_load_buttons.iter().skip(index)
+		.for_each(|instance| {
+			instance.unwrap_inst()
+			.map(|button, base| {
+				button.set_save_name("");
+				base.set_visible(false);
+			});
+		});
 	}
 
 	#[method]
@@ -109,11 +164,6 @@ impl MainMenu {
 
 		let easter = easters_iron_gauntlet::get_easter(self.iron_gauntlet_times_pressed);
 		self.set_easter_egg_text(easter);
-	}
-
-	#[method]
-	fn _on_button_clicked_new_game(&self) {
-		self.panel_new_game.touch_assert_sane(|panel| panel.set_visible(!panel.is_visible()));
 	}
 
 	#[method]
@@ -189,5 +239,31 @@ impl MainMenu {
 				godot_error!("Failed to create tween for label_easter_egg");
 			}
 		}
+	}
+
+	#[method]
+	fn _open_panel_new_game(&self) {
+		self.panel_new_game.touch_assert_sane(|panel| panel.set_visible(!panel.is_visible()));
+	}
+
+	#[method]
+	fn _open_panel_load_game(&self) {
+		self.panel_load_game.touch_assert_sane(|panel| panel.set_visible(!panel.is_visible()));
+	}
+
+	#[method]
+	fn _open_settings_menu(&self) {
+		let game_manager = GameManager::godot_singleton();
+		unsafe { game_manager.base().call_deferred(call_main_menu_to_settings, &[]) };
+	}
+
+	#[method]
+	fn _open_panel_credits(&self) {
+		self.panel_credits.touch_assert_sane(|panel| panel.set_visible(!panel.is_visible()));
+	}
+
+	#[method]
+	fn _exit_game(&self) {
+		self.background.unwrap_manual().get_tree().unwrap_manual().quit(0);
 	}
 }

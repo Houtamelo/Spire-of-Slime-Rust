@@ -1,28 +1,22 @@
-pub mod file;
-
 use file::SaveFile;
 use houta_utils::prelude::*;
+use gdrust_export_nodepath::extends;
 use std::collections::HashMap;
+
+pub mod file;
 use gdnative::prelude::*;
 use gdnative::api::*;
 use crate::ErrInspector;
 
 static save_dir: &str = "user://saves/";
 
-#[derive(NativeClass)]
-#[inherit(Node)]
+#[extends(Node)]
 pub struct SavesManager {
 	saves: HashMap<String, SaveFile>,
 }
 
 #[methods]
 impl SavesManager {
-	fn new(_owner: &Node) -> Self {
-		SavesManager {
-			saves: HashMap::new(),
-		}
-	}
-
 	pub fn godot_singleton() -> TInstance<'static, SavesManager, Shared> {
 		let engine = Engine::godot_singleton();
 		let singleton_base_obj = engine.get_singleton("SavesManager").expect("Failed to get singleton SavesManager");
