@@ -1,6 +1,6 @@
 use std::ops::{RangeInclusive};
 use proc_macros::get_perk;
-use crate::BoundU32;
+use houta_utils::prelude::BoundUSize;
 use crate::combat::ModifiableStat;
 use crate::combat::effects::onSelf::SelfApplier;
 use crate::combat::effects::onTarget::TargetApplier;
@@ -35,7 +35,7 @@ impl OffensiveSkill {
 			DMGMode::NoDamage => { return None; }
 		};
 		
-		let (mut dmg_min, mut dmg_max) = (caster.dmg.min, caster.dmg.max);
+		let (mut dmg_min, mut dmg_max) = (*caster.dmg.start() as isize, *caster.dmg.end() as isize);
 		
 		let base_toughness = target.get_stat(ModifiableStat::TOUGHNESS);
 		let min_toughness = isize::min(base_toughness, 0);
@@ -55,7 +55,7 @@ impl OffensiveSkill {
 	}
 	
 	pub fn calc_dmg_independent(power: isize, toughness_reduction: isize, caster: &CombatCharacter, target: &CombatCharacter, crit: bool) -> RangeInclusive<isize> {
-		let (mut dmg_min, mut dmg_max) = (caster.dmg.min, caster.dmg.max);
+		let (mut dmg_min, mut dmg_max) = (*caster.dmg.start() as isize, *caster.dmg.end() as isize);
 		
 		let base_toughness = target.get_stat(ModifiableStat::TOUGHNESS);
 		let min_toughness = isize::min(base_toughness, 0);
@@ -74,7 +74,7 @@ impl OffensiveSkill {
 		return dmg_min..=dmg_max;
 	}
 	
-	pub fn final_hit_chance(&self, caster: &CombatCharacter, target: &CombatCharacter) -> Option<BoundU32<0, 100>> {
+	pub fn final_hit_chance(&self, caster: &CombatCharacter, target: &CombatCharacter) -> Option<BoundUSize<0, 100>> {
 		let acc = match self.acc_mode {
 			ACCMode::CanMiss { acc } => { acc }
 			ACCMode::NeverMiss => { return None; }
@@ -83,7 +83,7 @@ impl OffensiveSkill {
 		return Some(OffensiveSkill::final_hit_chance_independent(acc, caster, target));
 	}
 
-	pub fn final_hit_chance_independent(mut base_acc: isize, caster: &CombatCharacter, target: &CombatCharacter) -> BoundU32<0, 100> {
+	pub fn final_hit_chance_independent(mut base_acc: isize, caster: &CombatCharacter, target: &CombatCharacter) -> BoundUSize<0, 100> {
 		if let Some(Perk::Nema(NemaPerk::Poison_Disbelief)) = get_perk!(target, Perk::Nema(NemaPerk::Poison_Disbelief)) {
 			if caster.persistent_effects.iter().any(|effect| matches!(effect, PersistentEffect::Poison {..})) {
 				base_acc -= 20;
@@ -93,7 +93,7 @@ impl OffensiveSkill {
 		return (base_acc + caster.get_stat(ModifiableStat::ACC) - target.get_stat(ModifiableStat::DODGE)).into();
 	}
 	
-	pub fn final_crit_chance(&self, caster: &CombatCharacter) -> Option<BoundU32<0, 100>> {
+	pub fn final_crit_chance(&self, caster: &CombatCharacter) -> Option<BoundUSize<0, 100>> {
 		let crit = match self.crit {
 			CRITMode::CanCrit { crit_chance: crit } => { crit }
 			CRITMode::NeverCrit => { return None; }
@@ -102,7 +102,7 @@ impl OffensiveSkill {
 		return Some(OffensiveSkill::final_crit_chance_independent(crit, caster));
 	}
 	
-	pub fn final_crit_chance_independent(base_crit: isize, caster: &CombatCharacter) -> BoundU32<0, 100> {
+	pub fn final_crit_chance_independent(base_crit: isize, caster: &CombatCharacter) -> BoundUSize<0, 100> {
 		return (base_crit + caster.get_stat(ModifiableStat::CRIT)).into();
 	}
 }

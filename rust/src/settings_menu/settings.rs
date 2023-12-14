@@ -4,8 +4,8 @@ use gdnative::api::*;
 pub(super) static DEFAULT_SETTINGS: &[GameSetting] = &[
     GameSetting::WindowMaximized(false),
     GameSetting::WindowSize(1280, 720),
-    GameSetting::SkillOverlayMode(SkillOverlayMode::default()),
-    GameSetting::Language(Language::default()),
+    GameSetting::SkillOverlayMode(SkillOverlayMode::Auto { delay_ms: 3000 }),
+    GameSetting::Language(Language::English),
     GameSetting::TargetFramerate(60),
     GameSetting::DialogueTextSpeed(100),
     GameSetting::Vsync(true),
@@ -103,8 +103,8 @@ impl GameSetting {
         match variant {
             GameSetting::WindowMaximized  (_) => GameSetting::WindowMaximized(false),
             GameSetting::WindowSize       (_, _) => GameSetting::WindowSize(1280, 720),
-            GameSetting::SkillOverlayMode (_) => GameSetting::SkillOverlayMode(SkillOverlayMode::default()),
-            GameSetting::Language         (_) => GameSetting::Language(Language::default()),
+            GameSetting::SkillOverlayMode (_) => GameSetting::SkillOverlayMode(SkillOverlayMode::Auto { delay_ms: 3000 }),
+            GameSetting::Language         (_) => GameSetting::Language(Language::English),
             GameSetting::TargetFramerate  (_) => GameSetting::TargetFramerate(60),
             GameSetting::DialogueTextSpeed(_) => GameSetting::DialogueTextSpeed(100),
             GameSetting::Vsync            (_) => GameSetting::Vsync(true),
@@ -115,14 +115,14 @@ impl GameSetting {
         }
     }
 
-    pub fn get_saved<T>(key: &str, default: T) -> T where T: FromVariant + ToVariant {
+    pub fn get_saved<T>(key: &str, default: T) -> T where T: FromVariant + ToVariant + Clone {
         let config = ConfigFile::new();
         if let Err(error) = config.load(crate::config_path) {
             godot_warn!("Failed to load config file: {}", error);
             return default;
         }
 
-        let result = config.get_value("player_prefs", key, default);
+        let result = config.get_value("player_prefs", key, default.clone());
         match result.try_to::<T>() {
             Ok(ok) => return ok,
             Err(error) => {

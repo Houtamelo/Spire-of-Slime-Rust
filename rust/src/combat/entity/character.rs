@@ -1,7 +1,9 @@
 use std::collections::HashMap;
-use rand::rngs::StdRng;
-use proc_macros::{get_perk};
-use crate::{BoundISize, iter_mut_allies_of, BoundU32};
+use std::ops::RangeInclusive;
+use crate::iter_mut_allies_of;
+use houta_utils::prelude::{BoundISize, BoundUSize};
+use rand::prelude::StdRng;
+use proc_macros::get_perk;
 use crate::combat::effects::onSelf::SelfApplier;
 use crate::combat::effects::onTarget::{DebuffApplier, TargetApplier};
 use crate::combat::effects::persistent::{PersistentDebuff, PersistentEffect, PoisonAdditive};
@@ -17,7 +19,7 @@ use crate::combat::entity::position::{Direction, Position};
 use crate::combat::entity::skill_intention::SkillIntention;
 use crate::combat::ModifiableStat;
 use crate::combat::perk::Perk;
-use crate::util::{GUID, I_Range, TrackedTicks};
+use crate::util::{GUID, TrackedTicks};
 
 #[derive(Debug, Clone)]
 pub struct CombatCharacter {
@@ -36,12 +38,12 @@ pub struct CombatCharacter {
 	pub(super) move_rate  : BoundISize<-300, 300>,
 	pub(super) poison_res : BoundISize<-300, 300>,
 	pub(super) poison_rate: BoundISize<-300, 300>,
-	pub(super) spd        : BoundU32  <  20, 300>,
+	pub(super) spd        : BoundUSize < 20, 300>,
 	pub(super) acc        : BoundISize<-300, 300>,
 	pub(super) crit       : BoundISize<-300, 300>,
 	pub(super) dodge      : BoundISize<-300, 300>,
-	pub dmg: I_Range,
-	pub(super) power: BoundU32<0, 500>,
+	pub dmg: RangeInclusive<usize>,
+	pub(super) power: BoundUSize<0, 500>,
 	pub persistent_effects: Vec<PersistentEffect>,
 	pub perks: Vec<Perk>,
 	pub state: CharacterState,

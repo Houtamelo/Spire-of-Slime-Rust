@@ -1,5 +1,5 @@
 use gdnative::prelude::*;
-use houta_utils::prelude::*;
+use houta_utils_gdnative::prelude::*;
 use gdrust_export_nodepath::extends;
 
 pub static signal_yes: &str = "_on_yes";
@@ -22,8 +22,8 @@ impl PanelAreYouSure {
 	#[method]
 	fn _ready(&mut self, #[base] owner: &Control) {
 		let owner_ref = unsafe { owner.assume_shared() };
-		self.button_no .unwrap_manual().connect("pressed", owner_ref, "_on_no_pressed" , VariantArray::new_shared(), Object::CONNECT_DEFERRED);
-		self.button_yes.unwrap_manual().connect("pressed", owner_ref, "_on_yes_pressed", VariantArray::new_shared(), Object::CONNECT_DEFERRED);
+		self.button_no .unwrap_manual().connect("pressed", owner_ref, "_on_no_pressed" , VariantArray::new_shared(), Object::CONNECT_DEFERRED).log_if_err();
+		self.button_yes.unwrap_manual().connect("pressed", owner_ref, "_on_yes_pressed", VariantArray::new_shared(), Object::CONNECT_DEFERRED).log_if_err();
 	}
 
 	#[method]

@@ -1,21 +1,23 @@
-use gdrust_export_nodepath::extends;
-use gdnative::api::*;
-use gdnative::prelude::*;
-use crate::{save::file::*, GameManager};
-use crate::save::*;
-use crate::util::panel_are_you_sure;
-use crate::util::panel_are_you_sure::PanelAreYouSure;
-use houta_utils::prelude::*;
-
 mod easters_save_name;
 mod easters_iron_gauntlet;
 mod load_button;
 
+use gdrust_export_nodepath::extends;
+use gdnative::api::*;
+use gdnative::prelude::*;
+use crate::{saves::file::*, GameManager};
+use crate::saves::*;
+use crate::util::panel_are_you_sure;
+use crate::util::panel_are_you_sure::PanelAreYouSure;
+use houta_utils_gdnative::prelude::*;
+
 pub(super) use load_button::LoadButton;
 
-pub(super) static call_main_menu_to_settings : &str = "main_menu_to_settings";
+pub(super) const CALL_MAIN_MENU_TO_SETTINGS: &str = "main_menu_to_settings";
+pub(super) const CALL_MAIN_MENU_LOAD_GAME  : &str = "main_menu_load_game";
 
 #[extends(Control)]
+#[derive(Debug)]
 pub(super) struct MainMenu {
 	#[export_path] background      : Option<Ref<Control>>,
 	#[export_path] button_new_game : Option<Ref<Button>>,
@@ -53,20 +55,20 @@ impl MainMenu {
 		self.grab_nodes_by_path(owner);
 		let owner_ref = unsafe { owner.assume_shared() };
 
-		self.background.unwrap_manual().connect("gui_input", owner_ref, "_on_background_gui_input", VariantArray::new_shared(), Object::CONNECT_DEFERRED);
+		self.background.unwrap_manual().connect("gui_input", owner_ref, "_on_background_gui_input", VariantArray::new_shared(), Object::CONNECT_DEFERRED).log_if_err();
 
 		// Menu Buttons
 		{
-			self.button_new_game .unwrap_manual().connect("pressed", owner_ref, "_open_panel_new_game" , VariantArray::new_shared(), Object::CONNECT_DEFERRED);
-			self.button_load_game.unwrap_manual().connect("pressed", owner_ref, "_open_panel_load_game", VariantArray::new_shared(), Object::CONNECT_DEFERRED);
-			self.button_settings .unwrap_manual().connect("pressed", owner_ref, "_open_settings_menu"  , VariantArray::new_shared(), Object::CONNECT_DEFERRED);
-			self.button_credit   .unwrap_manual().connect("pressed", owner_ref, "_open_panel_credits"  , VariantArray::new_shared(), Object::CONNECT_DEFERRED);
-			self.button_exit     .unwrap_manual().connect("pressed", owner_ref, "_exit_game"           , VariantArray::new_shared(), Object::CONNECT_DEFERRED);
+			self.button_new_game .unwrap_manual().connect("pressed", owner_ref, "_open_panel_new_game" , VariantArray::new_shared(), Object::CONNECT_DEFERRED).log_if_err();
+			self.button_load_game.unwrap_manual().connect("pressed", owner_ref, "_open_panel_load_game", VariantArray::new_shared(), Object::CONNECT_DEFERRED).log_if_err();
+			self.button_settings .unwrap_manual().connect("pressed", owner_ref, "_open_settings_menu"  , VariantArray::new_shared(), Object::CONNECT_DEFERRED).log_if_err();
+			self.button_credit   .unwrap_manual().connect("pressed", owner_ref, "_open_panel_credits"  , VariantArray::new_shared(), Object::CONNECT_DEFERRED).log_if_err();
+			self.button_exit     .unwrap_manual().connect("pressed", owner_ref, "_exit_game"           , VariantArray::new_shared(), Object::CONNECT_DEFERRED).log_if_err();
 		}
 
 		// Panel - NEW GAME
 		{
-			self.button_start_game.unwrap_manual().connect("pressed"  , owner_ref, "_on_button_clicked_start_game", VariantArray::new_shared(), Object::CONNECT_DEFERRED);
+			self.button_start_game.unwrap_manual().connect("pressed", owner_ref, "_on_button_clicked_start_game", VariantArray::new_shared(), Object::CONNECT_DEFERRED).log_if_err();
 
 			let config = ConfigFile::new();
 			config.load(crate::config_path)
@@ -77,55 +79,72 @@ impl MainMenu {
 			});
 
 			self.iron_gauntlet_times_pressed = config.get_value("iron_gauntlet", "times_pressed", 0).to().unwrap();
-			self.fake_toggle_iron_gauntlet.unwrap_manual().connect("pressed", owner_ref, "_on_fake_toggle_iron_gauntlet_pressed", VariantArray::new_shared(), Object::CONNECT_DEFERRED);
+			self.fake_toggle_iron_gauntlet.unwrap_manual().connect("pressed", owner_ref, "_on_fake_toggle_iron_gauntlet_pressed", VariantArray::new_shared(), Object::CONNECT_DEFERRED).log_if_err();
 
-			self.panel_are_you_sure_overwrite_save.touch_assert_safe(|panel, base| base.connect(panel_are_you_sure::signal_yes, owner_ref, "_on_panel_are_you_sure_overwrite_save_yes",
-			VariantArray::new_shared(), Object::CONNECT_DEFERRED));
+			self.panel_are_you_sure_overwrite_save.touch_assert_safe(|_, base| base.connect(panel_are_you_sure::signal_yes, owner_ref, "_on_panel_are_you_sure_overwrite_save_yes", VariantArray::new_shared(), Object::CONNECT_DEFERRED).log_if_err());
 		}
 
 		// Panel - LOAD GAME
 		{
-			self.create_and_assign_load_buttons();
+			self.create_and_assign_load_buttons(&owner_ref);
 		}
 	}
 
-	fn create_and_assign_load_buttons(&mut self) {
-		let container     = self.container_load_buttons.unwrap_manual();
-		let prefab        = self.prefab_load_button.unwrap_refcount();
+	fn create_and_assign_load_buttons(&mut self, owner_ref: &Ref<Control>) {
+		let container= self.container_load_buttons.unwrap_manual();
+		let prefab= self.prefab_load_button.unwrap_refcount();
 		let saves_manager = SavesManager::godot_singleton();
-		let saves         = saves_manager.map(|sm, _| sm.get_saves()).expect("Failed to get saves from SavesManager.");
 
-		let saves_count = saves.len();
-		let mut spawned_count = self.spawned_load_buttons.len();
-		while spawned_count <= saves_count {
-			let node = unsafe {
-				prefab.instance(PackedScene::GEN_EDIT_STATE_DISABLED).expect("Failed to create LoadButton node from packed scene")
-				.assume_safe_if_sane().expect("Failed to assume safe and sane LoadButton node from packed scene")
-			};
-			let control = unsafe { node.cast::<Control>().expect("Failed to cast LoadButton node to Control") };
-			let instance = control.cast_instance::<LoadButton>().expect("Failed to cast LoadButton control to LoadButton");
-			self.spawned_load_buttons.push(instance.claim());
-			spawned_count += 1;
-		}
+		saves_manager.map(|sm: &SavesManager, _| {
+			let saves = sm.get_saves();
+			let saves_count = saves.len();
+			let mut spawned_count = self.spawned_load_buttons.len();
+			while spawned_count <= saves_count {
+				let node = unsafe {
+					prefab.instance(PackedScene::GEN_EDIT_STATE_DISABLED).expect("Failed to create LoadButton node from packed scene")
+						  .assume_safe_if_sane().expect("Failed to assume safe and sane LoadButton node from packed scene")
+				};
+				
+				node.connect(load_button::SIGNAL_LOAD  , owner_ref, "_on_load_button_clicked"  , VariantArray::new_shared(), Object::CONNECT_DEFERRED).log_if_err();
+				node.connect(load_button::SIGNAL_DELETE, owner_ref, "_on_delete_save_confirmed", VariantArray::new_shared(), Object::CONNECT_DEFERRED).log_if_err();
+				container.add_child(node, false);
+				let control = node.cast::<Control>().expect("Failed to cast LoadButton node to Control");
+				let instance = control.cast_instance::<LoadButton>().expect("Failed to cast LoadButton control to LoadButton");
+				self.spawned_load_buttons.push(instance.claim());
+				spawned_count += 1;
+			}
 
-		let mut index = 0;
-		for save_name in saves.keys() {
-			self.spawned_load_buttons.get(index).unwrap_inst()
-			.map(|button, base| {
-				button.set_save_name(save_name);
-				base.set_visible(true);
+			let mut index = 0;
+			for save_name in saves.keys() {
+				self.spawned_load_buttons.get(index)
+					.touch_assert_safe(|button, base| {
+						button.set_save_name(save_name);
+						base.set_visible(true);
+					});
+
+				index += 1;
+			}
+
+			self.spawned_load_buttons.iter().skip(index).for_each(|instance| {
+				instance.touch_assert_safe(|button, base| {
+					button.set_save_name("");
+					base.set_visible(false);
+				});
 			});
-			index += 1;
-		}
-
-		self.spawned_load_buttons.iter().skip(index)
-		.for_each(|instance| {
-			instance.unwrap_inst()
-			.map(|button, base| {
-				button.set_save_name("");
-				base.set_visible(false);
-			});
-		});
+		}).log_if_err();
+	}
+	
+	#[method]
+	fn _on_load_button_clicked(&self, save_name: GodotString) {
+		unsafe { GameManager::godot_singleton().base().call_deferred(CALL_MAIN_MENU_LOAD_GAME, &[save_name.to_variant()]) };
+	}
+	
+	#[method]
+	fn _on_delete_save_confirmed(&mut self, #[base] owner: &Control, save_name: GodotString) {
+		let saves_manager = SavesManager::godot_singleton();
+		saves_manager.map_mut(|manager, _| manager.delete_save(save_name.to_string().as_str())).log_if_err();
+		let owner_ref = unsafe { owner.assume_shared() };
+		self.create_and_assign_load_buttons(&owner_ref);
 	}
 
 	#[method]
@@ -170,7 +189,7 @@ impl MainMenu {
 	fn _on_button_clicked_start_game(&mut self) {
 		let save_name = self.typed_save_name();
 		if save_name.len() == 0 {
-			self.set_easter_egg_text("You need to enter a save name");
+			self.set_easter_egg_text("You need to enter a saves name");
 			return;
 		}
 
@@ -180,11 +199,11 @@ impl MainMenu {
 		saves_manager.map_mut(|manager, _| {
 			if manager.get_saves().get(&save_name).is_some() {
 				self.panel_are_you_sure_overwrite_save.touch_assert_safe(|panel, base| {
-					panel.set_text(format!("Are you sure you want to overwrite save: {}", save_name).as_str());
+					panel.set_text(format!("Are you sure you want to overwrite saves: {}", save_name).as_str());
 					base.set_visible(true);
 				});
 
-				self.line_edit_save_name.unwrap_manual().release_focus();  // to make sure the player can't edit the save name while the are you sure panel is open
+				self.line_edit_save_name.unwrap_manual().release_focus();  // to make sure the player can't edit the saves name while the are you sure panel is open
 			}
 			else {
 				manager.add_save(save_file.clone());
@@ -253,8 +272,7 @@ impl MainMenu {
 
 	#[method]
 	fn _open_settings_menu(&self) {
-		let game_manager = GameManager::godot_singleton();
-		unsafe { game_manager.base().call_deferred(call_main_menu_to_settings, &[]) };
+		unsafe { GameManager::godot_singleton().base().call_deferred(CALL_MAIN_MENU_TO_SETTINGS, &[]) };
 	}
 
 	#[method]

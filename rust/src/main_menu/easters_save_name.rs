@@ -24,7 +24,7 @@ pub (super) fn get_name_easter(input: &str) -> Option<&'static str> {
 		"legendoflegaia"     => Some("My favorite childhood game, though I never managed to finish it cause I was scared of the zombies in the tower, I did manage to catch all fish tho"),
 		"stardewvalley"      => Some("MOOOOONEEEYYYYY"),
 		"fasterthanlight" | "ftl"=> Some("I'm not sure if I should say this, but I'm pretty sure it's a game about space travel (copilot suggested this and I couldn't let it slide) \nSeriously though, that game is nuts, an absolute masterpiece"),
-		"intothebreach"      => Some("A gem, a game, a gem in a game, are you gonna save humanity on this timeline as well?"),
+		"intothebreach"      => Some("A gem, a game, a gem in a game, are you gonna saves humanity on this timeline as well?"),
 		"crusaderkings"      => Some("I hate how long it takes to fabricate claims, but I love the way the game is set up"),
 		"deadcells"          => Some("I wonder if they would make a crossover with me..."),
 		"deadinvinland"      => Some("The rebel kid is amazing, so are the developers"),

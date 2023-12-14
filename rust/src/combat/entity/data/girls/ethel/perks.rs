@@ -1,10 +1,10 @@
-use crate::BoundU32;
+use houta_utils::prelude::BoundUSize;
 use crate::util::GUID;
 
 #[derive(Debug, Clone)]
 pub enum EthelPerk {
 	Bruiser_DisruptiveManeuvers,
-	Bruiser_EnragingPain { stacks: BoundU32<0, 6> },
+	Bruiser_EnragingPain { stacks: BoundUSize<0, 6> },
 	Bruiser_FocusedSwings,
 	Bruiser_Grudge { active: bool },
 	Bruiser_Relentless { stacks: usize },
@@ -28,7 +28,7 @@ pub enum EthelPerk {
 	Poison_PoisonCoating,
 	Tank_Conspicuous, //todo! needs AI implementation
 	Tank_Energetic,
-	Tank_ReactiveDefense { stacks: BoundU32<0, 6> },
+	Tank_ReactiveDefense { stacks: BoundUSize<0, 6> },
 	Tank_Spikeful,
 	Tank_Vanguard { cooldown_ms: i64},
 }

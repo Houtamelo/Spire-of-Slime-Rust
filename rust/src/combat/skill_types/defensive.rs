@@ -1,4 +1,4 @@
-use crate::BoundU32;
+use houta_utils::prelude::BoundUSize;
 use crate::combat::effects::onSelf::SelfApplier;
 use crate::combat::effects::onTarget::TargetApplier;
 use crate::combat::entity::character::CombatCharacter;
@@ -21,7 +21,7 @@ pub struct DefensiveSkill {
 }
 
 impl DefensiveSkill {
-	pub fn calc_crit_chance(&self, caster: &CombatCharacter) -> Option<BoundU32<0, 100>> {
+	pub fn calc_crit_chance(&self, caster: &CombatCharacter) -> Option<BoundUSize<0, 100>> {
 		let crit = match self.crit {
 			CRITMode::CanCrit { crit_chance: crit } => crit,
 			CRITMode::NeverCrit => return None,

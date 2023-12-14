@@ -1,9 +1,9 @@
+use std::ops::RangeInclusive;
 use crate::combat::effects::onSelf::SelfApplier;
 use crate::combat::effects::onTarget::TargetApplier;
 use crate::combat::entity::character::CombatCharacter;
 use crate::combat::ModifiableStat;
 use crate::combat::skill_types::*;
-use crate::util::I_Range;
 
 #[derive(Debug, Clone)]
 pub struct LewdSkill {
@@ -22,13 +22,13 @@ pub struct LewdSkill {
 }
 
 impl LewdSkill {
-	pub fn calc_dmg(&self, caster: &CombatCharacter, target: &CombatCharacter, crit: bool) -> Option<I_Range> {
+	pub fn calc_dmg(&self, caster: &CombatCharacter, target: &CombatCharacter, crit: bool) -> Option<RangeInclusive<isize>> {
 		let (power, toughness_reduction) = match self.dmg {
 			DMGMode::Power { power, toughness_reduction } => { (power, toughness_reduction) }
 			DMGMode::NoDamage => { return None; }
 		};
 
-		let (mut dmg_min, mut dmg_max) = (caster.dmg.min, caster.dmg.max);
+		let (mut dmg_min, mut dmg_max) = (*caster.dmg.start() as isize, *caster.dmg.end() as isize);
 
 		let base_toughness = target.get_stat(ModifiableStat::TOUGHNESS);
 		let min_toughness = isize::min(base_toughness, 0);
@@ -44,7 +44,7 @@ impl LewdSkill {
 			dmg_min = (dmg_min * 150) / 100;
 		}
 
-		return Some(I_Range::new(dmg_min, dmg_max));
+		return Some(dmg_min..=dmg_max);
 	}
 
 	pub fn calc_hit_chance(&self, caster: &CombatCharacter, target: &CombatCharacter) -> Option<isize> {

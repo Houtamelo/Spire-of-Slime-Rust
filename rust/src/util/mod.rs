@@ -31,19 +31,13 @@ impl TrackedTicks {
 	}
 }
 
-#[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
-pub struct I_Range {
-	pub min: isize,
-	pub max: isize,
-}
-
 pub trait Base100ChanceGenerator {
-	fn base100_chance(&mut self, chance: BoundU32<0, 100>) -> bool;
+	fn base100_chance(&mut self, chance: BoundUSize<0, 100>) -> bool;
 }
 
 impl Base100ChanceGenerator for StdRng {
-	fn base100_chance(&mut self, chance: BoundU32<0, 100>) -> bool {
-		return  self.gen_ratio(chance.get(), 100);
+	fn base100_chance(&mut self, chance: BoundUSize<0, 100>) -> bool {
+		return  self.gen_ratio(chance.get() as u32, 100);
 	}
 }
 

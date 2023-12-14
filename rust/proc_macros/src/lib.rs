@@ -8,21 +8,21 @@ use proc_macro::TokenStream;
 pub fn insert_combat_character_fields(_item: TokenStream) -> TokenStream {
 	let mut output = _item.to_string();
 	let fields =
-			"	pub(super) size: crate::BoundU32<1, 4>,
+			"	pub(super) size: houta_utils::prelude::BoundUSize<1, 4>,
     pub(super) dmg        : std::ops::RangeInclusive<usize>,
-    pub(super) spd        : crate::BoundU32<20, 300>,
-    pub(super) acc        : crate::BoundISize<-300, 300>,
-    pub(super) crit       : crate::BoundISize<-300, 300>,
-    pub(super) dodge      : crate::BoundISize<-300, 300>,
-    pub(super) stamina_max: crate::BoundU32<1, 500>,
-    pub(super) toughness  : crate::BoundISize<-100, 100>,
-    pub(super) stun_def   : crate::BoundISize<-100, 300>,
-    pub(super) debuff_res : crate::BoundISize<-300, 300>,
-    pub(super) debuff_rate: crate::BoundISize<-300, 300>,
-    pub(super) move_res   : crate::BoundISize<-300, 300>,
-    pub(super) move_rate  : crate::BoundISize<-300, 300>,
-    pub(super) poison_res : crate::BoundISize<-300, 300>,
-    pub(super) poison_rate: crate::BoundISize<-300, 300>,";
+    pub(super) spd        : houta_utils::prelude::BoundUSize<20, 300>,
+    pub(super) acc        : houta_utils::prelude::BoundISize<-300, 300>,
+    pub(super) crit       : houta_utils::prelude::BoundISize<-300, 300>,
+    pub(super) dodge      : houta_utils::prelude::BoundISize<-300, 300>,
+    pub(super) stamina_max: houta_utils::prelude::BoundUSize<1, 500>,
+    pub(super) toughness  : houta_utils::prelude::BoundISize<-100, 100>,
+    pub(super) stun_def   : houta_utils::prelude::BoundISize<-100, 300>,
+    pub(super) debuff_res : houta_utils::prelude::BoundISize<-300, 300>,
+    pub(super) debuff_rate: houta_utils::prelude::BoundISize<-300, 300>,
+    pub(super) move_res   : houta_utils::prelude::BoundISize<-300, 300>,
+    pub(super) move_rate  : houta_utils::prelude::BoundISize<-300, 300>,
+    pub(super) poison_res : houta_utils::prelude::BoundISize<-300, 300>,
+    pub(super) poison_rate: houta_utils::prelude::BoundISize<-300, 300>,";
 
 	let left_bracket_index = output.find('{').unwrap();
 	output.insert_str(left_bracket_index + 1, fields);

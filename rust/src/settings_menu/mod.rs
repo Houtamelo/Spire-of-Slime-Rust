@@ -4,14 +4,14 @@ use std::collections::HashMap;
 use settings::*;
 use gdnative::prelude::*;
 use gdnative::api::*;
-use houta_utils::prelude::*;
+use houta_utils_gdnative::prelude::*;
 use gdrust_export_nodepath::extends;
-
 use crate::util::panel_are_you_sure::PanelAreYouSure;
 use crate::util::panel_are_you_sure;
 
-pub static signal_language_changed: &str = "language_changed";
-pub(super) static signal_panel_closed: &str = "panel_closed";
+pub const SIGNAL_LANGUAGE_CHANGED: &str = "language_changed";
+pub(super) const SIGNAL_PANEL_CLOSED: &str = "panel_closed";
+pub(super) const CALL_OPEN_PANEL: &str = "_open_panel";
 
 #[extends(CanvasLayer)]
 #[register_with(Self::register)]
@@ -48,8 +48,8 @@ pub struct SettingsMenu {
 #[methods]
 impl SettingsMenu {
 	fn register(builder: &ClassBuilder<Self>) {
-        builder.signal(signal_language_changed).with_param("language", VariantType::Object).done();
-        builder.signal(signal_panel_closed).done();
+        builder.signal(SIGNAL_LANGUAGE_CHANGED).with_param("language", VariantType::Object).done();
+        builder.signal(SIGNAL_PANEL_CLOSED).done();
     }
 
 	#[method]
@@ -57,7 +57,7 @@ impl SettingsMenu {
 		self.grab_nodes_by_path(_owner);
         let owner_ref = unsafe { _owner.assume_shared() };
 
-		for setting in settings::DEFAULT_SETTINGS {
+		for setting in DEFAULT_SETTINGS {
             let key = setting.key();
 
 			match setting {
@@ -68,7 +68,7 @@ impl SettingsMenu {
 
                     let check_box = self.check_box_window_maximized.unwrap_manual();
                     check_box.set_pressed(saved_maximized);
-                    check_box.connect("toggled", owner_ref, "_on_check_box_window_maximized", VariantArray::new_shared(), Object::CONNECT_DEFERRED);
+                    check_box.connect("toggled", owner_ref, "_on_check_box_window_maximized", VariantArray::new_shared(), Object::CONNECT_DEFERRED).log_if_err();
 
                     let os = OS::godot_singleton();
                     os.set_window_maximized(saved_maximized);
@@ -82,10 +82,10 @@ impl SettingsMenu {
 
                     let spin_box_x = self.spin_box_window_size_x.unwrap_manual();
                     spin_box_x.set_value(saved_size_x as f64);
-                    spin_box_x.connect("value_changed", owner_ref, "_on_spin_box_window_size_x", VariantArray::new_shared(), Object::CONNECT_DEFERRED);
+                    spin_box_x.connect("value_changed", owner_ref, "_on_spin_box_window_size_x", VariantArray::new_shared(), Object::CONNECT_DEFERRED).log_if_err();
                     let spin_box_y = self.spin_box_window_size_y.unwrap_manual();
                     spin_box_y.set_value(saved_size_y as f64);
-                    spin_box_y.connect("value_changed", owner_ref, "_on_spin_box_window_size_y", VariantArray::new_shared(), Object::CONNECT_DEFERRED);
+                    spin_box_y.connect("value_changed", owner_ref, "_on_spin_box_window_size_y", VariantArray::new_shared(), Object::CONNECT_DEFERRED).log_if_err();
 
                     let os = OS::godot_singleton();
                     os.set_window_size(Vector2 { x: saved_size_x as f32, y: saved_size_y as f32 });
@@ -101,7 +101,7 @@ impl SettingsMenu {
                     }
 
                     option_button.select(saved_mode.index());
-                    option_button.connect("item_selected", owner_ref, "_on_option_button_skill_overlay_mode", VariantArray::new_shared(), Object::CONNECT_DEFERRED);
+                    option_button.connect("item_selected", owner_ref, "_on_option_button_skill_overlay_mode", VariantArray::new_shared(), Object::CONNECT_DEFERRED).log_if_err();
 
                     let spin_box = self.spin_box_skill_overlay_mode_auto_delay.unwrap_manual();
                     match saved_mode {
@@ -113,7 +113,7 @@ impl SettingsMenu {
                             spin_box.set_visible(false);
                         },
                     }
-                    spin_box.connect("value_changed", owner_ref, "_on_spin_box_skill_overlay_mode_auto_delay", VariantArray::new_shared(), Object::CONNECT_DEFERRED);
+                    spin_box.connect("value_changed", owner_ref, "_on_spin_box_skill_overlay_mode_auto_delay", VariantArray::new_shared(), Object::CONNECT_DEFERRED).log_if_err();
                 },
 				GameSetting::Language(_) => {
                     let GameSetting::Language(default) = GameSetting::default_value(setting) else { unreachable!() };
@@ -126,7 +126,7 @@ impl SettingsMenu {
                     }
 
                     option_button.select(saved_language.index());
-                    option_button.connect("item_selected", owner_ref, "_on_option_button_language", VariantArray::new_shared(), Object::CONNECT_DEFERRED);
+                    option_button.connect("item_selected", owner_ref, "_on_option_button_language", VariantArray::new_shared(), Object::CONNECT_DEFERRED).log_if_err();
                 },
 				GameSetting::TargetFramerate(_) => {
                     let GameSetting::TargetFramerate(default) = GameSetting::default_value(setting) else { unreachable!() };
@@ -135,7 +135,7 @@ impl SettingsMenu {
 
                     let spin_box = self.spin_box_target_framerate.unwrap_manual();
                     spin_box.set_value(saved_framerate as f64);
-                    spin_box.connect("value_changed", owner_ref, "_on_spin_box_target_framerate", VariantArray::new_shared(), Object::CONNECT_DEFERRED);
+                    spin_box.connect("value_changed", owner_ref, "_on_spin_box_target_framerate", VariantArray::new_shared(), Object::CONNECT_DEFERRED).log_if_err();
                 },
 				GameSetting::DialogueTextSpeed(_) => {
                     let GameSetting::DialogueTextSpeed(default) = GameSetting::default_value(setting) else { unreachable!() };
@@ -144,7 +144,7 @@ impl SettingsMenu {
 
                     let h_slider = self.h_slider_dialogue_text_speed.unwrap_manual();
                     h_slider.set_value(saved_speed as f64);
-                    h_slider.connect("value_changed", owner_ref, "_on_h_slider_dialogue_text_speed", VariantArray::new_shared(), Object::CONNECT_DEFERRED);
+                    h_slider.connect("value_changed", owner_ref, "_on_h_slider_dialogue_text_speed", VariantArray::new_shared(), Object::CONNECT_DEFERRED).log_if_err();
                 },
 				GameSetting::Vsync(_) => {
                     let GameSetting::Vsync(default) = GameSetting::default_value(setting) else { unreachable!() };
@@ -153,7 +153,7 @@ impl SettingsMenu {
 
                     let check_box = self.check_box_vsync.unwrap_manual();
                     check_box.set_pressed(saved_vsync);
-                    check_box.connect("toggled", owner_ref, "_on_check_box_vsync", VariantArray::new_shared(), Object::CONNECT_DEFERRED);
+                    check_box.connect("toggled", owner_ref, "_on_check_box_vsync", VariantArray::new_shared(), Object::CONNECT_DEFERRED).log_if_err();
 
                     let os = OS::godot_singleton();
                     os.set_use_vsync(saved_vsync);
@@ -165,7 +165,7 @@ impl SettingsMenu {
 
                     let h_slider = self.h_slider_main_volume.unwrap_manual();
                     h_slider.set_value(saved_volume as f64);
-                    h_slider.connect("value_changed", owner_ref, "_on_h_slider_main_volume", VariantArray::new_shared(), Object::CONNECT_DEFERRED);
+                    h_slider.connect("value_changed", owner_ref, "_on_h_slider_main_volume", VariantArray::new_shared(), Object::CONNECT_DEFERRED).log_if_err();
                 },
 				GameSetting::MusicVolume(_) => {
                     let GameSetting::MusicVolume(default) = GameSetting::default_value(setting) else { unreachable!() };
@@ -174,7 +174,7 @@ impl SettingsMenu {
 
                     let h_slider = self.h_slider_music_volume.unwrap_manual();
                     h_slider.set_value(saved_volume as f64);
-                    h_slider.connect("value_changed", owner_ref, "_on_h_slider_music_volume", VariantArray::new_shared(), Object::CONNECT_DEFERRED);
+                    h_slider.connect("value_changed", owner_ref, "_on_h_slider_music_volume", VariantArray::new_shared(), Object::CONNECT_DEFERRED).log_if_err();
                 },
 				GameSetting::SfxVolume(_) => {
                     let GameSetting::SfxVolume(default) = GameSetting::default_value(setting) else { unreachable!() };
@@ -183,7 +183,7 @@ impl SettingsMenu {
 
                     let h_slider = self.h_slider_sfx_volume.unwrap_manual();
                     h_slider.set_value(saved_volume as f64);
-                    h_slider.connect("value_changed", owner_ref, "_on_h_slider_sfx_volume", VariantArray::new_shared(), Object::CONNECT_DEFERRED);
+                    h_slider.connect("value_changed", owner_ref, "_on_h_slider_sfx_volume", VariantArray::new_shared(), Object::CONNECT_DEFERRED).log_if_err();
                 },
 				GameSetting::VoiceVolume(_) => {
                     let GameSetting::VoiceVolume(default) = GameSetting::default_value(setting) else { unreachable!() };
@@ -192,20 +192,26 @@ impl SettingsMenu {
 
                     let h_slider = self.h_slider_voice_volume.unwrap_manual();
                     h_slider.set_value(saved_volume as f64);
-                    h_slider.connect("value_changed", owner_ref, "_on_h_slider_voice_volume", VariantArray::new_shared(), Object::CONNECT_DEFERRED);
+                    h_slider.connect("value_changed", owner_ref, "_on_h_slider_voice_volume", VariantArray::new_shared(), Object::CONNECT_DEFERRED).log_if_err();
                 },
 			}
 		}
 
-        self.button_confirm_changes.unwrap_manual().connect("pressed", owner_ref, "_on_button_confirm_changes", VariantArray::new_shared(), Object::CONNECT_DEFERRED);
-        self.button_undo_changes   .unwrap_manual().connect("pressed", owner_ref, "_on_button_undo_changes"   , VariantArray::new_shared(), Object::CONNECT_DEFERRED);
+        self.button_confirm_changes.unwrap_manual().connect("pressed", owner_ref, "_on_button_confirm_changes", VariantArray::new_shared(), Object::CONNECT_DEFERRED).log_if_err();
+        self.button_undo_changes   .unwrap_manual().connect("pressed", owner_ref, "_on_button_undo_changes"   , VariantArray::new_shared(), Object::CONNECT_DEFERRED).log_if_err();
 
-        self.button_close_panel     .unwrap_manual().connect("pressed", owner_ref, "_on_button_close_panel"        , VariantArray::new_shared(), Object::CONNECT_DEFERRED);
-        self.button_on_close_confirm.unwrap_manual().connect("pressed", owner_ref, "_on_button_close_panel_confirm", VariantArray::new_shared(), Object::CONNECT_DEFERRED);
-        self.button_on_close_undo   .unwrap_manual().connect("pressed", owner_ref, "_on_button_close_panel_undo"   , VariantArray::new_shared(), Object::CONNECT_DEFERRED);
+        self.button_close_panel     .unwrap_manual().connect("pressed", owner_ref, "_on_button_close_panel"        , VariantArray::new_shared(), Object::CONNECT_DEFERRED).log_if_err();
+        self.button_on_close_confirm.unwrap_manual().connect("pressed", owner_ref, "_on_button_close_panel_confirm", VariantArray::new_shared(), Object::CONNECT_DEFERRED).log_if_err();
+        self.button_on_close_undo   .unwrap_manual().connect("pressed", owner_ref, "_on_button_close_panel_undo"   , VariantArray::new_shared(), Object::CONNECT_DEFERRED).log_if_err();
 
-        self.button_reset_settings.unwrap_manual().connect("pressed", owner_ref, "_on_button_reset_settings", VariantArray::new_shared(), Object::CONNECT_DEFERRED);
-        self.panel_are_you_sure_reset.unwrap_inst().base().connect(panel_are_you_sure::signal_yes, owner_ref, "_on_panel_are_you_sure_reset_yes", VariantArray::new_shared(), Object::CONNECT_DEFERRED);
+        self.button_reset_settings.unwrap_manual().connect("pressed", owner_ref, "_on_button_reset_settings", VariantArray::new_shared(), Object::CONNECT_DEFERRED).log_if_err();
+        self.panel_are_you_sure_reset.unwrap_inst().base().connect(panel_are_you_sure::signal_yes, owner_ref, "_on_panel_are_you_sure_reset_yes", VariantArray::new_shared(), Object::CONNECT_DEFERRED).log_if_err();
+    }
+    
+    #[method]
+    fn _open_panel(&mut self, #[base] _owner: &CanvasLayer) {
+        self.update_screen_settings();
+        _owner.show();
     }
 
     #[method]
@@ -213,7 +219,7 @@ impl SettingsMenu {
         let new_setting = GameSetting::WindowMaximized(button_pressed);
         SettingsMenu::replace_setting(&mut self.unsaved_settings, new_setting);
         self.enable_dirty_changes_buttons(true);
-        unsafe { OS::godot_singleton().set_deferred("window_maximized", button_pressed) };
+        OS::godot_singleton().set_deferred("window_maximized", button_pressed);
     }
 
     #[method]
@@ -272,7 +278,7 @@ impl SettingsMenu {
         SettingsMenu::replace_setting(&mut self.unsaved_settings, new_setting);
         self.enable_dirty_changes_buttons(true);
 
-        owner.emit_signal(signal_language_changed, &[language.to_variant()]);
+        owner.emit_signal(SIGNAL_LANGUAGE_CHANGED, &[language.to_variant()]);
     }
 
     #[method]
@@ -294,7 +300,7 @@ impl SettingsMenu {
         let new_setting = GameSetting::Vsync(button_pressed);
         SettingsMenu::replace_setting(&mut self.unsaved_settings, new_setting);
         self.enable_dirty_changes_buttons(true);
-        unsafe { OS::godot_singleton().set_deferred("use_vsync", button_pressed) };
+        OS::godot_singleton().set_deferred("use_vsync", button_pressed);
     }
 
     #[method]
@@ -353,7 +359,7 @@ impl SettingsMenu {
             self.saved_settings.insert(unsaved_setting.key(), unsaved_setting.clone());
         }
 
-        SettingsMenu::write_settings_to_config(&self.unsaved_settings);
+        SettingsMenu::write_settings_to_config(&mut self.unsaved_settings);
         self.unsaved_settings.clear();
         self.enable_dirty_changes_buttons(false);
     }
@@ -374,7 +380,7 @@ impl SettingsMenu {
             self.panel_on_close_confirm_or_undo.unwrap_manual().show();
         } else {
             _owner.hide();
-            _owner.emit_signal(signal_panel_closed, &[]);
+            _owner.emit_signal(SIGNAL_PANEL_CLOSED, &[]);
         }
     }
 
@@ -398,12 +404,12 @@ impl SettingsMenu {
             self.saved_settings.insert(unsaved_setting.key(), unsaved_setting.clone());
         }
 
-        SettingsMenu::write_settings_to_config(&self.unsaved_settings);
+        SettingsMenu::write_settings_to_config(&mut self.unsaved_settings);
         self.unsaved_settings.clear();
         self.enable_dirty_changes_buttons(false);
 
         _owner.hide();
-        _owner.emit_signal(signal_panel_closed, &[]);
+        _owner.emit_signal(SIGNAL_PANEL_CLOSED, &[]);
     }
 
     #[method]
@@ -416,7 +422,7 @@ impl SettingsMenu {
         self.update_screen_settings();
 
         _owner.hide();
-        _owner.emit_signal(signal_panel_closed, &[]);
+        _owner.emit_signal(SIGNAL_PANEL_CLOSED, &[]);
     }
 
     #[method]
@@ -466,8 +472,8 @@ impl SettingsMenu {
                     check_box.set_block_signals(true);
                     check_box.set_pressed(*maximized);
                     check_box.set_block_signals(false);
-
-                    unsafe { OS::godot_singleton().set_deferred("window_maximized", *maximized) };
+                    
+                    OS::godot_singleton().set_deferred("window_maximized", *maximized);
                 },
                 GameSetting::SkillOverlayMode(mode) => {
                     let option_button = self.option_button_skill_overlay_mode.unwrap_manual();
@@ -494,7 +500,7 @@ impl SettingsMenu {
                     option_button.select(language.index());
                     option_button.set_block_signals(false);
 
-                    unsafe { _owner.emit_signal(signal_language_changed, &[language.to_variant()]) };
+                    _owner.emit_signal(SIGNAL_LANGUAGE_CHANGED, &[language.to_variant()]);
                 },
                 GameSetting::DialogueTextSpeed(speed) => {
                     let h_slider = self.h_slider_dialogue_text_speed.unwrap_manual();
@@ -508,7 +514,7 @@ impl SettingsMenu {
                     check_box.set_pressed(*vsync);
                     check_box.set_block_signals(false);
 
-                    unsafe { OS::godot_singleton().set_deferred("use_vsync", *vsync) };
+                    OS::godot_singleton().set_deferred("use_vsync", *vsync);
                 },
                 GameSetting::MainVolume(volume) => {
                     let h_slider = self.h_slider_main_volume.unwrap_manual();
@@ -606,13 +612,13 @@ impl SettingsMenu {
         settings.insert(key, new_setting);
     }
 
-    fn write_settings_to_config(settings: &HashMap<&'static str, GameSetting>) {
+    fn write_settings_to_config(settings: &mut HashMap<&'static str, GameSetting>) {
         let config = ConfigFile::new();
         if let Err(error) = config.load(crate::config_path) {
             godot_warn!("Failed to load config file: {}", error);
         }
 
-        for (key, setting) in settings {
+        for (key, setting) in settings.iter() {
             config.set_value("player_prefs", key, setting);
         }
 

@@ -12,7 +12,8 @@ gdnative = "0.11.3"
 rand = "0.8.5"
 proc_macros = { path = "proc_macros" }
 lazy_static = "1.4.0"
-serde = { version = "1.0.180", features = ["derive"] }
+serde = { version = "1.0.193", features = ["derive"] }
 ron = "0.8.1"
-houta_utils = { package = "houtamelo_utils_gdnative", git = "https://github.com/Houtamelo/houtamelo_utils_gdnative.git" }
-gdrust_export_nodepath = { package = "gdrust_export_node_path_macro", git = "https://github.com/Houtamelo/gdrust_export_node_path_macro.git" }
+houta_utils = { package = "houtamelo_utils", git = "https://github.com/Houtamelo/houtamelo_utils.git" }
+houta_utils_gdnative = { package = "houtamelo_utils_gdnative", git = "https://github.com/Houtamelo/houtamelo_utils_gdnative.git" }
+gdrust_export_nodepath = { version = "0.1.2", package = "gdrust_export_node_path_macro", git = "https://github.com/Houtamelo/gdrust_export_node_path_macro.git" }

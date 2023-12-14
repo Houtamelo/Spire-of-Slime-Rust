@@ -1,6 +1,6 @@
 use std::ops::RangeInclusive;
 use rand::prelude::StdRng;
-use crate::{BoundISize, BoundU32};
+use houta_utils::prelude::{BoundISize, BoundUSize};
 use crate::combat::entity::data::girls::GirlData;
 use crate::combat::entity::data::npc::NPCData;
 use crate::combat::skill_types::Skill;
@@ -12,9 +12,9 @@ pub enum CharacterData {
 }
 
 pub trait CharacterDataTrait {
-	fn stamina_max(&self, level: usize, rng: Option<&mut StdRng>) -> BoundU32  <1, 500>;
+	fn stamina_max(&self, level: usize, rng: Option<&mut StdRng>) -> BoundUSize  <1, 500>;
 	fn dmg        (&self, level: usize) -> RangeInclusive<usize>;
-	fn spd        (&self, level: usize) -> BoundU32  <  20, 300>;
+	fn spd        (&self, level: usize) -> BoundUSize<  20, 300>;
 	fn acc        (&self, level: usize) -> BoundISize<-300, 300>;
 	fn crit       (&self, level: usize) -> BoundISize<-300, 300>;
 	fn dodge      (&self, level: usize) -> BoundISize<-300, 300>;

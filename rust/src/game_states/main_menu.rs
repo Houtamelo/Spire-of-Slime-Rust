@@ -1,4 +1,6 @@
+#[derive(Debug)]
 pub enum MainMenuState {
-    MainMenu,
+    Idle,
+    LoadingSave { save_name: String },
     Settings,
 }

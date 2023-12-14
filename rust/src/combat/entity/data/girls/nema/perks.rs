@@ -1,9 +1,9 @@
-use crate::BoundU32;
+use houta_utils::prelude::BoundUSize;
 
 #[derive(Debug, Clone)]
 pub enum NemaPerk {
 	Grumpiness, //todo! Needs lewd resolving implementation
-	AOE_Hatred { stacks: BoundU32<0, 4> },
+	AOE_Hatred { stacks: BoundUSize<0, 4> },
 	AOE_Loneliness,
 	Regret,
 	BattleMage_Agitation,

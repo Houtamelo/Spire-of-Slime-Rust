@@ -4,7 +4,7 @@ pub mod crabdra;
 use std::ops::{RangeInclusive};
 use rand::prelude::StdRng;
 use rand::Rng;
-use crate::{BoundISize, BoundU32};
+use houta_utils::prelude::{BoundISize, BoundUSize};
 use crate::combat::entity::data::character::{CharacterDataTrait};
 
 #[derive(Debug, Clone)]
@@ -18,7 +18,7 @@ pub enum NPCData {
 // Q: Why bundle all the NPC data into one enum impl?
 // R: It makes it easier to compare their stats which helps with balancing.
 impl CharacterDataTrait for NPCData {
-	fn stamina_max(&self, level: usize, rng: Option<&mut StdRng>) -> BoundU32<1, 500> {
+	fn stamina_max(&self, level: usize, rng: Option<&mut StdRng>) -> BoundUSize<1, 500> {
 		let base = match self {
 			NPCData::Crabdra   => 16 + (level * 20) / 10,
 			NPCData::Trent     => 18 + (level * 25) / 10,
@@ -60,7 +60,7 @@ impl CharacterDataTrait for NPCData {
 		return lower..=upper;
 	}
 
-	fn spd(&self, level: usize) -> BoundU32<20, 300> {
+	fn spd(&self, level: usize) -> BoundUSize<20, 300> {
 		return match self {
 			NPCData::Crabdra   => 100 + (level * 13) / 10,
 			NPCData::Trent     => 100 + (level *  9) / 10,

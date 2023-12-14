@@ -70,8 +70,8 @@ impl SelfApplier {
 				let mut base_multiplier = isize::max(*base_multiplier, 0) as usize;
 				if is_crit { base_multiplier = (base_multiplier * CRIT_EFFECT_MULTIPLIER) / 100; }
 
-				let max: usize = isize::max(caster.dmg.max, 0) as usize;
-				let min: usize = isize::clamp(caster.dmg.min, 0, max as isize) as usize;
+				let max: usize = usize::max(*caster.dmg.end(), 0);
+				let min: usize = usize::clamp(*caster.dmg.start(), 0, max);
 
 				let mut healAmount: usize;
 

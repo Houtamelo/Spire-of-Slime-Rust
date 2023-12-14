@@ -1,34 +1,35 @@
 use std::collections::HashMap;
-use crate::{BoundISize, BoundU32};
+use std::ops::RangeInclusive;
+use houta_utils::prelude::{BoundISize, BoundUSize};
 use crate::combat::entity::character::{CharacterState, CombatCharacter, OnZeroStamina};
 use crate::combat::entity::data::character::CharacterData;
 use crate::combat::entity::data::girls::{GirlData};
 use crate::combat::entity::data::skill_name::SkillName;
 use crate::combat::entity::position::Position;
 use crate::combat::perk::Perk;
-use crate::util::{GUID, I_Range, TrackedTicks};
+use crate::util::{GUID, TrackedTicks};
 
 pub const MAX_LUST: isize = 200;
 
 #[derive(Debug, Clone)]
 pub struct GirlState {
-	pub lust        : BoundU32<0, 200>,
-	pub temptation  : BoundU32<0, 100>,
+	pub lust        : BoundUSize<0, 200>,
+	pub temptation  : BoundUSize<0, 100>,
 	pub composure   : BoundISize< -100, 300>,
 	pub orgasm_limit: isize,
 	pub orgasm_count: isize,
-	pub exhaustion  : BoundU32<0, 100>,
+	pub exhaustion  : BoundUSize<0, 100>,
 }
 
 #[derive(Debug, Clone)]
 pub struct DefeatedGirl_Entity {
 	pub data: GirlData,
 	pub guid: GUID,
-	pub lust        : BoundU32<0, 200>,
-	pub temptation  : BoundU32<0, 100>,
+	pub lust        : BoundUSize<0, 200>,
+	pub temptation  : BoundUSize<0, 100>,
 	pub orgasm_limit: isize,
 	pub orgasm_count: isize,
-	pub exhaustion  : BoundU32<0, 100>,
+	pub exhaustion  : BoundUSize<0, 100>,
 	pub position: Position,
 }
 
@@ -72,8 +73,8 @@ pub struct AliveGirl_Grappled {
 	pub data: GirlData,
 	pub stamina_cur: isize,
 	pub stamina_max: isize,
-	pub lust       : BoundU32<0, 200>,
-	pub temptation : BoundU32<0, 100>,
+	pub lust       : BoundUSize<0, 200>,
+	pub temptation : BoundUSize<0, 100>,
 	pub composure  : BoundISize< -100, 300>,
 	pub toughness  : BoundISize< -100, 100>,
 	pub stun_def   : BoundISize< -100, 300>,
@@ -83,15 +84,15 @@ pub struct AliveGirl_Grappled {
 	pub move_rate  : BoundISize< -300, 300>,
 	pub poison_res : BoundISize< -300, 300>,
 	pub poison_rate: BoundISize< -300, 300>,
-	pub spd        : BoundU32<   20, 300>,
+	pub spd        : BoundUSize<   20, 300>,
 	pub acc        : BoundISize< -300, 300>,
 	pub crit       : BoundISize< -300, 300>,
 	pub dodge      : BoundISize< -300, 300>,
-	pub damage     : I_Range,
-	pub power      : BoundU32<0, 500>,
+	pub damage     : RangeInclusive<usize>,
+	pub power      : BoundUSize<0, 500>,
 	pub orgasm_limit: isize,
 	pub orgasm_count: isize,
-	pub exhaustion  : BoundU32<0, 100>,
+	pub exhaustion  : BoundUSize<0, 100>,
 	pub position_before_grappled: Position,
 	pub on_defeat: OnZeroStamina,
 	pub skill_use_counters: HashMap<SkillName, usize>,
@@ -161,11 +162,11 @@ impl AliveGirl_Grappled {
 pub struct DefeatedGirl_Grappled {
 	pub data: GirlData,
 	pub guid: GUID,
-	pub lust      : BoundU32<0, 200>,
-	pub temptation: BoundU32<0, 100>,
+	pub lust      : BoundUSize<0, 200>,
+	pub temptation: BoundUSize<0, 100>,
 	pub orgasm_limit: isize,
 	pub orgasm_count: isize,
-	pub exhaustion  : BoundU32<0, 100>,
+	pub exhaustion  : BoundUSize<0, 100>,
 	pub position_before_grappled: Position,
 }
 
