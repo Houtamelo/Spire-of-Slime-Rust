@@ -1,85 +1,68 @@
 pub mod panel_are_you_sure;
+mod int_conversions;
 
+use comfy_bounded_ints::prelude::{Bound_i64, Bound_u64};
+use comfy_bounded_ints::types::Bound_u8;
+use gdnative::api::{InputEvent, InputEventKey, InputEventMouseButton};
+use gdnative::object::TRef;
 use houta_utils::prelude::*;
-use std::ops::Deref;
-use rand::prelude::StdRng;
 use rand::Rng;
+use rand_xoshiro::Xoshiro256PlusPlus;
+use serde::{Deserialize, Serialize};
 
-#[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
+pub type SaturatedU64 = Bound_u64<0, {u64::MAX}>;
+pub type SaturatedI64 = Bound_i64<{i64::MIN}, {i64::MAX}>;
+pub use int_conversions::*;
+pub type PercentageU8 = Bound_u8<0, 100>;
+
+pub fn fn_name<T: ?Sized>(_val: &T) -> &'static str {
+	let name = std::any::type_name::<T>();
+	
+	return match &name[..name.len() - 3].rfind(':') {
+		Some(pos) => &name[pos + 1..name.len() - 3],
+		None => &name[..name.len() - 3],
+	};
+}
+
+pub const fn full_fn_name<T: ?Sized>(_val: &T) -> &'static str {
+	return std::any::type_name::<T>();
+}
+
+pub fn any_cancel_input(event: &TRef<InputEvent>) -> bool {
+	return (event.is_action("ui_cancel", false))
+		|| (event.cast::<InputEventMouseButton>().is_some_and(|mouse_event| mouse_event.button_index() == 2))
+		|| (event.cast::<InputEventKey>().is_some_and(|key_event| key_event.scancode() == 16777217)); // Escape key
+}
+
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Hash, Serialize, Deserialize)]
 pub struct TrackedTicks {
-	pub remaining_ms: i64,
-	pub initial_ms: i64,
+	pub remaining_ms: SaturatedU64,
+	pub initial_ms: SaturatedU64,
 }
 
 impl TrackedTicks {
-	pub fn from_seconds(seconds: f64) -> TrackedTicks {
-		return TrackedTicks {
-			remaining_ms: (seconds * 1000.0) as i64,
-			initial_ms: (seconds * 1000.0) as i64,
-		};
-	}
-
-	pub fn from_milliseconds(milliseconds: i64) -> TrackedTicks {
+	pub fn from_milliseconds(milliseconds: SaturatedU64) -> TrackedTicks {
 		return TrackedTicks {
 			remaining_ms: milliseconds,
 			initial_ms: milliseconds,
 		};
 	}
-
-	pub fn seconds(&self) -> f64 {
-		return self.remaining_ms as f64 / 1000.0;
-	}
 }
 
 pub trait Base100ChanceGenerator {
-	fn base100_chance(&mut self, chance: BoundUSize<0, 100>) -> bool;
+	fn base100_chance(&mut self, chance: PercentageU8) -> bool;
 }
 
-impl Base100ChanceGenerator for StdRng {
-	fn base100_chance(&mut self, chance: BoundUSize<0, 100>) -> bool {
-		return  self.gen_ratio(chance.get() as u32, 100);
+impl Base100ChanceGenerator for Xoshiro256PlusPlus {
+	fn base100_chance(&mut self, chance: Bound_u8<0, 100>) -> bool {
+		return self.gen_ratio(chance.get() as u32, 100);
 	}
 }
 
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
-pub struct GUID {
-	value: usize,
+
+#[derive(Debug, Copy, Clone)]
+pub struct Percentage_0_100 {
+	inner_value: f64,
 }
 
-impl GUID {
-	pub fn new(value: usize) -> GUID {
-		return GUID { value };
-	}
-}
-
-impl From<usize> for GUID {
-	fn from(value: usize) -> Self {
-		return GUID { value };
-	}
-}
-
-impl From<&usize> for GUID {
-	fn from(value: &usize) -> Self {
-		return GUID { value: *value };
-	}
-}
-
-impl From<GUID> for usize {
-	fn from(value: GUID) -> Self {
-		return value.value;
-	}
-}
-
-impl From<&GUID> for usize {
-	fn from(value: &GUID) -> Self {
-		return value.value;
-	}
-}
-
-impl Deref for GUID {
-	type Target = usize;
-
-	fn deref(&self) -> &Self::Target {
-		return &self.value;
-	}
-}
+bound_f64_impl!(Percentage_0_100, 0.0, 100.0);

@@ -1,14 +1,18 @@
 use std::collections::HashMap;
-use rand::rngs::StdRng;
+use houta_utils::any_matches;
+use houta_utils::prelude::Touch;
+use rand_xoshiro::Xoshiro256PlusPlus;
+use serde::{Deserialize, Serialize};
+use uuid::Uuid;
 use crate::combat::effects::persistent::PersistentEffect;
 use crate::combat::entity::character::CombatCharacter;
 use crate::combat::entity::data::girls::ethel::perks::*;
 use crate::combat::entity::data::girls::nema ::perks::*;
 use crate::combat::entity::data::npc::bellplant::LurePerk;
 use crate::combat::entity::Entity;
-use crate::util::GUID;
+use crate::util::SaturatedU64;
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub enum Perk {
 	Ethel(EthelPerk),
 	Nema(NemaPerk),
@@ -16,32 +20,31 @@ pub enum Perk {
 }
 
 impl Perk {
-	pub(in crate::combat) fn tick_all(mut owner: CombatCharacter, others: &mut HashMap<GUID, Entity>, ms: i64, _seed: &mut StdRng) {
+	pub(in crate::combat) fn tick_all(mut owner: CombatCharacter, others: &mut HashMap<Uuid, Entity>, 
+	                                  ms: SaturatedU64, _rng: &mut Xoshiro256PlusPlus) {
 		for perk in owner.perks.iter_mut() {
 			match perk {
 				Perk::Ethel(EthelPerk::Tank_Vanguard { cooldown_ms }) => {
-					*cooldown_ms = i64::clamp(*cooldown_ms - ms, 0, 10000);
+					cooldown_ms.set(u64::min(cooldown_ms.get() - ms.get(), 10000));
 				}
 				Perk::Nema(NemaPerk::Healer_Awe { accumulated_ms }) => {
-					*accumulated_ms = i64::clamp(*accumulated_ms + ms, 0, 8000);
+					accumulated_ms.set(u64::min(accumulated_ms.get() + ms.get(), 8000));
 				},
 				Perk::Nema(NemaPerk::Healer_Alarmed { duration_remaining_ms }) => {
-					*duration_remaining_ms = i64::max(*duration_remaining_ms - ms, 0);
+					duration_remaining_ms.set(u64::min(duration_remaining_ms.get() - ms.get(), 0));
 				},
 				Perk::Nema(NemaPerk::BattleMage_Trust { accumulated_ms }) => {
-					*accumulated_ms = i64::clamp(*accumulated_ms + ms, 0, 7000);
+					accumulated_ms.set(u64::min(accumulated_ms.get() + ms.get(), 7000));
 				},
 				Perk::Nema(NemaPerk::Poison_Acceptance { accumulated_ms }) => {
-					if owner.persistent_effects.iter().any(|effect| matches!(effect, PersistentEffect::Poison {..})) {
+					if any_matches!(owner.persistent_effects, PersistentEffect::Poison {..}) {
 						*accumulated_ms += ms;
 					}
 
-					let round_seconds = *accumulated_ms / 1000;
+					let round_seconds = accumulated_ms.get() / 1000;
 					if round_seconds > 0 {
 						*accumulated_ms -= round_seconds * 1000;
-						if let Some(girl) = &mut owner.girl_stats {
-							girl.lust -= round_seconds * 3;
-						}
+						owner.girl_stats.touch(|girl| *girl.lust -= round_seconds * 3);
 					}
 				},
 				_ => {}
@@ -51,3 +54,68 @@ impl Perk {
 		others.insert(owner.guid, Entity::Character(owner));
 	}
 }
+
+macro_rules! has_perk {
+    ($character: expr, $perk_pattern: pat) => {{
+	    'outer: loop {             
+		    for perk in $character.perks.iter() { 
+			    if let $perk_pattern = perk {
+				    break 'outer true; 
+			    }
+		    }  
+		    
+		    for effect in $character.persistent_effects.iter() { 
+			    if let crate::combat::effects::persistent::PersistentEffect::TemporaryPerk { perk, .. } = effect
+			        && let $perk_pattern = perk { 
+				    break 'outer true;
+			    }
+		    }  
+		    
+		    break false;
+	    }
+    }};
+}
+
+macro_rules! get_perk {
+    ($character: expr, $perk_pattern: pat) => {{
+	    'outer: loop {             
+		    for perk in $character.perks.iter() { 
+			    if let $perk_pattern = perk {
+				    break 'outer Some(perk); 
+			    }
+		    }  
+		    
+		    for effect in $character.persistent_effects.iter() { 
+			    if let crate::combat::effects::persistent::PersistentEffect::TemporaryPerk { perk, .. } = effect
+			        && let $perk_pattern = perk { 
+				    break 'outer Some(perk);
+			    }
+		    }  
+		    
+		    break None;
+	    }
+    }};
+}
+
+macro_rules! get_perk_mut {
+    ($character: expr, $perk_pattern: pat) => {{
+	    'outer: loop {             
+		    for perk in $character.perks.iter_mut() { 
+			    if let $perk_pattern = perk {
+				    break 'outer Some(perk); 
+			    }
+		    }  
+		    
+		    for effect in $character.persistent_effects.iter_mut() { 
+			    if let crate::combat::effects::persistent::PersistentEffect::TemporaryPerk { perk, .. } = effect
+			        && let $perk_pattern = perk { 
+				    break 'outer Some(perk);
+			    }
+		    }  
+		    
+		    break None;
+	    }
+    }};
+}
+
+pub(crate) use {has_perk, get_perk, get_perk_mut};

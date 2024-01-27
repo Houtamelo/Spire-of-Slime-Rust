@@ -1,17 +1,19 @@
-use houta_utils::prelude::BoundUSize;
-use crate::util::GUID;
+use comfy_bounded_ints::prelude::Bound_u8;
+use serde::{Deserialize, Serialize};
+use uuid::Uuid;
+use crate::util::SaturatedU64;
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub enum EthelPerk {
 	Bruiser_DisruptiveManeuvers,
-	Bruiser_EnragingPain { stacks: BoundUSize<0, 6> },
+	Bruiser_EnragingPain { stacks: Bound_u8<0, 6> },
 	Bruiser_FocusedSwings,
 	Bruiser_Grudge { active: bool },
-	Bruiser_Relentless { stacks: usize },
+	Bruiser_Relentless { stacks: Bound_u8<0, 10> },
 	Crit_Bold { used: bool },
 	Crit_Reliable,
 	Crit_StaggeringForce,
-	Crit_Vicious { stacks: usize },
+	Crit_Vicious { stacks: Bound_u8<0, 10> },
 	Debuffer_GoForTheEyes,
 	Debuffer_HardNogging,
 	Debuffer_NoQuarters,
@@ -28,10 +30,10 @@ pub enum EthelPerk {
 	Poison_PoisonCoating,
 	Tank_Conspicuous, //todo! needs AI implementation
 	Tank_Energetic,
-	Tank_ReactiveDefense { stacks: BoundUSize<0, 6> },
+	Tank_ReactiveDefense { stacks: Bound_u8<0, 6> },
 	Tank_Spikeful,
-	Tank_Vanguard { cooldown_ms: i64},
+	Tank_Vanguard { cooldown_ms: SaturatedU64 },
 }
 
-#[derive(Debug, Clone)] pub struct AffectedByParalyzingToxins   { pub caster_guid: GUID, }
-#[derive(Debug, Clone)] pub struct AffectedByConcentratedToxins { pub caster_guid: GUID, }
+#[derive(Debug, Clone)] pub struct AffectedByParalyzingToxins   { pub caster_guid: Uuid, }
+#[derive(Debug, Clone)] pub struct AffectedByConcentratedToxins { pub caster_guid: Uuid, }

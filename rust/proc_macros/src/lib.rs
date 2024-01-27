@@ -10,19 +10,19 @@ pub fn insert_combat_character_fields(_item: TokenStream) -> TokenStream {
 	let fields =
 			"	pub(super) size: houta_utils::prelude::BoundUSize<1, 4>,
     pub(super) dmg        : std::ops::RangeInclusive<usize>,
-    pub(super) spd        : houta_utils::prelude::BoundUSize<20, 300>,
-    pub(super) acc        : houta_utils::prelude::BoundISize<-300, 300>,
-    pub(super) crit       : houta_utils::prelude::BoundISize<-300, 300>,
-    pub(super) dodge      : houta_utils::prelude::BoundISize<-300, 300>,
-    pub(super) stamina_max: houta_utils::prelude::BoundUSize<1, 500>,
-    pub(super) toughness  : houta_utils::prelude::BoundISize<-100, 100>,
-    pub(super) stun_def   : houta_utils::prelude::BoundISize<-100, 300>,
-    pub(super) debuff_res : houta_utils::prelude::BoundISize<-300, 300>,
-    pub(super) debuff_rate: houta_utils::prelude::BoundISize<-300, 300>,
-    pub(super) move_res   : houta_utils::prelude::BoundISize<-300, 300>,
-    pub(super) move_rate  : houta_utils::prelude::BoundISize<-300, 300>,
-    pub(super) poison_res : houta_utils::prelude::BoundISize<-300, 300>,
-    pub(super) poison_rate: houta_utils::prelude::BoundISize<-300, 300>,";
+    pub(super) spd        : houta_utils::prelude::comfy_bounded_ints::prelude::Bound_u16<20, 300>,
+    pub(super) acc        : houta_utils::prelude::comfy_bounded_ints::prelude::Bound_i16<-300, 300>,
+    pub(super) crit       : houta_utils::prelude::comfy_bounded_ints::prelude::Bound_i16<-300, 300>,
+    pub(super) dodge      : houta_utils::prelude::comfy_bounded_ints::prelude::Bound_i16<-300, 300>,
+    pub(super) stamina_max: houta_utils::prelude::comfy_bounded_ints::prelude::Bound_u16<1, 500>,
+    pub(super) toughness  : houta_utils::prelude::comfy_bounded_ints::prelude::Bound_i8<-100, 100>,
+    pub(super) stun_def   : houta_utils::prelude::comfy_bounded_ints::prelude::Bound_i16<-100, 300>,
+    pub(super) debuff_res : houta_utils::prelude::comfy_bounded_ints::prelude::Bound_i16<-300, 300>,
+    pub(super) debuff_rate: houta_utils::prelude::comfy_bounded_ints::prelude::Bound_i16<-300, 300>,
+    pub(super) move_res   : houta_utils::prelude::comfy_bounded_ints::prelude::Bound_i16<-300, 300>,
+    pub(super) move_rate  : houta_utils::prelude::comfy_bounded_ints::prelude::Bound_i16<-300, 300>,
+    pub(super) poison_res : houta_utils::prelude::comfy_bounded_ints::prelude::Bound_i16<-300, 300>,
+    pub(super) poison_rate: houta_utils::prelude::comfy_bounded_ints::prelude::Bound_i16<-300, 300>,";
 
 	let left_bracket_index = output.find('{').unwrap();
 	output.insert_str(left_bracket_index + 1, fields);
@@ -30,7 +30,7 @@ pub fn insert_combat_character_fields(_item: TokenStream) -> TokenStream {
 }
 
 
-// usage example: positions!(❌|✔️|✔️|✔️),
+/// usage example: positions!(🛑|✔️|✔️|✔️),
 #[proc_macro]
 pub fn positions(_item: TokenStream) -> TokenStream {
 	let output = _item.to_string().replace('\"', "");
@@ -42,31 +42,32 @@ pub fn positions(_item: TokenStream) -> TokenStream {
 
 	let one_b = match one.trim() {
 		"✔️" => true,
-		"❌" => false,
+		"🛑" => false,
 		_ => panic!("Invalid value for one: {}", one),
 	};
 
 	let two_b = match two.trim() {
 		"✔️" => true,
-		"❌" => false,
+		"🛑" => false,
 		_ => panic!("Invalid value for two: {}", two),
 	};
 
 	let tree_b = match tree.trim() {
 		"✔️" => true,
-		"❌" => false,
+		"🛑" => false,
 		_ => panic!("Invalid value for tree: {}", tree),
 	};
 
 	let four_b = match four.trim() {
 		"✔️" => true,
-		"❌" => false,
+		"🛑" => false,
 		_ => panic!("Invalid value for four: {}", four),
 	};
 
 	return format!("crate::combat::skill_types::PositionMatrix {{ positions: [{one_b}, {two_b}, {tree_b}, {four_b}] }}").parse().unwrap();
 }
 
+/*
 #[proc_macro]
 pub fn get_perk(_item: TokenStream) -> TokenStream {
 	let string = _item.to_string();
@@ -130,4 +131,5 @@ pub fn get_perk_mut(_item: TokenStream) -> TokenStream {
 		}}
 	}}").parse().unwrap();
 }
+*/
 

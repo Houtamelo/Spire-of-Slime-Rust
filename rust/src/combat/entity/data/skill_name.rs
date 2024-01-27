@@ -1,12 +1,13 @@
-use crate::combat::entity::data::girls::ethel::skills::EthelSkillName;
-use crate::combat::entity::data::girls::nema::skills::NemaSkillName;
-use crate::combat::entity::data::npc::bellplant::BellPlantSkillName;
-use crate::combat::entity::data::npc::crabdra::CrabdraSkillName;
+use serde::{Deserialize, Serialize};
+use crate::combat::entity::data::girls::ethel::skills::EthelSkill;
+use crate::combat::entity::data::girls::nema::skills::NemaSkill;
+use crate::combat::entity::data::npc::bellplant::BellPlantSkill;
+use crate::combat::entity::data::npc::crabdra::CrabdraSkill;
 
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Serialize, Deserialize)]
 pub enum SkillName {
-	FromNema(NemaSkillName),
-	FromEthel(EthelSkillName),
-	FromCrabdra(CrabdraSkillName),
-	FromBellPlant(BellPlantSkillName),
+	FromNema(NemaSkill),
+	FromEthel(EthelSkill),
+	FromCrabdra(CrabdraSkill),
+	FromBellPlant(BellPlantSkill),
 }

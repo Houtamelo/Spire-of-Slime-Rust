@@ -1,29 +1,30 @@
-use std::collections::{HashMap, HashSet};
-use gdnative::prelude::*;
-use rand::prelude::StdRng;
-use entity::position::Position;
-use crate::combat::entity::*;
-use crate::{iter_mut_allies_of};
-use crate::combat::effects::persistent::PersistentEffect;
-use crate::combat::entity::character::*;
-use crate::combat::entity::girl::*;
-use crate::combat::ModifiableStat::SPD;
-use crate::combat::timeline::TimelineEvent;
-use crate::util::GUID;
-
 mod effects;
 mod skill_types;
 mod timeline;
-pub mod entity;
 mod skill_resolving;
 mod perk;
+pub mod entity;
 
-include!("stat.rs");
+use std::collections::{HashMap, HashSet};
+use comfy_bounded_ints::prelude::{Bound_u8, SqueezeTo, SqueezeTo_u64};
+use gdnative::prelude::*;
+use rand_xoshiro::Xoshiro256PlusPlus;
+use serde::{Deserialize, Serialize};
+use uuid::Uuid;
+use entity::position::Position;
+use crate::combat::entity::*;
+use crate::combat::effects::persistent::PersistentEffect;
+use crate::combat::entity::character::*;
+use crate::combat::entity::girl::*;
+use crate::combat::entity::stat::{CurrentStamina, Speed};
+use crate::combat::timeline::TimelineEvent;
+use crate::util::{SaturatedU64, ToSaturatedI64};
 
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct CombatState {
-	entities: HashMap<GUID, Entity>,
-	seed: StdRng,
-	elapsed_ms: i64,
+	entities: HashMap<Uuid, Entity>,
+	seed: Xoshiro256PlusPlus,
+	elapsed_ms: SaturatedU64,
 }
 
 impl CombatState {
@@ -35,93 +36,113 @@ impl CombatState {
 		}
 	}
 
-	fn tick(&mut self, delta_time_ms: i64) {
+	fn tick(&mut self, delta_time_ms: SaturatedU64) {
 		self.elapsed_ms += delta_time_ms;
 		
-		let guids_to_tick : HashSet<GUID> = self.entities.values().map(|entity| entity.guid()).collect();
-
-		for guid in guids_to_tick.iter() {
-			if let Some(Entity::Character(character)) = self.entities.remove(guid) {
-				PersistentEffect::tick_all(character, &mut self.entities, &mut self.seed, delta_time_ms);
+		let guids_to_tick: HashSet<Uuid> = self.entities.values()
+			.map(|entity| entity.guid())
+			.collect();
+		
+		guids_to_tick.iter().for_each(|guid| {
+			match self.entities.remove(guid) {
+				Some(Entity::Character(character)) => { 
+					PersistentEffect::tick_all(character, &mut self.entities, &mut self.seed, delta_time_ms);
+				},
+				Some(entity) => { 
+					self.entities.insert(*guid, entity);
+				},
+				None => {},
 			}
-		}
+		});
 
-		for guid in guids_to_tick.iter() {
-			if let Some(Entity::Character(character)) = self.entities.remove(&guid) {
-				tick_character(character, &mut self.entities, delta_time_ms);
-			} else {
-				godot_warn!("Warning: Trying to tick character with guid {guid:?}, but it was not found in the left or right entities!");
+		guids_to_tick.into_iter().for_each(|guid| {
+			match self.entities.remove(&guid) {
+				Some(Entity::Character(character)) => { 
+					tick_character(character, &mut self.entities, delta_time_ms);
+				},
+				Some(entity) => { 
+					self.entities.insert(guid, entity);
+				},
+				None => {
+					godot_warn!("Warning: Trying to tick character with guid {guid:?}, but it was not found in the left or right entities!");
+				}
 			}
-		}
+		});
 		
 		return;
 		
-		fn tick_character(mut character: CombatCharacter, others: &mut HashMap<GUID, Entity>, delta_time_ms: i64) {
-			match character.state {
+		fn tick_character(mut character: CombatCharacter, others: &mut HashMap<Uuid, Entity>, delta_time_ms: SaturatedU64) {
+			let charge_ms = CharacterState::spd_charge_ms(
+				delta_time_ms, character.dyn_stat::<Speed>());
+			let recovery_ms = CharacterState::spd_recovery_ms(
+				delta_time_ms, character.dyn_stat::<Speed>());
+			
+			match &mut character.state {
 				CharacterState::Idle => {
 					// todo! run AI here
-					character.state = CharacterState::Idle;
 					others.insert(character.guid, Entity::Character(character));
 				}
-				CharacterState::Grappling(grappling) => {
-					character.state = CharacterState::Grappling(grappling);
-					tick_grappled_girl(character, others, delta_time_ms);
+				CharacterState::Grappling(..) => {
+					let CharacterState::Grappling(grapplindetached_state) = std::mem::replace(&mut character.state, CharacterState::Idle)
+						else { unreachable!(); };
+					
+					tick_grappled_girl(character, grapplindetached_state, others, delta_time_ms);
 				}
-				CharacterState::Downed { mut ticks } => {
+				CharacterState::Downed { ticks } => {
 					ticks.remaining_ms -= delta_time_ms;
-					if ticks.remaining_ms <= 0 {
+					
+					if ticks.remaining_ms.get() <= 0 {
 						character.state = CharacterState::Idle;
-						character.stamina_cur = isize::max(character.stamina_cur, (character.get_max_stamina() * 5) / 10)
-					} else {
-						character.state = CharacterState::Downed { ticks };
+						
+						let stamina = {
+							let mut temp = character.max_stamina().to_sat_i64();
+							temp *= 5;
+							temp /= 10;
+							CurrentStamina::new(temp.squeeze_to())
+						};
+						
+						if character.stamina_cur.get() < stamina.get() {
+							character.stamina_cur = stamina;
+						}
 					}
 
 					others.insert(character.guid, Entity::Character(character));
 				}
-				CharacterState::Stunned { mut ticks, state_before_stunned } => {
+				CharacterState::Stunned { ticks, state_before_stunned } => {
 					ticks.remaining_ms -= delta_time_ms;
-					if ticks.remaining_ms <= 0 {
-						character.state = match state_before_stunned {
-							StateBeforeStunned::Recovering { ticks }             => { CharacterState::Recovering { ticks } }
-							StateBeforeStunned::Charging   { skill_intention } => { CharacterState::Charging { skill_intention } }
-							StateBeforeStunned::Idle                                           => { CharacterState::Idle }
+					
+					if ticks.remaining_ms.get() <= 0 {
+						character.state = match std::mem::replace(state_before_stunned, StateBeforeStunned::Idle) {
+							StateBeforeStunned::Recovering { ticks } =>
+								{ CharacterState::Recovering { ticks } },
+							StateBeforeStunned::Charging { skill_intention } => 
+								{ CharacterState::Charging { skill_intention } },
+							StateBeforeStunned::Idle =>
+								{ CharacterState::Idle },
 						}
-					} else {
-						character.state = CharacterState::Stunned { ticks, state_before_stunned }
 					}
 
 					others.insert(character.guid, Entity::Character(character));
 				}
 				CharacterState::Charging { skill_intention } => {
-					character.state = CharacterState::Charging { skill_intention }; // move it back to calculate SPD on next line
-					let spd_delta_time_ms = CharacterState::spd_charge_ms(delta_time_ms, character.get_stat(SPD));
-					let CharacterState::Charging { mut skill_intention} = character.state else { panic!() };
-
-					skill_intention.charge_ticks.remaining_ms -= spd_delta_time_ms;
-					if skill_intention.charge_ticks.remaining_ms <= 0 {
+					skill_intention.charge_ticks.remaining_ms -= charge_ms;
+					
+					if skill_intention.charge_ticks.remaining_ms.get() <= 0 {
 						//todo! Cast skill
 						character.state = match skill_intention.recovery_after_complete {
 							Some(ticks) => { CharacterState::Recovering { ticks } }
 							None => { CharacterState::Idle }
 						}
-					} else {
-						character.state = CharacterState::Charging { skill_intention };
 					}
 
 					others.insert(character.guid, Entity::Character(character));
 				},
 				CharacterState::Recovering { ticks } => {
-					character.state = CharacterState::Recovering { ticks }; // move it back to calculate SPD on next line
-					let spd_delta_time_ms = CharacterState::spd_recovery_ms(delta_time_ms, character.get_stat(SPD));
-					let CharacterState::Recovering { mut ticks } = character.state else { panic!() };
-
-					ticks.remaining_ms -= spd_delta_time_ms;
-					if ticks.remaining_ms <= 0 {
+					ticks.remaining_ms -= recovery_ms;
+					
+					if ticks.remaining_ms.get() <= 0 {
 						character.state = CharacterState::Idle;
 						//todo! run AI here
-					}
-					else {
-						character.state = CharacterState::Recovering { ticks };
 					}
 
 					others.insert(character.guid, Entity::Character(character));
@@ -129,98 +150,92 @@ impl CombatState {
 			}
 		}
 		
-		fn tick_grappled_girl(mut grappler: CombatCharacter, others: &mut HashMap<GUID, Entity>, delta_time_ms: i64) {
-			let CharacterState::Grappling(mut g_state) = grappler.state else { panic!() };
+		fn tick_grappled_girl(mut grappler: CombatCharacter, mut detached_state: GrapplingState, 
+		                      others: &mut HashMap<Uuid, Entity>, delta_time_ms: SaturatedU64) {
+			const INTERVAL_MS: u64 = 1000;
 			
-			match g_state.victim {
-				GrappledGirlEnum::Alive(mut girl_alive) => {
-					if g_state.duration_ms <= delta_time_ms { // duration is over so time to cum!
-						let seconds = ((g_state.accumulated_ms + g_state.duration_ms) / 1000) as isize;
-						girl_alive.lust += seconds * (g_state.lust_per_sec as isize);
-						girl_alive.temptation += seconds * (g_state.temptation_per_sec as isize);
+			match detached_state.victim {
+				GrappledGirlEnum::Alive(mut girl_grappled) => {
+					if detached_state.duration_ms <= delta_time_ms { // duration is over so time to cum!
+						let remaining_intervals = (detached_state.accumulated_ms.get() + detached_state.duration_ms.get()) / INTERVAL_MS;
+						*girl_grappled.lust += remaining_intervals * detached_state.lust_per_interval.get().squeeze_to_u64();
+						*girl_grappled.temptation += remaining_intervals * detached_state.temptation_per_interval.get().squeeze_to_u64();
 						
-						g_state.accumulated_ms = 0;
-						
-						let mut girl_released: CombatCharacter = girl_alive.to_non_grappled();
+						let mut girl_released = girl_grappled.into_non_grappled();
 						grappler.state = CharacterState::Idle;
 
-						let girl_size = *girl_released.position.size();
+						let girl_size = girl_released.position.size();
 						let girl_position = match grappler.position {
-							Position::Left  { .. } => { Position::Right { order: 0, size: girl_size } }
-							Position::Right { .. } => { Position::Left  { order: 0, size: girl_size } }
+							Position::Left  { .. } => { Position::Right { order: Bound_u8::new(0), size: girl_size } }
+							Position::Right { .. } => { Position::Left  { order: Bound_u8::new(0), size: girl_size } }
 						};
 
 						// shift all allies of the released girl to the edge, to make space for her at the front
-						for ally_of_girl in iter_mut_allies_of!(girl_released, others) {
-							let order_mut = ally_of_girl.position_mut().order_mut();
-							*order_mut += girl_size;
-						}
+						iter_mut_allies_of!(girl_released, others).for_each(|ally|
+							*ally.position_mut().order_mut() += girl_size);
 
 						girl_released.position = girl_position;
 						others.insert(girl_released.guid, Entity::Character(girl_released));
-						others.insert(grappler     .guid, Entity::Character(grappler));
+						others.insert(grappler.guid, Entity::Character(grappler));
 						return;
 					}
 					
-					g_state.accumulated_ms += delta_time_ms;
-
-					// early return
-					if g_state.accumulated_ms < 1000 {
-						g_state.victim = GrappledGirlEnum::Alive(girl_alive);
-						grappler.state = CharacterState::Grappling(g_state);
+					detached_state.accumulated_ms += delta_time_ms;
+					
+					if detached_state.accumulated_ms.get() < INTERVAL_MS {
+						detached_state.victim = GrappledGirlEnum::Alive(girl_grappled);
+						grappler.state = CharacterState::Grappling(detached_state);
 						others.insert(grappler.guid, Entity::Character(grappler));
 						return;
 					}
 
-					let interval_count = g_state.accumulated_ms / 1000;
-					g_state.accumulated_ms -= interval_count * 1000;
-					let seconds = interval_count as isize;
-					girl_alive.lust += seconds * (g_state.lust_per_sec as isize);
-					girl_alive.temptation += seconds * (g_state.temptation_per_sec as isize);
-
-					// early return
-					if girl_alive.lust < MAX_LUST {
-						g_state.victim = GrappledGirlEnum::Alive(girl_alive);
-						grappler.state = CharacterState::Grappling(g_state);
+					let interval_count = detached_state.accumulated_ms.get() / INTERVAL_MS;
+					detached_state.accumulated_ms -= interval_count * INTERVAL_MS;
+					
+					*girl_grappled.lust += interval_count * detached_state.lust_per_interval.get().squeeze_to_u64();
+					*girl_grappled.temptation += interval_count * detached_state.temptation_per_interval.get().squeeze_to_u64();
+					
+					if girl_grappled.lust.get() < MAX_LUST {
+						detached_state.victim = GrappledGirlEnum::Alive(girl_grappled);
+						grappler.state = CharacterState::Grappling(detached_state);
 						others.insert(grappler.guid, Entity::Character(grappler));
-						return;
-					}
-
-					girl_alive.lust = 0.into();
-					girl_alive.orgasm_count = isize::clamp(girl_alive.orgasm_count + 1, 0, girl_alive.orgasm_limit);
-					girl_alive.temptation -= 40;
-
-					if girl_alive.orgasm_count == girl_alive.orgasm_limit {
-						let defeated_girl = girl_alive.to_defeated();
-						g_state.victim = defeated_girl;
-						grappler.state = CharacterState::Grappling(g_state);
 					} else {
-						g_state.victim = GrappledGirlEnum::Alive(girl_alive);
-						grappler.state = CharacterState::Grappling(g_state);
-					}
+						girl_grappled.lust.set(0);
+						let orgasm_count = girl_grappled.orgasm_count.get();
+						girl_grappled.orgasm_count.set(u8::clamp(orgasm_count + 1, 0, girl_grappled.orgasm_limit.get()));
+						*girl_grappled.temptation -= 40;
 
-					others.insert(grappler.guid, Entity::Character(grappler));
+						if girl_grappled.orgasm_count.get() >= girl_grappled.orgasm_limit.get() {
+							let girl_defeated = girl_grappled.into_defeated();
+							detached_state.victim = girl_defeated;
+							grappler.state = CharacterState::Grappling(detached_state);
+						} else {
+							detached_state.victim = GrappledGirlEnum::Alive(girl_grappled);
+							grappler.state = CharacterState::Grappling(detached_state);
+						}
+
+						others.insert(grappler.guid, Entity::Character(grappler));
+					}
 				}
 				GrappledGirlEnum::Defeated(mut girl_defeated) => {
-					g_state.accumulated_ms += delta_time_ms;
+					detached_state.accumulated_ms += delta_time_ms;
 					
-					if g_state.accumulated_ms >= 1000 {
-						let interval_count = g_state.accumulated_ms / 1000;
-						g_state.accumulated_ms -= interval_count * 1000;
-						let seconds = interval_count as isize;
-						girl_defeated.lust += seconds * (g_state.lust_per_sec as isize);
-						girl_defeated.temptation += seconds * (g_state.temptation_per_sec as isize);
+					if detached_state.accumulated_ms.get() >= INTERVAL_MS {
+						let interval_count = detached_state.accumulated_ms.get() / INTERVAL_MS;
+						detached_state.accumulated_ms -= interval_count * INTERVAL_MS;
+						*girl_defeated.lust += interval_count * detached_state.lust_per_interval.get().squeeze_to_u64();
+						*girl_defeated.temptation += interval_count * detached_state.temptation_per_interval.get().squeeze_to_u64();
 					}
 					
-					if girl_defeated.lust >= MAX_LUST {
-						const temptation_delta_on_orgasm: isize = -40;
-						girl_defeated.lust = 0.into();
-						girl_defeated.orgasm_count = isize::clamp(girl_defeated.orgasm_count + 1, 0, girl_defeated.orgasm_limit);
-						girl_defeated.temptation += temptation_delta_on_orgasm;
+					if girl_defeated.lust.get() >= MAX_LUST {
+						girl_defeated.lust.set(0);
+						let orgasm_count = girl_defeated.orgasm_count.get();
+						girl_defeated.orgasm_count.set(u8::clamp(orgasm_count + 1, 0, girl_defeated.orgasm_limit.get()));
+						*girl_defeated.temptation -= 40;
 					}
 					
-					g_state.victim = GrappledGirlEnum::Defeated(girl_defeated);
-					grappler.state = CharacterState::Grappling(g_state);
+					detached_state.victim = GrappledGirlEnum::Defeated(girl_defeated);
+					grappler.state = CharacterState::Grappling(detached_state);
 					others.insert(grappler.guid, Entity::Character(grappler));
 				}
 			}
@@ -228,14 +243,12 @@ impl CombatState {
 	}
 	
 	fn get_timeline_events(&self) -> Vec<TimelineEvent> {
-		let mut all_events: Vec<TimelineEvent> = Vec::new();
-		for entity in self.entities.values() {
-			if let Entity::Character(character) = entity {
-				TimelineEvent::register_character(character, &mut all_events)
-			}
-		}
+		let mut events= self.entities.values()
+			.filter_map(|entity| if let Entity::Character(character) = entity { Some(character) } else { None })
+			.flat_map(|character| TimelineEvent::generate_events(character))
+			.collect::<Vec<_>>();
 		
-		all_events.sort_by(|a, b| a.time_frame_ms.cmp(&b.time_frame_ms));
-		return all_events;
+		events.sort_by(|a, b| a.time_frame_ms.cmp(&b.time_frame_ms));
+		return events;
 	}
 }

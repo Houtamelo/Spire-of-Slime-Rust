@@ -1,30 +1,33 @@
-use std::convert::Into;
-use lazy_static::lazy_static;
-use crate::combat::entity::data::girls::ethel::stats::EthelData;
-
 pub mod stats;
 pub mod skills;
 pub mod perks;
 
-lazy_static! { pub static ref default_ethel: EthelData = EthelData {
-	size        : 1.into(),
-	dmg         : 8..=12,
-	spd         : 100.into(),
-	acc         : 0  .into(),
-	crit        : 0  .into(),
-	dodge       : 10 .into(),
-	stamina_max : 30 .into(),
-	toughness   : 0  .into(),
-	stun_def    : 10 .into(),
-	debuff_res  : 0  .into(),
-	debuff_rate : 0  .into(),
-	move_res    : 10 .into(),
-	move_rate   : 0  .into(),
-	poison_res  : 0  .into(),
-	poison_rate : 0  .into(),
-	skills      : vec![&skills::skill_ethel_clash,
-	                    skills::skill_ethel_safeguard.deref(),
-	                    skills::skill_ethel_jolt.deref()],
-	composure   : 0  .into(),
-	orgasm_limit: 3  .into(),
-};}
+use houta_utils::prelude::DynamicArray;
+use crate::combat::entity::data::girls::ethel::stats::EthelData;
+use crate::combat::entity::stat::*;
+
+
+pub static DEFAULT_ETHEL: EthelData = EthelData {
+	size : Size::new(1),
+	dmg  : CheckedRange::new(8, 12).unwrap(),
+	spd  : Speed::new(100),
+	acc  : Accuracy::new(0),
+	crit : CritChance::new(0),
+	dodge: Dodge::new(10),
+	max_stamina: MaxStamina::new(30),
+	toughness  : Toughness::new(0),
+	stun_def   : StunDef::new(10),
+	debuff_res : DebuffRes::new(0),
+	debuff_rate: DebuffRate::new(0),
+	move_res   : MoveRes::new(10),
+	move_rate  : MoveRate::new(0),
+	poison_res : PoisonRes::new(0),
+	poison_rate: PoisonRate::new(0),
+	skills: DynamicArray::Static(&[
+		skills::CLASH_CONST, 
+		skills::SAFEGUARD_CONST, 
+		skills::JOLT_CONST
+	]),
+	composure   : Composure::new(0),
+	orgasm_limit: OrgasmLimit::new(3),
+};

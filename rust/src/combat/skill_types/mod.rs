@@ -1,4 +1,10 @@
+pub mod offensive;
+pub mod defensive;
+pub mod lewd;
+
+use comfy_bounded_ints::prelude::{Bound_u8, SqueezeTo_usize};
 use gdnative::godot_error;
+use serde::{Deserialize, Serialize};
 use entity::position::Position;
 use crate::combat::effects::onSelf::SelfApplier;
 use crate::combat::effects::onTarget::TargetApplier;
@@ -7,13 +13,11 @@ use crate::combat::entity::data::skill_name::SkillName;
 use crate::combat::skill_types::defensive::DefensiveSkill;
 use crate::combat::skill_types::lewd::LewdSkill;
 use crate::combat::skill_types::offensive::OffensiveSkill;
+use crate::combat::stat::{Accuracy, CritChance, Power};
 use crate::MAX_CHARACTERS_PER_TEAM;
+use crate::util::SaturatedU64;
 
-pub mod offensive;
-pub mod defensive;
-pub mod lewd;
-
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub enum Skill {
 	Offensive(OffensiveSkill),
 	Defensive(DefensiveSkill),
@@ -22,68 +26,67 @@ pub enum Skill {
 
 pub trait SkillTrait {
 	fn name            (&self) -> SkillName;
-	fn recovery_ms     (&self) -> &i64;
-	fn charge_ms       (&self) -> &i64;
+	fn recovery_ms     (&self) -> &SaturatedU64;
+	fn charge_ms       (&self) -> &SaturatedU64;
 	fn crit            (&self) -> &CRITMode;
-	fn effects_self    (&self) -> &Vec<SelfApplier>;
-	fn effects_target  (&self) -> &Vec<TargetApplier>;
+	fn effects_self    (&self) -> &[SelfApplier];
+	fn effects_target  (&self) -> &[TargetApplier];
 	fn caster_positions(&self) -> &PositionMatrix;
 	fn target_positions(&self) -> &PositionMatrix;
 	fn multi_target    (&self) -> &bool;
 	fn use_counter     (&self) -> &UseCounter;
 }
 
-#[derive(Debug, Clone, PartialEq, Eq, Copy)]
+#[derive(Debug, Clone, PartialEq, Eq, Copy, Serialize, Deserialize)]
 pub enum ACCMode {
-	CanMiss { acc: isize },
+	CanMiss { acc: Accuracy },
 	NeverMiss,
 }
 
-#[derive(Debug, Clone, PartialEq, Eq, Copy)]
+#[derive(Debug, Clone, PartialEq, Eq, Copy, Serialize, Deserialize)]
 pub enum DMGMode {
-	Power { power: isize, toughness_reduction: isize },
+	Power { power: Power, toughness_reduction: Bound_u8<0, 100> },
 	NoDamage,
 }
 
-#[derive(Debug, Clone, PartialEq, Eq, Copy)]
+#[derive(Debug, Clone, PartialEq, Eq, Copy, Serialize, Deserialize)]
 pub enum CRITMode {
-	CanCrit { crit_chance: isize },
+	CanCrit { chance: CritChance },
 	NeverCrit,
 }
 
-#[derive(Debug, Clone, PartialEq, Eq, Copy)]
+#[derive(Debug, Clone, PartialEq, Eq, Copy, Serialize, Deserialize)]
 pub struct PositionMatrix {
-	pub positions: [bool; MAX_CHARACTERS_PER_TEAM],
+	pub positions: [bool; MAX_CHARACTERS_PER_TEAM as usize],
 }
 
 impl PositionMatrix {
 	pub fn contains(&self, position: Position) -> bool {
-		let (order, size): (usize, usize) = position.deconstruct();
+		let (order, size) = { 
+			let (temp_order, temp_size) = position.deconstruct();
+			(temp_order.squeeze_to_usize(), temp_size.squeeze_to_usize())
+		};
 		
-		if (order + size > MAX_CHARACTERS_PER_TEAM) || (size == 0) {
+		let plus_size = order + size;
+		if plus_size > MAX_CHARACTERS_PER_TEAM as usize
+			|| size == 0 {
 			godot_error!("PositionMatrix::contains: position: {position:?}, size: {size} is out of bounds");
 			return false;
 		}
 
-		for index in order..(order + size) {
-			if self.positions[index] {
-				return true;
-			}
-		}
-		
-		return false;
+		return (order..plus_size).any(|index| self.positions[index]);
 	}
 }
 
-#[derive(Debug, Clone, PartialEq, Eq, Copy)]
+#[derive(Debug, Clone, PartialEq, Eq, Copy, Serialize, Deserialize)]
 pub enum AllyRequirement {
 	CanSelf,
 	NotSelf,
 	OnlySelf
 }
 
-#[derive(Debug, Clone, PartialEq, Eq, Copy)]
+#[derive(Debug, Clone, PartialEq, Eq, Copy, Serialize, Deserialize)]
 pub enum UseCounter {
 	Unlimited,
-	Limited { max_uses: isize },
+	Limited { max_uses: Bound_u8<1, 255> },
 }

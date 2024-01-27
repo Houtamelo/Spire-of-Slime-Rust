@@ -1,74 +1,78 @@
 use std::collections::{HashMap, HashSet};
+use std::num::{NonZeroU16, NonZeroU8};
+use std::vec::IntoIter;
 use gdnative::log::godot_warn;
-use rand::rngs::StdRng;
-use combat::ModifiableStat;
-use crate::{combat};
+use rand_xoshiro::Xoshiro256PlusPlus;
+use serde::{Deserialize, Serialize};
+use uuid::Uuid;
+use crate::combat::effects::IntervalMS;
 use crate::combat::entity::character::*;
 use crate::combat::entity::data::girls::ethel::perks::EthelPerk;
 use crate::combat::entity::data::girls::nema::perks::NemaPerk;
 use crate::combat::entity::Entity;
 use crate::combat::perk::Perk;
-use crate::combat::skill_types::CRITMode;
-use crate::util::GUID;
+use crate::combat::skill_types::{ACCMode, CRITMode};
+use crate::combat::entity::stat::{DynamicStat, Power};
+use crate::util::*;
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub enum PersistentEffect {
 	Poison {
-		duration_ms: i64,
-		accumulated_ms: i64,
-		interval_ms: i64,
-		dmg_per_interval: usize,
+		duration_ms: SaturatedU64,
+		accumulated_ms: SaturatedU64,
+		interval_ms: IntervalMS,
+		poison_per_interval: NonZeroU8,
 		additives: HashSet<PoisonAdditive>,
-		caster_guid: GUID,
+		caster_guid: Uuid,
 	},
 	Heal {
-		duration_ms: i64,
-		accumulated_ms: i64,
-		heal_per_sec: usize,
+		duration_ms: SaturatedU64,
+		accumulated_ms: SaturatedU64,
+		heal_per_interval: NonZeroU8,
 	},
 	Arousal {
-		duration_ms: i64,
-		accumulated_ms: i64,
-		lust_per_sec: usize,
+		duration_ms: SaturatedU64,
+		accumulated_ms: SaturatedU64,
+		lust_per_interval: NonZeroU8,
 	},
 	Buff {
-		duration_ms: i64,
-		stat: ModifiableStat,
-		stat_increase: usize,
+		duration_ms: SaturatedU64,
+		stat: DynamicStat,
+		stat_increase: NonZeroU16,
 	},
-	Debuff(PersistentDebuff),
+	Debuff {
+		duration_ms: SaturatedU64,
+		debuff_kind: PersistentDebuff
+	},
 	Guarded {
-		duration_ms: i64,
-		guarder_guid: GUID,
+		duration_ms: SaturatedU64,
+		guarder_guid: Uuid,
 	},
 	Marked {
-		duration_ms: i64,
+		duration_ms: SaturatedU64,
 	},
 	Riposte {
-		duration_ms: i64,
-		dmg_multiplier: isize,
-		acc: isize,
-		crit: CRITMode,
+		duration_ms: SaturatedU64,
+		skill_power: Power,
+		acc_mode: ACCMode,
+		crit_mode: CRITMode,
 	},
 	TemporaryPerk {
-		duration_ms: i64,
+		duration_ms: SaturatedU64,
 		perk: Perk,
 	}
 }
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub enum PersistentDebuff {
 	Standard {
-		duration_ms: i64,
-		stat: ModifiableStat,
-		stat_decrease: usize,
+		stat: DynamicStat,
+		stat_decrease: NonZeroU16,
 	},
-	StaggeringForce {
-		duration_ms: i64,
-	}
+	StaggeringForce,
 }
 
-#[derive(Debug, Clone, Hash, Eq, PartialEq)]
+#[derive(Debug, Clone, Hash, Eq, PartialEq, Serialize, Deserialize)]
 pub enum PoisonAdditive {
 	Ethel_LingeringToxins,
 	Ethel_ParalyzingToxins,
@@ -76,176 +80,197 @@ pub enum PoisonAdditive {
 	Nema_Madness,
 }
 
-impl PersistentDebuff {
-	pub fn duration(&self) -> i64 {
-		match self {
-			PersistentDebuff::Standard { duration_ms, .. } => { *duration_ms },
-			PersistentDebuff::StaggeringForce { duration_ms, .. } => { *duration_ms },
-		}
-	}
-
-	pub fn duration_mut(&mut self) -> &mut i64 {
-		match self {
-			PersistentDebuff::Standard        { duration_ms, .. } => { duration_ms },
-			PersistentDebuff::StaggeringForce { duration_ms, .. } => { duration_ms },
-		}
-	}
-}
-
 impl PersistentEffect {
-	pub(in crate::combat) fn tick_all(mut owner: CombatCharacter, others: &mut HashMap<GUID, Entity>, seed: &mut StdRng, delta_ms: i64) {
-		let iter : Vec<PersistentEffect> = owner.persistent_effects.drain(0..owner.persistent_effects.len()).collect();
-		for mut effect in iter {
-			match &mut effect {
-				PersistentEffect::Poison { duration_ms, accumulated_ms, interval_ms, dmg_per_interval, caster_guid, .. } => {
-					let caster_guid = caster_guid.clone();
+	pub(in crate::combat) fn tick_all(mut owner: CombatCharacter, others: &mut HashMap<Uuid, Entity>,
+	                                  rng: &mut Xoshiro256PlusPlus, delta_ms: SaturatedU64) {
+		let effects_vec: Vec<PersistentEffect> = owner.persistent_effects
+			.drain(0..owner.persistent_effects.len())
+			.collect::<Vec<_>>();
+		
+		let effects_iter = effects_vec.into_iter();
+		
+		Self::tick_next(owner, effects_iter, others, rng, delta_ms);
+	}
+	
+	fn tick_next(mut owner: CombatCharacter, mut iter: IntoIter<PersistentEffect>, 
+	               others: &mut HashMap<Uuid, Entity>, rng: &mut Xoshiro256PlusPlus, delta_ms: SaturatedU64) {
+		macro_rules! next { () => { Self::tick_next(owner, iter, others, rng, delta_ms) }; }
+		
+		let Some(mut effect) = iter.next()
+			else { // all effects ticked, recursion ends here
+				others.insert(owner.guid, Entity::Character(owner)); 
+				return;
+			};
+		
+		match &mut effect {
+			PersistentEffect::Poison { duration_ms, accumulated_ms,
+				interval_ms, poison_per_interval: dmg_per_interval, caster_guid, .. } => {
+				let caster_guid = *caster_guid;
+				
+				let actual_ms = clamp_tick_ms(delta_ms, *duration_ms);
 
-					let actual_ms = clamp_tick_ms(delta_ms, *duration_ms);
+				*accumulated_ms += actual_ms;
+				*duration_ms -= actual_ms;
 
-					*accumulated_ms += actual_ms;
-					*duration_ms -= actual_ms;
+				let intervals_count: u64 = accumulated_ms.get() / interval_ms.get();
+				let dmg = {
+					let mut temp = intervals_count.to_sat_i64();
+					temp *= dmg_per_interval.get();
+					temp
+				};
 
-					let intervals_count = (*accumulated_ms / *interval_ms) as usize;
-					let dmg: usize = intervals_count * *dmg_per_interval;
-
-
-					if *duration_ms > 0 {
-						if intervals_count > 0 {
-							*accumulated_ms -= intervals_count as i64 * *interval_ms;
-							owner.stamina_cur -= dmg as isize;
-						}
-
-						owner.persistent_effects.push(effect);
-					} else if *accumulated_ms > 0 || intervals_count > 0 {
-						let partial_interval_damage = (dmg as i64 + (*accumulated_ms * *dmg_per_interval as i64) / *interval_ms) as isize;
-						owner.stamina_cur -= partial_interval_damage;
-					} else {
-						return;
+				if duration_ms.get() > 0 {
+					if intervals_count > 0 {
+						*accumulated_ms -= intervals_count * interval_ms.get();
+						*owner.stamina_cur -= dmg.get();
 					}
 
-					if owner.stamina_dead() { // poison killed this character, we can ignore the rest of the status effects
-						let mut killer_option : Option<CombatCharacter> = None;
-						if let Some(killer_entity) = others.remove(&caster_guid) {
-							if let Entity::Character(killer) = killer_entity {
-								killer_option = Some(killer);
-							} else {
-								others.insert(killer_entity.guid(), killer_entity);
-							}
-						}
+					owner.persistent_effects.push(effect);
+				} else if accumulated_ms.get() > 0 || intervals_count > 0 { // duration is over but there might still be some damage left
+					*owner.stamina_cur -= dmg.get();
 
-						owner.do_on_zero_stamina(killer_option.as_mut(), others, seed);
+					let partial_interval_dmg = {
+						let mut temp = accumulated_ms.to_sat_i64();
+						temp *= dmg_per_interval.get();
+						temp /= interval_ms.get();
+						temp
+					};
+					
+					*owner.stamina_cur -= partial_interval_dmg.get();
+				} else { // duration is over and no damage to be dealt, next!
+					next!();
+					return;
+				}
 
-						if let Some(killer) = killer_option {
+				if owner.stamina_alive() {
+					next!();
+					return;
+				} else { // Owner is dead, recursion ends here
+					match others.remove(&caster_guid) {
+						Some(Entity::Character(mut killer)) => {
+							owner.do_on_zero_stamina(Some(&mut killer), others, rng);
 							others.insert(killer.guid, Entity::Character(killer));
+						},
+						Some(killer_non_character) => {
+							others.insert(killer_non_character.guid(), killer_non_character);
+							owner.do_on_zero_stamina(None, others, rng);
 						}
-
-						return;
+						None => {
+							owner.do_on_zero_stamina(None, others, rng);
+						}
 					}
-				},
-				PersistentEffect::Heal{ duration_ms, accumulated_ms, heal_per_sec } => {
-					let actual_ms = clamp_tick_ms(delta_ms, *duration_ms);
-					
-					*accumulated_ms += actual_ms;
-					*duration_ms -= actual_ms;
-					
-					let intervals_count = (*accumulated_ms / 1000) as usize;
-					let heal: usize = intervals_count * *heal_per_sec;
-					
-					if heal > 0 {
-						*accumulated_ms -= intervals_count as i64 * 1000;
-						owner.stamina_cur += heal as isize;
-					}
+				};
+			},
+			PersistentEffect::Heal{ duration_ms, accumulated_ms, heal_per_interval: heal_per_sec } => {
+				const INTERVAL_MS: u64 = 1000;
+				
+				let actual_ms = clamp_tick_ms(delta_ms, *duration_ms);
 
-					if *duration_ms > 0 { owner.persistent_effects.push(effect); }
-				},
-				PersistentEffect::Arousal{ duration_ms, accumulated_ms, lust_per_sec } => {
-					let actual_ms = clamp_tick_ms(delta_ms, *duration_ms);
-					
-					*accumulated_ms += actual_ms;
-					*duration_ms -= actual_ms;
-					
-					let intervals_count = (*accumulated_ms / 1000) as usize;
-					let lust: usize = intervals_count * *lust_per_sec;
-					
-					if lust > 0 {
-						let Some(girl) = &mut owner.girl_stats else { 
+				*accumulated_ms += actual_ms;
+				*duration_ms -= actual_ms;
+
+				let intervals_count: u64 = accumulated_ms.get() / INTERVAL_MS;
+				let heal_amount = {
+					let mut temp = intervals_count.to_sat_i64();
+					temp *= heal_per_sec.get();
+					temp
+				};
+
+				if intervals_count > 0 {
+					*accumulated_ms -= intervals_count * INTERVAL_MS;
+					*owner.stamina_cur += heal_amount.get();
+				}
+
+				if duration_ms.get() > 0 {
+					owner.persistent_effects.push(effect);
+				}
+				
+				next!();
+			},
+			PersistentEffect::Arousal{ duration_ms, accumulated_ms, lust_per_interval: lust_per_sec } => {
+				const INTERVAL_MS: u64 = 1000;
+				
+				let actual_ms = clamp_tick_ms(delta_ms, *duration_ms);
+
+				*accumulated_ms += actual_ms;
+				*duration_ms -= actual_ms;
+
+				let intervals_count: u64 = accumulated_ms.get() / INTERVAL_MS;
+				let lust_delta = {
+					let mut temp = intervals_count.to_sat_i64();
+					temp *= lust_per_sec.get();
+					temp
+				};
+
+				if intervals_count > 0 {
+					let Some(girl) = &mut owner.girl_stats 
+						else { 
 							godot_warn!("character has arousal status but isn't a girl: {owner:?}");
-							continue;
+							next!();
+							return; 
 						};
-						
-						*accumulated_ms -= intervals_count as i64 * 1000;
-						girl.lust += lust as isize;
-					}
 
-					if *duration_ms > 0 { owner.persistent_effects.push(effect); }
-				},
-				PersistentEffect::Buff{ duration_ms, .. } => {
-					*duration_ms -= delta_ms;
-					if *duration_ms > 0 { owner.persistent_effects.push(effect); }
-				},
-				PersistentEffect::Debuff(debuff) => {
-					let duration_ms = debuff.duration_mut();
-					*duration_ms -= delta_ms;
-					if *duration_ms > 0 { owner.persistent_effects.push(effect); }
-				},
-				PersistentEffect::Guarded{ duration_ms, .. } => {
-					*duration_ms -= delta_ms;
-					if *duration_ms > 0 { owner.persistent_effects.push(effect); }
-				},
-				PersistentEffect::Marked{ duration_ms } => {
-					*duration_ms -= delta_ms;
-					if *duration_ms > 0 { owner.persistent_effects.push(effect); }
-				},
-				PersistentEffect::Riposte{ duration_ms, .. } => {
-					*duration_ms -= delta_ms;
-					if *duration_ms > 0 { owner.persistent_effects.push(effect); }
-				},
-				PersistentEffect::TemporaryPerk{ duration_ms, .. } => {
-					*duration_ms -= delta_ms;
-					if *duration_ms > 0 { owner.persistent_effects.push(effect); }
-				},
-			}
+					*accumulated_ms -= intervals_count * INTERVAL_MS;
+					*girl.lust += lust_delta.get();
+				}
+
+				if duration_ms.get() > 0 {
+					owner.persistent_effects.push(effect);
+				}
+
+				next!();
+			},
+			PersistentEffect::Buff{ duration_ms, .. }
+			| PersistentEffect::Debuff{ duration_ms, .. }
+			| PersistentEffect::Guarded{ duration_ms, .. }
+			| PersistentEffect::Marked{ duration_ms }
+			| PersistentEffect::Riposte{ duration_ms, .. }
+			| PersistentEffect::TemporaryPerk{ duration_ms, .. } => {
+				*duration_ms -= delta_ms;
+				if duration_ms.get() > 0 {
+					owner.persistent_effects.push(effect);
+				}
+
+				next!();
+			},
 		}
-		
-		others.insert(owner.guid, Entity::Character(owner));
-		return;
-		
-		fn clamp_tick_ms(input: i64, duration: i64) -> i64 {
-			if input <= duration {
-				return input;
+
+		fn clamp_tick_ms(delta_ms: SaturatedU64, duration_ms: SaturatedU64) -> SaturatedU64 {
+			return if delta_ms.get() <= duration_ms.get() {
+				delta_ms
 			} else {
-				godot_warn!("Tick ms is greater than duration_ms. This should not happen. Tick ms: {}, duration_ms: {}", input, duration);
-				return duration;
+				godot_warn!("Tick ms is greater than duration_ms. This should not happen. Tick ms: {:?}, duration_ms: {:?}", delta_ms, duration_ms);
+				duration_ms
 			};
 		}
 	}
 	
-	pub fn duration(&self) -> i64 {
+	pub fn duration(&self) -> SaturatedU64 {
 		return match self {
-			PersistentEffect::Poison       { duration_ms, ..} => { *duration_ms },
-			PersistentEffect::Heal         { duration_ms, ..} => { *duration_ms },
-			PersistentEffect::Arousal      { duration_ms, ..} => { *duration_ms },
-			PersistentEffect::Buff         { duration_ms, ..} => { *duration_ms },
-			PersistentEffect::Guarded      { duration_ms, ..} => { *duration_ms },
-			PersistentEffect::Marked       { duration_ms    } => { *duration_ms },
-			PersistentEffect::Riposte      { duration_ms, ..} => { *duration_ms },
-			PersistentEffect::TemporaryPerk{ duration_ms, ..} => { *duration_ms },
-			PersistentEffect::Debuff(debuff) => { debuff.duration() },
+			PersistentEffect::Poison { duration_ms, .. } | PersistentEffect::Heal { duration_ms, .. }
+			| PersistentEffect::Arousal { duration_ms, .. } | PersistentEffect::Buff { duration_ms, .. }
+			| PersistentEffect::Guarded { duration_ms, .. } | PersistentEffect::Marked { duration_ms } 
+			| PersistentEffect::Riposte { duration_ms, .. } | PersistentEffect::Debuff { duration_ms, .. }
+			| PersistentEffect::TemporaryPerk { duration_ms, .. } => {
+				*duration_ms
+			}
 		};
 	}
 
 	pub fn get_poison_additives(perks: &Vec<Perk>) -> HashSet<PoisonAdditive> {
-		let mut additives = HashSet::new();
-		for perk in perks {
-			match perk {
-				Perk::Ethel(EthelPerk::Poison_LingeringToxins   ) => { additives.insert(PoisonAdditive::Ethel_LingeringToxins   ); },
-				Perk::Ethel(EthelPerk::Poison_ParalyzingToxins  ) => { additives.insert(PoisonAdditive::Ethel_ParalyzingToxins  ); },
-				Perk::Ethel(EthelPerk::Poison_ConcentratedToxins) => { additives.insert(PoisonAdditive::Ethel_ConcentratedToxins); },
-				Perk::Nema (NemaPerk ::Poison_Madness           ) => { additives.insert(PoisonAdditive::Nema_Madness            ); },
-				_ => {}
-			}
-		}
-
-		return additives;
+		return perks.iter()
+			.filter_map(|perk| {
+				return match perk {
+					Perk::Ethel(EthelPerk::Poison_LingeringToxins) => 
+						Some(PoisonAdditive::Ethel_LingeringToxins),
+					Perk::Ethel(EthelPerk::Poison_ParalyzingToxins) => 
+						Some(PoisonAdditive::Ethel_ParalyzingToxins),
+					Perk::Ethel(EthelPerk::Poison_ConcentratedToxins) => 
+						Some(PoisonAdditive::Ethel_ConcentratedToxins),
+					Perk::Nema(NemaPerk::Poison_Madness) => 
+						Some(PoisonAdditive::Nema_Madness),
+					_ => None
+				};
+			}).collect();
 	}
 }

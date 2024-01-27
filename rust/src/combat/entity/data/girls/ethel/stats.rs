@@ -1,40 +1,52 @@
-use std::ops::RangeInclusive;
-use rand::prelude::StdRng;
-use proc_macros::insert_combat_character_fields;
-use houta_utils::prelude::{BoundISize, BoundUSize};
-use crate::combat::entity::data::character::{CharacterDataTrait, SkillUserTrait};
+use serde::{Serialize, Deserialize};
+use houta_utils::prelude::DynamicArray;
+use rand_xoshiro::Xoshiro256PlusPlus;
+use crate::combat::entity::data::character::{CharacterDataTrait};
 use crate::combat::entity::data::girls::{GirlName, GirlTrait};
 use crate::combat::skill_types::Skill;
+use crate::combat::entity::stat::*;
 
-insert_combat_character_fields!(
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct EthelData {
-	pub(super) skills: Vec<&'static Skill>,
-	pub(super) composure   : BoundISize< -100, 300>,
-	pub(super) orgasm_limit: BoundUSize<1, 8>,
-});
+	pub(super) skills: DynamicArray<Skill>,
+	pub(super) composure: Composure,
+	pub(super) orgasm_limit: OrgasmLimit,
+	pub(super) size: Size,
+    pub(super) dmg: CheckedRange,
+    pub(super) spd: Speed,
+    pub(super) acc: Accuracy,
+    pub(super) crit : CritChance,
+    pub(super) dodge: Dodge,
+    pub(super) max_stamina: MaxStamina,
+    pub(super) toughness  : Toughness,
+    pub(super) stun_def   : StunDef,
+    pub(super) debuff_res : DebuffRes,
+    pub(super) debuff_rate: DebuffRate,
+    pub(super) move_res   : MoveRes,
+    pub(super) move_rate  : MoveRate,
+    pub(super) poison_res : PoisonRes,
+    pub(super) poison_rate: PoisonRate,
+}
 
 impl GirlTrait for EthelData {
-	fn name        (&self) -> GirlName              { return GirlName::Nema   ; }
-	fn composure   (&self) -> BoundISize<-100, 300> { return self.composure   ; }
-	fn orgasm_limit(&self) -> BoundUSize<1, 8>      { return self.orgasm_limit; }
+	fn name(&self) -> GirlName { return GirlName::Nema; }
+	fn composure(&self) -> Composure { return self.composure; }
+	fn orgasm_limit(&self) -> OrgasmLimit { return self.orgasm_limit; }
 }
 
 impl CharacterDataTrait for EthelData {
-	fn stamina_max(&self, _level: usize, _rng: Option<&mut StdRng>) -> BoundUSize<1, 500> { return self.stamina_max; }
-	fn dmg        (&self, _level: usize) -> RangeInclusive<usize> { return self.dmg.clone(); }
-	fn spd        (&self, _level: usize) -> BoundUSize  <  20, 300> { return self.spd        ; }
-	fn acc        (&self, _level: usize) -> BoundISize<-300, 300> { return self.acc        ; }
-	fn crit       (&self, _level: usize) -> BoundISize<-300, 300> { return self.crit       ; }
-	fn dodge      (&self, _level: usize) -> BoundISize<-300, 300> { return self.dodge      ; }
-	fn toughness  (&self, _level: usize) -> BoundISize<-100, 100> { return self.toughness  ; }
-	fn stun_def   (&self, _level: usize) -> BoundISize<-100, 300> { return self.stun_def   ; }
-	fn debuff_res (&self, _level: usize) -> BoundISize<-300, 300> { return self.debuff_res ; }
-	fn debuff_rate(&self, _level: usize) -> BoundISize<-300, 300> { return self.debuff_rate; }
-	fn move_res   (&self, _level: usize) -> BoundISize<-300, 300> { return self.move_res   ; }
-	fn move_rate  (&self, _level: usize) -> BoundISize<-300, 300> { return self.move_rate  ; }
-	fn poison_res (&self, _level: usize) -> BoundISize<-300, 300> { return self.poison_res ; }
-	fn poison_rate(&self, _level: usize) -> BoundISize<-300, 300> { return self.poison_rate; }
+	fn max_stamina(&self, _level: u8, _rng: Option<&mut Xoshiro256PlusPlus>) -> MaxStamina { return self.max_stamina; }
+	fn dmg  (&self, _level: u8) -> CheckedRange { return self.dmg.clone(); }
+	fn spd  (&self, _level: u8) -> Speed      { return self.spd  ; }
+	fn acc  (&self, _level: u8) -> Accuracy   { return self.acc  ; }
+	fn crit (&self, _level: u8) -> CritChance { return self.crit ; }
+	fn dodge(&self, _level: u8) -> Dodge      { return self.dodge; }
+	fn toughness  (&self, _level: u8) -> Toughness  { return self.toughness  ; }
+	fn stun_def   (&self, _level: u8) -> StunDef    { return self.stun_def   ; }
+	fn debuff_res (&self, _level: u8) -> DebuffRes  { return self.debuff_res ; }
+	fn debuff_rate(&self, _level: u8) -> DebuffRate { return self.debuff_rate; }
+	fn move_res   (&self, _level: u8) -> MoveRes    { return self.move_res   ; }
+	fn move_rate  (&self, _level: u8) -> MoveRate   { return self.move_rate  ; }
+	fn poison_res (&self, _level: u8) -> PoisonRes  { return self.poison_res ; }
+	fn poison_rate(&self, _level: u8) -> PoisonRate { return self.poison_rate; }
 }
-
-impl SkillUserTrait for EthelData { fn skills(&self) -> &Vec<&Skill> { return &self.skills; } }

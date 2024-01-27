@@ -1,6 +1,6 @@
 use gdnative::prelude::*;
 use houta_utils_gdnative::prelude::*;
-use gdrust_export_nodepath::extends;
+use gdnative_export_node_as_path::extends;
 
 pub static signal_yes: &str = "_on_yes";
 

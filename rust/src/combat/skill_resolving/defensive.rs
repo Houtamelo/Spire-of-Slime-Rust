@@ -1,125 +1,135 @@
 use std::collections::{HashMap, HashSet};
+use std::num::NonZeroU16;
 use gdnative::prelude::*;
-use rand::prelude::StdRng;
-use proc_macros::{get_perk, get_perk_mut};
-use crate::combat::effects::onTarget::{DebuffApplier, TargetApplier};
-use crate::iter_allies_of;
+use rand_xoshiro::Xoshiro256PlusPlus;
+use uuid::Uuid;
+use crate::combat::effects::onTarget::{DebuffApplierKind, TargetApplier};
 use crate::combat::entity::*;
 use crate::combat::entity::character::*;
 use crate::combat::entity::data::girls::ethel::perks::*;
 use crate::combat::entity::data::girls::nema::perks::NemaPerk;
-use crate::combat::ModifiableStat;
-use crate::combat::perk::Perk;
+use crate::combat::perk::{get_perk_mut, has_perk, Perk};
 use crate::combat::skill_types::defensive::DefensiveSkill;
-use crate::util::{Base100ChanceGenerator, GUID, TrackedTicks};
+use crate::combat::stat::DynamicStat;
+use crate::util::{Base100ChanceGenerator, ToSaturatedU64, TrackedTicks};
 
-pub fn start_targeting_self(caster: &mut CombatCharacter, others: &mut HashMap<GUID, Entity>, skill: DefensiveSkill, seed: &mut StdRng, recover_ms: Option<i64>) {
-	process_self_effects_and_costs(caster, others, &skill, seed, recover_ms);
-	resolve_target_self(caster, others, &skill, seed);
+pub fn start_targeting_self(caster: &mut CombatCharacter, others: &mut HashMap<Uuid, Entity>,
+                            skill: DefensiveSkill, rng: &mut Xoshiro256PlusPlus, recover_ms: Option<i64>) {
+	process_self_effects_and_costs(caster, others, &skill, rng, recover_ms);
+	resolve_target_self(caster, others, &skill, rng);
 	
-	if skill.multi_target == false {
+	if !skill.multi_target {
 		return;
 	}
 
-	let mut targets_guid = HashSet::new();
-	for possible_target in iter_allies_of!(caster, others) {
-		if possible_target.position().contains_any(&skill.target_positions) {
-			targets_guid.insert(possible_target.guid());
-		}
-	}
+	let targets_guid: HashSet<Uuid> = iter_allies_of!(caster, others)
+		.filter_map(|possible_target| 
+			possible_target.position()
+				.contains_any(&skill.target_positions)
+				.then_some(possible_target.guid()))
+		.collect();
 
-	for target_guid in targets_guid {
-		if let Some(Entity::Character(ally)) = others.remove(&target_guid) {
-			let target_ally_option = resolve_target_ally(caster, ally, others, &skill, seed);
-			if let Some(ally_alive) = target_ally_option {
-				others.insert(ally_alive.guid(), Entity::Character(ally_alive));
-			}
-		} else {
-			godot_warn!("Warning: Trying to apply skill to ally with guid {target_guid:?}, but it was not found in the allies!");
-		}
-	}
+	targets_guid.into_iter()
+		.for_each(|guid|
+			match others.remove(&guid) {
+				Some(Entity::Character(ally)) => {
+					resolve_target_ally(caster, ally, others, &skill, rng)
+						.map(|survived| others.insert(survived.guid(), Entity::Character(survived)));
+				},
+				Some(entity) => {
+					godot_warn!("{}(): Trying to apply skill to character with guid {guid:?}, but the entity was not a character.\n\
+						Entity: {entity:?}", crate::util::full_fn_name(&start_targeting_ally));
+					others.insert(entity.guid(), entity);
+				},
+				None => {
+					godot_warn!("{}(): Trying to apply skill to character with guid {guid:?}, but it was not found in the allies!",
+						crate::util::full_fn_name(&start_targeting_ally));
+					return;
+				}
+			});
 }
 
-pub fn start_targeting_ally(caster: &mut CombatCharacter, target: CombatCharacter, others: &mut HashMap<GUID, Entity>, skill: DefensiveSkill, seed: &mut StdRng, recover_ms: Option<i64>) {
-	process_self_effects_and_costs(caster, others, &skill, seed, recover_ms);
+pub fn start_targeting_ally(caster: &mut CombatCharacter, target: CombatCharacter, others: &mut HashMap<Uuid, Entity>,
+                            skill: DefensiveSkill, rng: &mut Xoshiro256PlusPlus, recover_ms: Option<i64>) {
+	process_self_effects_and_costs(caster, others, &skill, rng, recover_ms);
 
-	if skill.multi_target == false {
-		let target_option = resolve_target_ally(caster, target, others, &skill, seed);
-		if let Some(target) = target_option {
-			others.insert(target.guid(), Entity::Character(target));
-		}
+	if !skill.multi_target {
+		resolve_target_ally(caster, target, others, &skill, rng)
+			.map(|alive| others.insert(alive.guid(), Entity::Character(alive)));
 		return;
 	}
 
-	let mut targets_guid: HashSet<GUID> = HashSet::new();
-	for possible_target in iter_allies_of!(target, others) {
-		if possible_target.position().contains_any(&skill.target_positions) {
-			targets_guid.insert(possible_target.guid());
+	let targets_guid: HashSet<Uuid> = {
+		let mut temp: HashSet<Uuid> = iter_allies_of!(target, others)
+			.filter_map(|possible_target|
+				possible_target.position()
+					.contains_any(&skill.target_positions)
+					.then_some(possible_target.guid()))
+			.collect();
+
+		if caster.position.contains_any(&skill.target_positions) { // caster may collaterally target himself
+			temp.insert(caster.guid);
 		}
-	}
-
-	if caster.position.contains_any(&skill.target_positions) { // caster may collaterally target himself
-		targets_guid.insert(caster.guid);
-	}
-
-	let target_option = resolve_target_ally(caster, target, others, &skill, seed);
-	if let Some(target) = target_option {
-		others.insert(target.guid(), Entity::Character(target));
-	}
-
-	for target_guid in targets_guid {
-		if let Some(Entity::Character(ally)) = others.remove(&target_guid) {
-			let target_ally_option = resolve_target_ally(caster, ally, others, &skill, seed);
-			if let Some(ally_alive) = target_ally_option {
-				others.insert(ally_alive.guid(), Entity::Character(ally_alive));
-			}
-		} else if target_guid == caster.guid {
-			resolve_target_self(caster, others, &skill, seed);
-		} else {
-			godot_warn!("Warning: Trying to apply skill to ally with guid {target_guid:?}, but it was not found in the allies!");
-		}
-	}
-}
-
-fn process_self_effects_and_costs(caster: &mut CombatCharacter, others: &mut HashMap<GUID, Entity>, skill: &DefensiveSkill, seed: &mut StdRng, recover_ms: Option<i64>) {
-	if let Some(recover_ms) = recover_ms {
-		caster.state = CharacterState::Recovering { ticks: TrackedTicks::from_milliseconds(recover_ms) };
-	}
-
-	let crit_chance = skill.calc_crit_chance(caster);
-	let is_crit = match crit_chance {
-		Some(chance) if seed.base100_chance(chance) => {
-			if let Some(Perk::Ethel(EthelPerk::Crit_Vicious { stacks })) = get_perk_mut!(caster, Perk::Ethel(EthelPerk::Crit_Vicious { .. })) {
-				*stacks -= 2;
-			}
-
-			true
-		},
-		_ => false
+		
+		temp
 	};
+	
+	resolve_target_ally(caster, target, others, &skill, rng)
+		.map(|alive| others.insert(alive.guid(), Entity::Character(alive)));
 
-	for self_applier in skill.effects_self.iter() {
-		self_applier.apply(caster, others, seed, is_crit);
+	targets_guid.into_iter()
+		.for_each(|guid|
+			match others.remove(&guid) {
+				Some(Entity::Character(ally)) => {
+					resolve_target_ally(caster, ally, others, &skill, rng)
+						.map(|survived| others.insert(survived.guid(), Entity::Character(survived)));
+				},
+				Some(entity) => {
+					godot_warn!("{}(): Trying to apply skill to character with guid {guid:?}, but the entity was not a character.\n\
+						Entity: {entity:?}", crate::util::full_fn_name(&start_targeting_ally));
+					others.insert(entity.guid(), entity);
+				},
+				None if guid == caster.guid => {
+					resolve_target_self(caster, others, &skill, rng);
+				},
+				None => {
+					godot_warn!("{}(): Trying to apply skill to character with guid {guid:?}, but it was not found.",
+						crate::util::full_fn_name(&start_targeting_ally));
+					return;
+				}
+			});
+}
+
+fn process_self_effects_and_costs(caster: &mut CombatCharacter, others: &mut HashMap<Uuid, Entity>,
+                                  skill: &DefensiveSkill, rng: &mut Xoshiro256PlusPlus, recover_ms: Option<i64>) {
+	recover_ms.map(|ms| caster.state = CharacterState::Recovering { ticks: TrackedTicks::from_milliseconds(ms.to_sat_u64()) });
+
+	let is_crit = skill
+		.final_crit_chance(caster)
+		.is_some_and(|chance| rng.base100_chance(chance));
+
+	if is_crit && let Some(Perk::Ethel(EthelPerk::Crit_Vicious { stacks })) = get_perk_mut!(caster, Perk::Ethel(EthelPerk::Crit_Vicious { .. })) {
+		*stacks -= 2;
 	}
+
+	skill.effects_self.iter().for_each(|applier|
+		applier.apply(caster, others, rng, is_crit));
 }
 
 /// Returns the target, if it wasn't killed/grappled.
 #[must_use]
-fn resolve_target_ally(caster: &mut CombatCharacter, mut target: CombatCharacter, others: &mut HashMap<GUID, Entity>, skill: &DefensiveSkill, seed: &mut StdRng) -> Option<CombatCharacter> {
-	let crit_chance = skill.calc_crit_chance(caster);
-	let is_crit = match crit_chance {
-		Some(chance) if seed.base100_chance(chance) => {
-			if let Some(Perk::Ethel(EthelPerk::Crit_Vicious { stacks })) = get_perk_mut!(caster, Perk::Ethel(EthelPerk::Crit_Vicious { .. })) {
-				*stacks -= 2;
-			}
-
-			true
-		},
-		_ => false
-	};
-
-	for target_applier in skill.effects_target.iter() {
-		if let Some(target_option) = target_applier.apply_target(caster, target, others, seed, is_crit) {
+fn resolve_target_ally(caster: &mut CombatCharacter, mut target: CombatCharacter, others: &mut HashMap<Uuid, Entity>,
+                       skill: &DefensiveSkill, rng: &mut Xoshiro256PlusPlus) -> Option<CombatCharacter> {
+	let is_crit = skill
+		.final_crit_chance(caster)
+		.is_some_and(|chance| rng.base100_chance(chance));
+	
+	if is_crit && let Some(Perk::Ethel(EthelPerk::Crit_Vicious { stacks })) = get_perk_mut!(caster, Perk::Ethel(EthelPerk::Crit_Vicious { .. })) {
+		*stacks -= 2;
+	}
+	
+	for applier in skill.effects_target.iter() {
+		if let Some(target_option) = applier.apply_target(caster, target, others, rng, is_crit) {
 			target = target_option;
 		} else {
 			return None;
@@ -128,79 +138,83 @@ fn resolve_target_ally(caster: &mut CombatCharacter, mut target: CombatCharacter
 
 	// Perks
 	{
-		if let Some(Perk::Nema(NemaPerk::Grumpiness)) = get_perk!(target, Perk::Nema(NemaPerk::Grumpiness)) {
+		if has_perk!(target, Perk::Nema(NemaPerk::Grumpiness)) {
 			let spd_buff = TargetApplier::Buff {
-				duration_ms: 3000,
-				stat: ModifiableStat::SPD,
-				stat_increase: 25,
+				duration_ms: 3000.to_sat_u64(),
+				stat: DynamicStat::Speed,
+				stat_increase: unsafe { NonZeroU16::new_unchecked(25) },
 			};
 
-			let toughness_debuff = TargetApplier::Debuff(DebuffApplier::Standard {
-				duration_ms: 4000,
-				stat: ModifiableStat::TOUGHNESS,
-				stat_decrease: 15,
+			let toughness_debuff = TargetApplier::Debuff { 
+				duration_ms: 4000.to_sat_u64(), 
 				apply_chance: None,
-			});
+				applier_kind: DebuffApplierKind::Standard { 
+					stat: DynamicStat::Toughness, 
+					stat_decrease: unsafe { NonZeroU16::new_unchecked(15) },
+				}
+			};
 
-			let composure_debuff = TargetApplier::Debuff(DebuffApplier::Standard {
-				duration_ms: 4000,
-				stat: ModifiableStat::COMPOSURE,
-				stat_decrease: 15,
+			let composure_debuff = TargetApplier::Debuff {
+				duration_ms: 4000.to_sat_u64(),
 				apply_chance: None,
-			});
+				applier_kind: DebuffApplierKind::Standard { 
+					stat: DynamicStat::Composure, 
+					stat_decrease: unsafe { NonZeroU16::new_unchecked(15) }, 
+				}
+			};
 
-			spd_buff.apply_self(&mut target, others, seed, false);
-			toughness_debuff.apply_self(&mut target, others, seed, false);
-			composure_debuff.apply_self(&mut target, others, seed, false);
+			spd_buff.apply_self(&mut target, others, rng, false);
+			toughness_debuff.apply_self(&mut target, others, rng, false);
+			composure_debuff.apply_self(&mut target, others, rng, false);
 		}
 	}
 
 	return Some(target);
 }
 
-fn resolve_target_self(caster: &mut CombatCharacter, others: &mut HashMap<GUID, Entity>, skill: &DefensiveSkill, seed: &mut StdRng) {
-	let crit_chance = skill.calc_crit_chance(caster);
-	let is_crit = match crit_chance {
-		Some(chance) if seed.base100_chance(chance) => {
-			if let Some(Perk::Ethel(EthelPerk::Crit_Vicious { stacks })) = get_perk_mut!(caster, Perk::Ethel(EthelPerk::Crit_Vicious { .. })) {
-				*stacks -= 2;
-			}
+fn resolve_target_self(caster: &mut CombatCharacter, others: &mut HashMap<Uuid, Entity>, 
+                       skill: &DefensiveSkill, rng: &mut Xoshiro256PlusPlus) {
+	let is_crit = skill
+		.final_crit_chance(caster)
+		.is_some_and(|chance| rng.base100_chance(chance));
 
-			true
-		},
-		_ => false
-	};
-
-	for target_applier in skill.effects_target.iter() {
-		target_applier.apply_self(caster, others, seed, is_crit);
+	if is_crit && let Some(Perk::Ethel(EthelPerk::Crit_Vicious { stacks })) = get_perk_mut!(caster, Perk::Ethel(EthelPerk::Crit_Vicious { .. })) {
+		*stacks -= 2;
 	}
+
+	skill.effects_target.iter()
+		.for_each(|applier| applier.apply_self(caster, others, rng, is_crit));
 
 	// Perks
 	{
-		if let Some(Perk::Nema(NemaPerk::Grumpiness)) = get_perk!(caster, Perk::Nema(NemaPerk::Grumpiness)) {
+		if has_perk!(caster, Perk::Nema(NemaPerk::Grumpiness)) {
 			let spd_buff = TargetApplier::Buff {
-				duration_ms: 3000,
-				stat: ModifiableStat::SPD,
-				stat_increase: 25,
+				duration_ms: 3000.to_sat_u64(),
+				stat: DynamicStat::Speed,
+				stat_increase: unsafe { NonZeroU16::new_unchecked(25) },
 			};
 
-			let toughness_debuff = TargetApplier::Debuff(DebuffApplier::Standard {
-				duration_ms: 4000,
-				stat: ModifiableStat::TOUGHNESS,
-				stat_decrease: 15,
+			let toughness_debuff = TargetApplier::Debuff {
+				duration_ms: 4000.to_sat_u64(),
 				apply_chance: None,
-			});
+				applier_kind: DebuffApplierKind::Standard { 
+					stat: DynamicStat::Toughness, 
+					stat_decrease: unsafe { NonZeroU16::new_unchecked(15) }, 
+				} 
+			};
 
-			let composure_debuff = TargetApplier::Debuff(DebuffApplier::Standard {
-				duration_ms: 4000,
-				stat: ModifiableStat::COMPOSURE,
-				stat_decrease: 15,
+			let composure_debuff = TargetApplier::Debuff {
+				duration_ms: 4000.to_sat_u64(),
 				apply_chance: None,
-			});
+				applier_kind: DebuffApplierKind::Standard { 
+					stat: DynamicStat::Composure, 
+					stat_decrease: unsafe { NonZeroU16::new_unchecked(15) }, 
+				} 
+			};
 
-			spd_buff.apply_self(caster, others, seed, false);
-			toughness_debuff.apply_self(caster, others, seed, false);
-			composure_debuff.apply_self(caster, others, seed, false);
+			spd_buff.apply_self(caster, others, rng, false);
+			toughness_debuff.apply_self(caster, others, rng, false);
+			composure_debuff.apply_self(caster, others, rng, false);
 		}
 	}
 }

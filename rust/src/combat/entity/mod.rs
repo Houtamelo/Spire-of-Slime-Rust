@@ -3,15 +3,18 @@ pub mod position;
 pub mod character;
 pub mod skill_intention;
 pub mod data;
+pub mod stat;
 
 use std::cmp::Ordering;
+use serde::{Deserialize, Serialize};
+use uuid::Uuid;
 use position::Position;
 use crate::combat::entity::character::CombatCharacter;
 use crate::combat::entity::data::EntityData;
 use crate::combat::entity::girl::DefeatedGirl_Entity;
-use crate::util::GUID;
 
-#[derive(Debug)]
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub enum Entity {
 	Character(CombatCharacter),
 	Corpse(Corpse),
@@ -39,7 +42,7 @@ impl Entity {
 		}
 	}
 	
-	pub fn guid(&self) -> GUID {
+	pub fn guid(&self) -> Uuid {
 		return match self {
 			Entity::Character(character) => character.guid,
 			Entity::Corpse(corpse) => corpse.guid, 
@@ -48,44 +51,44 @@ impl Entity {
 	}
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct Corpse {
-	pub guid: GUID,
+	pub guid: Uuid,
 	pub position: Position,
 	pub data: EntityData,
 }
 
-#[macro_export]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Serialize, Deserialize)]
+pub enum Race {
+	Human,
+	Plant,
+	Mutation,
+}
+
 macro_rules! iter_allies_of {
 	($character: expr, $entities: expr) => {
 		$entities.values().filter(|entity| $crate::combat::Position::is_same_side(entity.position(), $character.position()))
 	};
 }
 
-#[macro_export]
 macro_rules! iter_mut_allies_of {
 	($character: expr, $entities: expr) => {
 		$entities.values_mut().filter(|entity| $crate::combat::Position::is_same_side(entity.position(), $character.position()))
 	};
-}   
+}
 
-#[macro_export]
 macro_rules! iter_enemies_of {
 	($character: expr, $entities: expr) => {
 		$entities.values().filter(|entity| $crate::combat::Position::is_opposite_side(entity.position(), $character.position()))
 	};
 }
 
-#[macro_export]
+#[allow(unused_macros)]
 macro_rules! iter_mut_enemies_of {
 	($character: expr, $entities: expr) => {
 		$entities.values_mut().filter(|entity| $crate::combat::Position::is_opposite_side(entity.position(), $character.position()))
 	};
 }
 
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
-pub enum Race {
-	Human,
-	Plant,
-	Mutation,
-}
+#[allow(unused_imports)]
+pub(crate) use {iter_allies_of, iter_mut_allies_of, iter_enemies_of, iter_mut_enemies_of};

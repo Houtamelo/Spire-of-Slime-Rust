@@ -1,20 +1,22 @@
-use std::ops::RangeInclusive;
+use comfy_bounded_ints::prelude::{SqueezeTo, SqueezeTo_i64};
+use houta_utils::prelude::DynamicArray;
 use crate::combat::effects::onSelf::SelfApplier;
 use crate::combat::effects::onTarget::TargetApplier;
 use crate::combat::entity::character::CombatCharacter;
-use crate::combat::ModifiableStat;
 use crate::combat::skill_types::*;
+use crate::combat::stat::{CheckedRange, Dodge, Toughness};
+use crate::util::{PercentageU8, SaturatedU64, ToSaturatedI64, ToU8Percentage};
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct LewdSkill {
 	pub skill_name: SkillName,
-	pub recovery_ms     : i64,
-	pub charge_ms       : i64,
-	pub acc_mode        : ACCMode,
-	pub dmg             : DMGMode,
-	pub crit            : CRITMode,
-	pub effects_self    : Vec<SelfApplier>,
-	pub effects_target  : Vec<TargetApplier>,
+	pub recovery_ms: SaturatedU64,
+	pub charge_ms  : SaturatedU64,
+	pub acc_mode : ACCMode,
+	pub dmg_mode : DMGMode,
+	pub crit_mode: CRITMode,
+	pub effects_self    : DynamicArray<SelfApplier>,
+	pub effects_target  : DynamicArray<TargetApplier>,
 	pub caster_positions: PositionMatrix,
 	pub target_positions: PositionMatrix,
 	pub multi_target    : bool,
@@ -22,59 +24,88 @@ pub struct LewdSkill {
 }
 
 impl LewdSkill {
-	pub fn calc_dmg(&self, caster: &CombatCharacter, target: &CombatCharacter, crit: bool) -> Option<RangeInclusive<isize>> {
-		let (power, toughness_reduction) = match self.dmg {
-			DMGMode::Power { power, toughness_reduction } => { (power, toughness_reduction) }
-			DMGMode::NoDamage => { return None; }
+	pub fn calc_dmg(&self, caster: &CombatCharacter, target: &CombatCharacter, is_crit: bool) -> Option<CheckedRange> {
+		let DMGMode::Power { power, toughness_reduction } = self.dmg_mode 
+			else { return None; };
+
+		let toughness = {
+			let base = target.dyn_stat::<Toughness>().squeeze_to_i64();
+			let min = i64::min(base, 0);
+			i64::max(min, base - toughness_reduction.squeeze_to_i64())
 		};
 
-		let (mut dmg_min, mut dmg_max) = (*caster.dmg.start() as isize, *caster.dmg.end() as isize);
-
-		let base_toughness = target.get_stat(ModifiableStat::TOUGHNESS);
-		let min_toughness = isize::min(base_toughness, 0);
-		let final_toughness = isize::max(min_toughness, base_toughness - toughness_reduction);
-
-		let total_power = power * caster.get_stat(ModifiableStat::POWER) * (100 - final_toughness);
-
-		dmg_max = (dmg_max * total_power) / 1000000;
-		dmg_min = isize::min((dmg_min * total_power) / 1000000, dmg_max);
-
-		if crit {
-			dmg_max = (dmg_max * 150) / 100;
-			dmg_min = (dmg_min * 150) / 100;
-		}
-
-		return Some(dmg_min..=dmg_max);
+		let total_power = { 
+			let mut temp = power.to_sat_i64();
+			temp *= caster.dyn_stat::<Power>().get();
+			temp *= 100 - toughness;
+			temp /= 10000;
+			temp
+		};
+		
+		let (final_min, final_max) = {
+			let dmg_range = caster.dmg;
+			
+			let mut temp_min = dmg_range.bound_lower().to_sat_i64();
+			let mut temp_max = dmg_range.bound_upper().to_sat_i64();
+			temp_min *= total_power;
+			temp_min /= 100;
+			temp_max *= total_power;
+			temp_max /= 100;
+			
+			if is_crit {
+				temp_min *= 15;
+				temp_min /= 10;
+				temp_max *= 15;
+				temp_max /= 10;
+			}
+			
+			(temp_min, temp_max)
+		};
+		
+		return Some(CheckedRange::floor(final_min.squeeze_to(), final_max.squeeze_to()));
 	}
 
-	pub fn calc_hit_chance(&self, caster: &CombatCharacter, target: &CombatCharacter) -> Option<isize> {
-		let acc = match self.acc_mode {
-			ACCMode::CanMiss { acc } => { acc }
-			ACCMode::NeverMiss => { return None; }
-		};
+	pub fn calc_hit_chance(&self, caster: &CombatCharacter, target: &CombatCharacter) -> Option<PercentageU8> {
+		return match self.acc_mode {
+			ACCMode::CanMiss { acc } => {
+				let final_acc = {
+					let mut temp = acc.to_sat_i64();
+					temp += caster.dyn_stat::<Accuracy>().get();
+					temp -= target.dyn_stat::<Dodge>().get();
+					temp.to_percent_u8()
+				};
 
-		return Some(acc + caster.get_stat(ModifiableStat::ACC) - target.get_stat(ModifiableStat::DODGE));
+				Some(final_acc)
+			}
+			ACCMode::NeverMiss => None,
+		};
 	}
 	
-	pub fn calc_crit_chance(&self, caster: &CombatCharacter) -> Option<isize> {
-		let crit = match self.crit {
-			CRITMode::CanCrit { crit_chance: crit } => { crit }
-			CRITMode::NeverCrit => { return None; }
-		};
+	pub fn calc_crit_chance(&self, caster: &CombatCharacter) -> Option<PercentageU8> {
+		return match self.crit_mode {
+			CRITMode::CanCrit { chance } => {
+				let final_chance = {
+					let mut temp = chance.to_sat_i64();
+					temp += caster.dyn_stat::<CritChance>().get();
+					temp.to_percent_u8()
+				};
 
-		return Some(crit + caster.get_stat(ModifiableStat::CRIT));
+				Some(final_chance)
+			},
+			CRITMode::NeverCrit => None,
+		};
 	}
 }
 
 impl SkillTrait for LewdSkill {
-	fn name            (&self) -> SkillName           { return self.skill_name       ; }
-	fn recovery_ms     (&self) -> &i64                { return &self.recovery_ms     ; }
-	fn charge_ms       (&self) -> &i64                { return &self.charge_ms       ; }
-	fn crit            (&self) -> &CRITMode           { return &self.crit            ; }
-	fn effects_self    (&self) -> &Vec<SelfApplier>   { return &self.effects_self    ; }
-	fn effects_target  (&self) -> &Vec<TargetApplier> { return &self.effects_target  ; }
-	fn caster_positions(&self) -> &PositionMatrix     { return &self.caster_positions; }
-	fn target_positions(&self) -> &PositionMatrix     { return &self.target_positions; }
-	fn multi_target    (&self) -> &bool               { return &self.multi_target    ; }
-	fn use_counter     (&self) -> &UseCounter         { return &self.use_counter     ; }
+	fn name(&self) -> SkillName { return self.skill_name  ; }
+	fn recovery_ms(&self) -> &SaturatedU64 { return &self.recovery_ms; }
+	fn charge_ms  (&self) -> &SaturatedU64 { return &self.charge_ms  ; }
+	fn crit(&self) -> &CRITMode { return &self.crit_mode; }
+	fn effects_self    (&self) -> &[SelfApplier]   { return &self.effects_self    ; }
+	fn effects_target  (&self) -> &[TargetApplier] { return &self.effects_target  ; }
+	fn caster_positions(&self) -> &PositionMatrix  { return &self.caster_positions; }
+	fn target_positions(&self) -> &PositionMatrix  { return &self.target_positions; }
+	fn multi_target(&self) -> &bool { return &self.multi_target; }
+	fn use_counter (&self) -> &UseCounter { return &self.use_counter ; }
 }

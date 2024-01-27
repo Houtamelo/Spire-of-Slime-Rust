@@ -2,7 +2,7 @@ mod easters_save_name;
 mod easters_iron_gauntlet;
 mod load_button;
 
-use gdrust_export_nodepath::extends;
+use gdnative_export_node_as_path::extends;
 use gdnative::api::*;
 use gdnative::prelude::*;
 use crate::{saves::file::*, GameManager};
@@ -26,18 +26,18 @@ pub(super) struct MainMenu {
 	#[export_path] button_credit   : Option<Ref<Button>>,
 	#[export_path] button_exit     : Option<Ref<Button>>,
 
-	  // Panel - NEW GAME
-	#[export_path] panel_new_game           : Option<Ref<Control >>,
+	// Panel - NEW GAME
 	#[export_path] fake_toggle_iron_gauntlet: Option<Ref<Button  >>, iron_gauntlet_times_pressed: usize,
-	#[export_path] label_easter_egg         : Option<Ref<Label   >>, tween_easter_egg_text      : Option<Ref<SceneTreeTween>>,
-	#[export_path] line_edit_save_name      : Option<Ref<LineEdit>>,
-	#[export_path] button_start_game        : Option<Ref<Button  >>,
+	#[export_path] panel_new_game     : Option<Ref<Control >>,
+	#[export_path] label_easter_egg   : Option<Ref<Label   >>, tween_easter_egg_text: Option<Ref<SceneTreeTween>>,
+	#[export_path] line_edit_save_name: Option<Ref<LineEdit>>,
+	#[export_path] button_start_game  : Option<Ref<Button  >>,
 	#[export_path] panel_are_you_sure_overwrite_save: Option<Instance<PanelAreYouSure>>,
 
 	// Panel - LOAD GAME
-	#[export_path] panel_load_game       : Option<Ref<Control>>,
+	#[export_path] panel_load_game: Option<Ref<Control>>,
 	#[export_path] container_load_buttons: Option<Ref<Control>>,
-	#[property] prefab_load_button       : Option<Ref<PackedScene>>,
+	#[property] prefab_load_button: Option<Ref<PackedScene>>,
 	spawned_load_buttons: Vec<Instance<LoadButton>>,
 
 	// Panel - CREDITS

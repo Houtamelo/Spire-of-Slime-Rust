@@ -1,55 +1,69 @@
 use std::collections::HashMap;
-use std::ops::RangeInclusive;
-use crate::iter_mut_allies_of;
-use houta_utils::prelude::{BoundISize, BoundUSize};
-use rand::prelude::StdRng;
-use proc_macros::get_perk;
-use crate::combat::effects::onSelf::SelfApplier;
-use crate::combat::effects::onTarget::{DebuffApplier, TargetApplier};
-use crate::combat::effects::persistent::{PersistentDebuff, PersistentEffect, PoisonAdditive};
+use std::num::{NonZeroI8, NonZeroU16, NonZeroU8};
+
+use comfy_bounded_ints::prelude::*;
+use houta_utils::{any_matches, no_matches};
+use houta_utils::prelude::{IsNoneOr, Touch};
+use rand_xoshiro::Xoshiro256PlusPlus;
+use serde::{Deserialize, Serialize};
+use uuid::Uuid;
+
+use crate::combat::effects::{
+	onSelf::SelfApplier,
+	onTarget::{DebuffApplierKind, TargetApplier},
+	persistent::{PersistentDebuff, PersistentEffect, PoisonAdditive},
+};
 use crate::combat::entity::{Corpse, Entity};
 use crate::combat::entity::character::CharacterState::Grappling;
-use crate::combat::entity::data::character::{CharacterData};
-use crate::combat::entity::data::EntityData;
-use crate::combat::entity::data::girls::ethel::perks::*;
-use crate::combat::entity::data::girls::nema::perks::NemaPerk;
-use crate::combat::entity::data::skill_name::SkillName;
-use crate::combat::entity::girl::*;
-use crate::combat::entity::position::{Direction, Position};
+use crate::combat::entity::data::{
+	character::CharacterData,
+	EntityData,
+	skill_name::SkillName
+};
+use crate::combat::entity::data::girls::{
+	ethel::perks::*,
+	nema::perks::*,
+};
+use crate::combat::entity::girl::AliveGirl_Grappled;
+use crate::combat::entity::girl::GirlState;
+use crate::combat::entity::girl::GrappledGirlEnum;
+use crate::combat::entity::iter_mut_allies_of;
+use crate::combat::entity::position::Direction;
+use crate::combat::entity::position::Position;
 use crate::combat::entity::skill_intention::SkillIntention;
-use crate::combat::ModifiableStat;
-use crate::combat::perk::Perk;
-use crate::util::{GUID, TrackedTicks};
+use crate::combat::perk::{get_perk, Perk};
+use crate::combat::stat::*;
+use crate::util::*;
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct CombatCharacter {
-	pub guid: GUID,
+	pub guid: Uuid,
 	pub data: CharacterData,
-	pub last_damager_guid: Option<GUID>,
-	pub stamina_cur: isize,
-	pub(super) stamina_max: isize,
-	pub(super) toughness: BoundISize<-100, 100>,
-	pub(super) stun_def : BoundISize<-100, 300>,
-	pub stun_redundancy_ms: Option<i64>,
+	pub last_damager_guid: Option<Uuid>,
+	pub stamina_cur: CurrentStamina,
+	pub(super) stamina_max: MaxStamina,
+	pub(super) toughness: Toughness,
+	pub(super) stun_def : StunDef,
+	pub stun_redundancy_ms: Option<SaturatedU64>,
 	pub girl_stats: Option<GirlState>,
-	pub(super) debuff_res : BoundISize<-300, 300>,
-	pub(super) debuff_rate: BoundISize<-300, 300>,
-	pub(super) move_res   : BoundISize<-300, 300>,
-	pub(super) move_rate  : BoundISize<-300, 300>,
-	pub(super) poison_res : BoundISize<-300, 300>,
-	pub(super) poison_rate: BoundISize<-300, 300>,
-	pub(super) spd        : BoundUSize < 20, 300>,
-	pub(super) acc        : BoundISize<-300, 300>,
-	pub(super) crit       : BoundISize<-300, 300>,
-	pub(super) dodge      : BoundISize<-300, 300>,
-	pub dmg: RangeInclusive<usize>,
-	pub(super) power: BoundUSize<0, 500>,
+	pub(super) debuff_res : DebuffRes,
+	pub(super) debuff_rate: DebuffRate,
+	pub(super) move_res   : MoveRes,
+	pub(super) move_rate  : MoveRate,
+	pub(super) poison_res : PoisonRes,
+	pub(super) poison_rate: PoisonRate,
+	pub(super) spd  : Speed,
+	pub(super) acc  : Accuracy,
+	pub(super) crit : CritChance,
+	pub(super) dodge: Dodge,
+	pub dmg: CheckedRange,
+	pub(super) power: Power,
 	pub persistent_effects: Vec<PersistentEffect>,
 	pub perks: Vec<Perk>,
 	pub state: CharacterState,
 	pub position: Position,
 	pub on_zero_stamina: OnZeroStamina,
-	pub skill_use_counters: HashMap<SkillName, usize>,
+	pub skill_use_counters: HashMap<SkillName, u16>,
 }
 
 impl CombatCharacter {
@@ -57,285 +71,271 @@ impl CombatCharacter {
 		return &self.position;
 	}
 
-	pub fn guid(&self) -> GUID {
+	pub fn guid(&self) -> Uuid {
 		return self.guid;
 	}
 	
-	pub fn get_stat(&self, stat: ModifiableStat) -> isize {
-		let mut stat_value = (|character: &CombatCharacter, stat: ModifiableStat| -> isize {
-			match stat {
-				ModifiableStat::DEBUFF_RES => {
-					let mut base = character.debuff_res.get();
-
-					if let Some(Perk::Ethel(EthelPerk::Debuffer_HardNogging)) = get_perk!(character, Perk::Ethel(EthelPerk::Debuffer_HardNogging)) {
-						if let CharacterState::Stunned { .. } = character.state {
-							base += 25;
-						}
+	pub fn dyn_stat<T: DynamicStatTrait>(&self) -> T {
+		let stat_kind = T::stat_enum();
+		
+		let unbuffed_stat = 'stat_calc: {
+			match stat_kind {
+				DynamicStat::DebuffRes => {
+					let mut temp = self.debuff_res.to_sat_i64();
+					
+					if let Some(Perk::Ethel(EthelPerk::Debuffer_HardNogging)) = get_perk!(self, Perk::Ethel(EthelPerk::Debuffer_HardNogging)) 
+						&& matches!(self.state, CharacterState::Stunned{..}) {
+						temp += 25;
 					}
 
-					return base;
+					temp
 				},
-				ModifiableStat::POISON_RES => {
-					let base = character.poison_res.get();
-					return base;
+				DynamicStat::PoisonRes => {
+					self.poison_res.to_sat_i64()
 				},
-				ModifiableStat::MOVE_RES => {
-					let base = character.move_res.get();
-					return base;
+				DynamicStat::MoveRes => {
+					self.move_res.to_sat_i64()
 				},
-				ModifiableStat::ACC => {
-					let mut base = character.acc.get();
+				DynamicStat::Accuracy => {
+					let mut temp = self.acc.to_sat_i64();
 
 					// Perks
 					{
-						if let Some(Perk::Ethel(EthelPerk::Bruiser_Relentless { stacks })) = get_perk!(character, Perk::Ethel(EthelPerk::Bruiser_Relentless { stacks })) {
-							base -= *stacks as isize * 5;
+						if let Some(Perk::Ethel(EthelPerk::Bruiser_Relentless { stacks })) = get_perk!(self, Perk::Ethel(EthelPerk::Bruiser_Relentless {..})) {
+							temp -= stacks.squeeze_to_i64() * 5;
 						}
 
-						if let Some(Perk::Nema(NemaPerk::BattleMage_Carefree)) = get_perk!(character, Perk::Nema(NemaPerk::BattleMage_Carefree)) {
-							if character.persistent_effects.iter().all(|effect| matches!(effect, PersistentEffect::Poison {..}) == false) {
-								base += 10;
-							}
+						if let Some(Perk::Nema(NemaPerk::BattleMage_Carefree)) = get_perk!(self, Perk::Nema(NemaPerk::BattleMage_Carefree)) 
+							&& no_matches!(self.persistent_effects, PersistentEffect::Poison {..}) { 
+							temp += 10;
 						}
 
-						if let Some(Perk::Nema(NemaPerk::BattleMage_Trust { accumulated_ms })) = get_perk!(character, Perk::Nema(NemaPerk::BattleMage_Trust{..})) {
-							let stacks = i64::clamp(accumulated_ms / 1000, 0, 7) as isize;
-							base += stacks * 2;
+						if let Some(Perk::Nema(NemaPerk::BattleMage_Trust { accumulated_ms })) = get_perk!(self, Perk::Nema(NemaPerk::BattleMage_Trust{..})) {
+							let stacks = i64::clamp(accumulated_ms.squeeze_to_i64() / 1000, 0, 7);
+							temp += stacks * 2;
 						}
 					}
 
-					if character.persistent_effects.iter().any(|effect| {
-						if let PersistentEffect::Poison { additives, .. } = effect {
-							return additives.iter().any(|additive| matches!(additive, PoisonAdditive::Ethel_ConcentratedToxins));
-						} else {
-							return false;
-						} }) {
-						base += 5;
+					if self.persistent_effects.iter().any(|effect| {
+						if let PersistentEffect::Poison { additives, .. } = effect
+							&& any_matches!(additives, PoisonAdditive::Ethel_ConcentratedToxins) { true } else { false }
+					}) {
+						temp += 5;
 					}
 
-					return base;
+					temp
 				},
-				ModifiableStat::CRIT => {
-					let real_base = character.crit.get();
-					let mut base = real_base;
+				DynamicStat::Crit => {
+					let base = self.crit.squeeze_to_i64();
+					let mut temp = base.to_sat_i64();
 
 					// Perks
 					{
-						if let Some(Perk::Ethel(EthelPerk::Crit_Vicious { stacks })) = get_perk!(character, Perk::Ethel(EthelPerk::Crit_Vicious { .. })) {
-							base += *stacks as isize * 10;
+						if let Some(Perk::Ethel(EthelPerk::Crit_Vicious { stacks })) = get_perk!(self, Perk::Ethel(EthelPerk::Crit_Vicious { .. })) {
+							temp += stacks.squeeze_to_i64() * 10;
 						}
 
-						if let Some(Perk::Ethel(EthelPerk::Crit_Reliable)) = get_perk!(character, Perk::Ethel(EthelPerk::Crit_Reliable)) {
-							base -= real_base;
+						if let Some(Perk::Ethel(EthelPerk::Crit_Reliable)) = get_perk!(self, Perk::Ethel(EthelPerk::Crit_Reliable)) {
+							temp -= base;
 						}
 
-						if let Some(Perk::Nema(NemaPerk::BattleMage_Trust { accumulated_ms })) = get_perk!(character, Perk::Nema(NemaPerk::BattleMage_Trust{..})) {
-							let stacks = i64::clamp(accumulated_ms / 1000, 0, 7) as isize;
-							base += stacks * 2;
+						if let Some(Perk::Nema(NemaPerk::BattleMage_Trust { accumulated_ms })) = get_perk!(self, Perk::Nema(NemaPerk::BattleMage_Trust{..})) {
+							let stacks = i64::clamp(accumulated_ms.squeeze_to_i64() / 1000, 0, 7);
+							temp += stacks * 2;
 						}
 					}
 
-					return base;
+					temp
 				},
-				ModifiableStat::DODGE => {
-					let mut base = character.dodge.get();
+				DynamicStat::Dodge => {
+					let mut temp = self.dodge.to_sat_i64();
 
 					// Perks
 					{
-						if let Some(Perk::Ethel(EthelPerk::Duelist_Anticipation)) = get_perk!(character, Perk::Ethel(EthelPerk::Duelist_Anticipation)) {
-							if character.persistent_effects.iter().any(|effect| return if let PersistentEffect::Riposte { .. } = effect { true } else { false }) { // is any riposte active?
-								base += 15;
-							}
+						if let Some(Perk::Ethel(EthelPerk::Duelist_Anticipation)) = get_perk!(self, Perk::Ethel(EthelPerk::Duelist_Anticipation)) 
+							&& any_matches!(self.persistent_effects, PersistentEffect::Riposte { .. }) {
+							temp += 15;
 						}
 
-						if let Some(Perk::Nema(NemaPerk::Healer_Alarmed { duration_remaining_ms })) = get_perk!(character, Perk::Nema(NemaPerk::Healer_Alarmed { .. })) {
-							if *duration_remaining_ms > 0 {
-								base += 50;
-							}
+						if let Some(Perk::Nema(NemaPerk::Healer_Alarmed { duration_remaining_ms })) = get_perk!(self, Perk::Nema(NemaPerk::Healer_Alarmed { .. }))
+							&& duration_remaining_ms.get() > 0 {
+							temp += 50;
 						}
 
-						if let Some(Perk::Nema(NemaPerk::BattleMage_Carefree)) = get_perk!(character, Perk::Nema(NemaPerk::BattleMage_Carefree)) {
-							if character.persistent_effects.iter().all(|effect| matches!(effect, PersistentEffect::Debuff(_)) == false) {
-								base += 10;
-							}
+						if let Some(Perk::Nema(NemaPerk::BattleMage_Carefree)) = get_perk!(self, Perk::Nema(NemaPerk::BattleMage_Carefree)) 
+							&& no_matches!(self.persistent_effects, PersistentEffect::Debuff{..}) {
+							temp += 10;
 						}
 					}
 
-					return base;
+					temp
 				},
-				ModifiableStat::TOUGHNESS => {
-					let mut base = character.toughness.get();
+				DynamicStat::Toughness => {
+					let mut temp = self.toughness.to_sat_i64();
 
 					// Perks
 					{
-						if let Some(Perk::Ethel(EthelPerk::Tank_ReactiveDefense { stacks })) = get_perk!(character, Perk::Ethel(EthelPerk::Tank_ReactiveDefense {..})) {
-							base += stacks.get() as isize * 4;
+						if let Some(Perk::Ethel(EthelPerk::Tank_ReactiveDefense { stacks })) = get_perk!(self, Perk::Ethel(EthelPerk::Tank_ReactiveDefense {..})) {
+							temp += stacks.squeeze_to_i64() * 4;
 						}
 
-						if let Some(Perk::Nema(NemaPerk::AOE_Hatred {..})) = get_perk!(character, Perk::Nema(NemaPerk::AOE_Hatred {..})) {
-							base += 10;
+						if let Some(Perk::Nema(NemaPerk::AOE_Hatred {..})) = get_perk!(self, Perk::Nema(NemaPerk::AOE_Hatred {..})) {
+							temp += 10;
 						}
 					}
 
-					return base;
+					temp
 				},
-				ModifiableStat::COMPOSURE => {
-					if character.girl_stats.is_none() {
-						return 0;
+				DynamicStat::Power => {
+					let mut temp = self.power.to_sat_i64();
+
+					// Perks
+					{
+						if let Some(Perk::Ethel(EthelPerk::Tank_Spikeful)) = get_perk!(self, Perk::Ethel(EthelPerk::Tank_Spikeful)) {
+							temp += i64::clamp(self.toughness.squeeze_to(), 0, 30); // we care about the base toughness, not the modified one.
+						}
+
+						if let Some(Perk::Ethel(EthelPerk::Bruiser_EnragingPain { stacks })) = get_perk!(self, Perk::Ethel(EthelPerk::Bruiser_EnragingPain { .. })) {
+							temp += stacks.squeeze_to_i64() * 5;
+						}
+
+						if let Some(Perk::Ethel(EthelPerk::Crit_Reliable)) = get_perk!(self, Perk::Ethel(EthelPerk::Crit_Reliable)) 
+							&& let base_crit @ 1.. = self.crit.squeeze_to_i64() {
+							temp += base_crit;
+						}
+
+						if let Some(Perk::Nema(NemaPerk::BattleMage_Agitation)) = get_perk!(self, Perk::Nema(NemaPerk::BattleMage_Agitation))
+							&& let spd_above_100 @ 1.. = (self.dyn_stat::<Speed>().squeeze_to_i64() - 100) {
+							temp += spd_above_100;
+						}
 					}
 
-					let mut base = character.girl_stats.as_ref().unwrap().composure.get();
+					if self.persistent_effects.iter().any(|effect| {
+						if let PersistentEffect::Poison { additives, .. } = effect
+							&& any_matches!(additives, PoisonAdditive::Nema_Madness) { true } else { false }
+					}) {
+						temp += 25;
+					}
+
+					temp
+				},
+				DynamicStat::Speed => {
+					let mut temp = self.spd.to_sat_i64();
+
+					let total_paralyzing_poison = self.persistent_effects.iter()
+						.fold(0.to_sat_i64(), |mut sum, effect| {
+							if let PersistentEffect::Poison { poison_per_interval: dmg_per_interval, additives, .. } = effect 
+								&& any_matches!(additives, PoisonAdditive::Ethel_ParalyzingToxins) { 
+								sum += dmg_per_interval.get();
+							}
+
+							return sum;
+						}).get();
+
+					temp -= i64::clamp(total_paralyzing_poison * 3, 0, 30);
+
+					if let Some(Perk::Ethel(EthelPerk::Duelist_EnGarde)) = get_perk!(self, Perk::Ethel(EthelPerk::Duelist_EnGarde)) 
+						&& any_matches!(self.persistent_effects, PersistentEffect::Riposte { .. }) {
+						temp -= 20;
+					}
+
+					if let Some(Perk::Nema(NemaPerk::BattleMage_Trust { accumulated_ms })) = get_perk!(self, Perk::Nema(NemaPerk::BattleMage_Trust{..})) {
+						let stacks = i64::clamp(accumulated_ms.squeeze_to_i64() / 1000, 0, 7).squeeze_to_i64();
+						temp += stacks * 3;
+					}
+
+					temp
+				},
+				DynamicStat::DebuffRate => { 
+					self.debuff_rate.to_sat_i64()
+				},
+				DynamicStat::PoisonRate => {
+					let mut temp = self.poison_rate.to_sat_i64();
+
+					if let Some(Perk::Nema(NemaPerk::Poison_Melancholy)) = get_perk!(self, Perk::Nema(NemaPerk::Poison_Melancholy)) {
+						temp += i64::max(self.max_stamina().squeeze_to_i64() - self.stamina_cur.squeeze_to_i64(), 0);
+					}
+
+					temp
+				},
+				DynamicStat::MoveRate => { 
+					self.move_rate.to_sat_i64()
+				},
+				DynamicStat::StunDef => {
+					let mut temp = self.stun_def.to_sat_i64();
+
+					if let Some(Perk::Ethel(EthelPerk::Debuffer_HardNogging)) = get_perk!(self, Perk::Ethel(EthelPerk::Debuffer_HardNogging)) 
+						&& any_matches!(self.persistent_effects, PersistentEffect::Debuff{..}) { 
+						temp += 25;
+					}
+
+					temp
+				},
+				DynamicStat::Composure => {
+					let Some(girl_stats) = &self.girl_stats
+						else { break 'stat_calc 0.to_sat_i64(); };
+					
+					let mut temp = girl_stats.composure.to_sat_i64();
 
 					//Perks
 					{
-						if let Some(Perk::Nema(NemaPerk::BattleMage_Agitation)) = get_perk!(character, Perk::Nema(NemaPerk::BattleMage_Agitation)) {
-							let spd_bellow_100 = isize::min(character.get_stat(ModifiableStat::SPD) - 100, 0);
-							base += spd_bellow_100;
+						if let Some(Perk::Nema(NemaPerk::BattleMage_Agitation)) = get_perk!(self, Perk::Nema(NemaPerk::BattleMage_Agitation))
+							&& let spd_bellow_100 @ ..=-1 = (100 - self.dyn_stat::<Speed>().squeeze_to_i64()) {
+							temp += spd_bellow_100;
 						}
 
-						if let Some(Perk::Nema(NemaPerk::Grumpiness)) = get_perk!(character, Perk::Nema(NemaPerk::Grumpiness)) {
-							if matches!(character.state, CharacterState::Downed {..}) {
-								base += 30;
-							}
-						}
-					}
-
-					return base;
-				},
-				ModifiableStat::POWER => {
-					let mut base = character.power.get() as isize;
-
-					// Perks
-					{
-						if let Some(Perk::Ethel(EthelPerk::Tank_Spikeful)) = get_perk!(character, Perk::Ethel(EthelPerk::Tank_Spikeful)) {
-							base += isize::clamp(character.toughness.get(), 0, 30); // we care about the base toughness, not the modified one.
-						}
-
-						if let Some(Perk::Ethel(EthelPerk::Bruiser_EnragingPain { stacks })) = get_perk!(character, Perk::Ethel(EthelPerk::Bruiser_EnragingPain { .. })) {
-							base += stacks.get() as isize * 5;
-						}
-
-						if let Some(Perk::Ethel(EthelPerk::Crit_Reliable)) = get_perk!(character, Perk::Ethel(EthelPerk::Crit_Reliable)) {
-							let base_crit = character.crit.get();
-							if base_crit > 0 {
-								base += base_crit;
-							}
-						}
-
-						if let Some(Perk::Nema(NemaPerk::BattleMage_Agitation)) = get_perk!(character, Perk::Nema(NemaPerk::BattleMage_Agitation)) {
-							let spd_above_100 = isize::max(character.get_stat(ModifiableStat::SPD) - 100, 0);
-							base += spd_above_100;
+						if let Some(Perk::Nema(NemaPerk::Grumpiness)) = get_perk!(self, Perk::Nema(NemaPerk::Grumpiness)) 
+							&& matches!(self.state, CharacterState::Downed {..}) { 
+							temp += 30;
 						}
 					}
 
-					if character.persistent_effects.iter().any(|effect| {
-						let PersistentEffect::Poison { additives, .. } = effect else { return false; };
-						return additives.iter().any(|additive| matches!(additive, PoisonAdditive::Nema_Madness));
-					}) {
-						base += 25;
-					}
-
-					return base;
-				},
-				ModifiableStat::SPD => {
-					let mut base = character.spd.get() as isize;
-
-					let total_paralyzing_poison = character.persistent_effects.iter().fold(0, |mut total, effect| {
-						if let PersistentEffect::Poison { dmg_per_interval: dmg_per_sec, additives, .. } = effect {
-							if additives.iter().any(|additive| matches!(additive, PoisonAdditive::Ethel_ParalyzingToxins)) {
-								total += dmg_per_sec;
-							}
-						}
-
-						return total;
-					}) as isize;
-
-					base -= isize::clamp(total_paralyzing_poison * 3, 0, 30);
-
-					if let Some(Perk::Ethel(EthelPerk::Duelist_EnGarde)) = get_perk!(character, Perk::Ethel(EthelPerk::Duelist_EnGarde)) {
-						if character.persistent_effects.iter().any(|effect| return if let PersistentEffect::Riposte { .. } = effect { true } else { false }) { // is any riposte active?
-							base -= 20;
-						}
-					}
-
-					if let Some(Perk::Nema(NemaPerk::BattleMage_Trust { accumulated_ms })) = get_perk!(character, Perk::Nema(NemaPerk::BattleMage_Trust{..})) {
-						let stacks = i64::clamp(accumulated_ms / 1000, 0, 7) as isize;
-						base += stacks * 3;
-					}
-
-					return base;
-				},
-				ModifiableStat::DEBUFF_RATE => character.debuff_rate.get(),
-				ModifiableStat::POISON_RATE => {
-					let mut base = character.poison_rate.get();
-
-					if let Some(Perk::Nema(NemaPerk::Poison_Melancholy)) = get_perk!(character, Perk::Nema(NemaPerk::Poison_Melancholy)) {
-						base += isize::max(character.get_max_stamina() - character.stamina_cur, 0);
-					}
-
-					return base;
-				},
-				ModifiableStat::MOVE_RATE => character.move_rate.get(),
-				ModifiableStat::STUN_DEF => {
-					let mut base = character.stun_def.get();
-
-					if let Some(Perk::Ethel(EthelPerk::Debuffer_HardNogging)) = get_perk!(character, Perk::Ethel(EthelPerk::Debuffer_HardNogging)) {
-						if character.persistent_effects.iter().any(|effect| return if let PersistentEffect::Debuff(_) = effect { true } else { false }) {
-							base += 25;
-						}
-					}
-
-					return base;
-				},
-			}
-		})(self, stat);
-
-		for effect in self.persistent_effects.iter() {
-			if let PersistentEffect::Buff { stat: buffed_stat, stat_increase, .. } = effect {
-				if stat == *buffed_stat {
-					stat_value += *stat_increase as isize;
+					temp
 				}
 			}
-			else if let PersistentEffect::Debuff(debuff) = effect {
-				match debuff {
-					PersistentDebuff::Standard { stat: debuff_stat, stat_decrease, .. } => {
-						if stat == *debuff_stat {
-							stat_value -= *stat_decrease as isize;
+		};
+
+		let buffed_stat = self.persistent_effects.iter()
+			.fold(unbuffed_stat.get(), |mut sum: i64, effect: &PersistentEffect| {
+				if let PersistentEffect::Buff { stat: buffed_stat, stat_increase, .. } = effect
+					&& stat_kind == *buffed_stat {
+					sum += stat_increase.get().squeeze_to_i64();
+				} else if let PersistentEffect::Debuff { duration_ms: _duration_ms, debuff_kind } = effect {
+					match debuff_kind {
+						PersistentDebuff::Standard { stat: debuff_stat, stat_decrease, .. } => {
+							if stat_kind == *debuff_stat {
+								sum -= stat_decrease.get().squeeze_to_i64();
+							}
 						}
-					}
-					PersistentDebuff::StaggeringForce { .. } => {
-						match stat {
-							ModifiableStat::TOUGHNESS  | ModifiableStat::COMPOSURE  | ModifiableStat::STUN_DEF
-						  | ModifiableStat::DEBUFF_RES | ModifiableStat::POISON_RES | ModifiableStat::MOVE_RES => {
-								stat_value -= 10;
-							},
-							_ => {}
+						PersistentDebuff::StaggeringForce { .. } => {
+							if matches!(stat_kind, DynamicStat::Toughness | DynamicStat::StunDef
+							| DynamicStat::DebuffRes | DynamicStat::PoisonRes | DynamicStat::MoveRes) {
+								sum -= 10;
+							}
 						}
 					}
 				}
-			}
-		}
+				
+				return sum;
+			});
 
-		return stat_value;
+		return T::from_i64(buffed_stat);
 	}
 
-	pub fn get_max_stamina(&self) -> isize {
-		let mut base = self.stamina_max;
+	pub fn max_stamina(&self) -> MaxStamina {
+		let mut temp = self.stamina_max.to_sat_i64();
 		if let Some(Perk::Ethel(EthelPerk::Tank_Energetic)) = get_perk!(self, Perk::Ethel(EthelPerk::Tank_Energetic)) {
-			base = (base * 125) / 100;
+			temp *= 125;
+			temp /= 100;
 		}
-		return base;
-	}
-
-	pub fn clamp_stamina(current: isize, max: isize) -> isize {
-		return isize::clamp(current, 0, max);
+		return MaxStamina::new(temp.squeeze_to());
 	}
 
 	pub fn can_be_grappled(&self) -> bool {
-		if let CharacterData::Girl(_) = &self.data {
-			return self.girl_stats.is_some();
+		return if let CharacterData::Girl(_) = &self.data {
+			self.girl_stats.is_some()
 		} else {
-			return false;
+			false
 		}
 	}
 
@@ -377,112 +377,111 @@ impl CombatCharacter {
 	}
 
 	pub fn into_grappled(self) -> Option<GrappledGirlEnum> {
-		if self.can_be_grappled() {
-			return Some(self.into_grappled_unchecked());
+		return if self.can_be_grappled() {
+			Some(self.into_grappled_unchecked())
 		} else {
-			return None;
+			None
 		}
 	}
 
-	pub fn do_on_zero_stamina(mut self, killer: Option<&mut CombatCharacter>, others: &mut HashMap<GUID, Entity>, seed: &mut StdRng) {
+	pub fn do_on_zero_stamina(mut self, killer_option: Option<&mut CombatCharacter>,
+	                          others: &mut HashMap<Uuid, Entity>, rng: &mut Xoshiro256PlusPlus) {
 		// Perk::Ethel_LingeringToxins
 		{
-			let mut self_adjacent_center: Option<&mut Entity> = None;
-			let mut self_adjacent_edge  : Option<&mut Entity> = None;
-
 			let self_pos = &self.position;
-			for self_ally in iter_mut_allies_of!(self, others) {
-				let ally_pos = self_ally.position();
-				match Position::is_adjacent(self_pos, ally_pos) {
-					Some(Direction::Center) => {
-						debug_assert!({ if let None = self_adjacent_center { true } else { false } });
-						self_adjacent_center = Some(self_ally);
-					},
-					Some(Direction::Edge) => {
-						debug_assert!({ if let None = self_adjacent_edge { true } else { false } });
-						self_adjacent_edge = Some(self_ally);
-					},
-					None => {}
-				}
-			}
+
+			let (ally_adjacent_center, ally_adjacent_edge) = iter_mut_allies_of!(self, others)
+				.fold((None, None), |(center, edge), ally|
+					match Position::is_adjacent(self_pos, ally.position()) {
+						Some(Direction::Center) => {
+							debug_assert!(center.is_none());
+							(Some(ally), edge)
+						},
+						Some(Direction::Edge) => { 
+							debug_assert!(edge.is_none());
+							(center, Some(ally))
+						},
+						None => (center, edge),
+					});
 
 			for effect in self.persistent_effects.iter() {
-				let PersistentEffect::Poison { duration_ms, accumulated_ms, interval_ms, dmg_per_interval, additives, caster_guid } = effect
+				let PersistentEffect::Poison { duration_ms, accumulated_ms, interval_ms,
+					poison_per_interval: dmg_per_interval, additives, caster_guid } = effect
 						else { continue; };
 
-				if additives.iter().any(|add| matches!(add, PoisonAdditive::Ethel_LingeringToxins)) == false {
+				if no_matches!(additives, PoisonAdditive::Ethel_LingeringToxins) {
 					continue;
 				}
 
 				let poison = PersistentEffect::Poison {
-					duration_ms     : *duration_ms / 2   ,
-					accumulated_ms  : accumulated_ms / 2 ,
+					duration_ms     : SaturatedU64::new(duration_ms.get() / 2),
+					accumulated_ms  : SaturatedU64::new(accumulated_ms.get() / 2),
 					interval_ms     : interval_ms.clone(),
-					dmg_per_interval: *dmg_per_interval,
+					poison_per_interval: dmg_per_interval.clone(),
 					additives       : additives  .clone(),
 					caster_guid     : caster_guid.clone(),
 				};
 
-				if let Some(Entity::Character(ally)) = self_adjacent_center {
+				if let Some(Entity::Character(ally)) = ally_adjacent_center {
 					ally.persistent_effects.push(poison.clone());
 				}
-				if let Some(Entity::Character(ally)) = self_adjacent_edge {
+				
+				if let Some(Entity::Character(ally)) = ally_adjacent_edge {
 					ally.persistent_effects.push(poison);
 				}
 			}
 		}
 
 		// OnKill effects
-		if let Some(killer) = killer {
+		killer_option.touch(|killer| {
 			if let Some(Perk::Nema(NemaPerk::BattleMage_Triumph)) = get_perk!(killer, Perk::Nema(NemaPerk::BattleMage_Triumph)) {
 				let speed_buff = SelfApplier::Buff {
-					duration_ms: 3000,
-					stat: ModifiableStat::SPD,
-					stat_increase: 25,
+					duration_ms: 3000.to_sat_u64(),
+					stat: DynamicStat::Speed,
+					stat_increase: unsafe { NonZeroU16::new_unchecked(25) },
 				};
 
-				speed_buff.apply(killer, others, seed, false);
-
-				if let Some(girl) = &mut killer.girl_stats {
-					girl.lust -= 10;
-				}
+				speed_buff.apply(killer, others, rng, false);
+				
+				killer.girl_stats.touch(|girl| *girl.lust -= 10);
 			}
 
 			if let Some(Perk::Nema(NemaPerk::Regret)) = get_perk!(killer, Perk::Nema(NemaPerk::BattleMage_Triumph)) {
-				let composure_debuff = TargetApplier::Debuff(DebuffApplier::Standard {
-					duration_ms: 5000,
-					stat: ModifiableStat::COMPOSURE,
-					stat_decrease: 15,
+				let composure_debuff = TargetApplier::Debuff {
+					duration_ms: 5000.to_sat_u64(),
 					apply_chance: None,
-				});
+					applier_kind: DebuffApplierKind::Standard {
+						stat: DynamicStat::Composure,
+						stat_decrease: unsafe { NonZeroU16::new_unchecked(15) },
+					},
+				};
 
-				composure_debuff.apply_self(killer, others, seed, false);
+				composure_debuff.apply_self(killer, others, rng, false);
 			}
-		}
+		});
 		
 		if let Grappling(grappling_state) = self.state {
 			match grappling_state.victim {
 				GrappledGirlEnum::Alive(girl_alive) => {
-					let mut girl_standing = girl_alive.to_non_grappled();
-					girl_standing.state = CharacterState::Downed { ticks: TrackedTicks::from_milliseconds(2500) }; // girl is downed for 2.5s after being released from a grapple
+					let mut girl_standing = girl_alive.into_non_grappled();
+					// girl is downed for 2.5s after being released from a grapple
+					girl_standing.state = CharacterState::Downed { ticks: TrackedTicks::from_milliseconds(2500.to_sat_u64()) };
 
-					*girl_standing.position.order_mut() = 0;
+					girl_standing.position.order_mut().set(0);
 
-					for girl_ally in iter_mut_allies_of!(girl_standing, others) {
-						let ally_order: &mut usize = girl_ally.position_mut().order_mut();
-						*ally_order += girl_standing.position.size();
+					for ally in iter_mut_allies_of!(girl_standing, others) {
+						*ally.position_mut().order_mut() += girl_standing.position.size();
 					}
 
 					others.insert(girl_standing.guid, Entity::Character(girl_standing));
 				}
 				GrappledGirlEnum::Defeated(girl_defeated) => {
-					let mut girl_standing = girl_defeated.to_non_grappled();
-
-					*girl_standing.position.order_mut() = 0;
+					let mut girl_standing = girl_defeated.into_non_grappled();
+					
+					girl_standing.position.order_mut().set(0);
 
 					for girl_ally in iter_mut_allies_of!(girl_standing, others) {
-						let mutref_ally_order = girl_ally.position_mut().order_mut();
-						*mutref_ally_order += girl_standing.position.size();
+						*girl_ally.position_mut().order_mut() += girl_standing.position.size();
 					}
 
 					others.insert(girl_standing.guid, Entity::DefeatedGirl(girl_standing));
@@ -501,40 +500,45 @@ impl CombatCharacter {
 				others.insert(corpse.guid(), corpse);
 			},
 			OnZeroStamina::Downed => {
-				self.state = CharacterState::Downed { ticks: TrackedTicks::from_milliseconds(8000) };
+				self.state = CharacterState::Downed { ticks: TrackedTicks::from_milliseconds(8000.to_sat_u64()) };
 				others.insert(self.guid(), Entity::Character(self));
 			},
-			OnZeroStamina::Vanish => {},
+			OnZeroStamina::Vanish => {}, // poof :)
 		}
 	}
 
 	pub fn increment_skill_counter(&mut self, skill_name: SkillName) {
-		self.skill_use_counters.entry(skill_name).and_modify(|c| *c += 1).or_insert(1);
+		self.skill_use_counters
+			.entry(skill_name)
+			.and_modify(|c| *c += 1)
+			.or_insert(1);
 	}
 	
-	pub fn skill_counter_bellow_limit(&self, skill_name: SkillName, limit: usize) -> bool {
-		return match self.skill_use_counters.get(&skill_name) {
-			None => true,
-			Some(count) => *count < limit,
-		};
+	pub fn skill_counter_bellow_limit(&self, skill_name: SkillName, limit: u16) -> bool {
+		return self.skill_use_counters
+			.get(&skill_name)
+			.is_none_or(|count| *count < limit);
 	}
 	
 	/// Used to check if character died after losing stamina.
 	pub fn stamina_alive(&self) -> bool {
-		return self.stamina_cur > 0;
+		return self.stamina_cur.get() > 0;
 	}
 	
 	pub fn stamina_dead(&self) -> bool {
 		return !self.stamina_alive();
 	}
 
-	pub fn iter_perks(&self) -> impl Iterator<Item=&Perk> {
-		return self.perks.iter().chain(self.persistent_effects.iter().filter_map(|effect| {
-			match effect {
-				PersistentEffect::TemporaryPerk { perk, .. } => Some(perk),
-				_ => None,
-			}
-		}));
+	pub fn iter_perks(&self) -> impl Iterator<Item= &Perk> {
+		return self.perks.iter()
+			.chain(self.persistent_effects.iter()
+				.filter_map(|effect| {
+					if let PersistentEffect::TemporaryPerk { perk, .. } = effect {
+						Some(perk)
+					} else {
+						None
+					}
+				}));
 	}
 }
 
@@ -544,19 +548,19 @@ impl PartialEq<Self> for CombatCharacter {
 
 impl Eq for CombatCharacter { }
 
-#[derive(Debug, Clone)]
-pub struct State_Grappling {
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct GrapplingState {
 	pub victim: GrappledGirlEnum,
-	pub lust_per_sec: usize,
-	pub temptation_per_sec: isize,
-	pub duration_ms: i64,
-	pub accumulated_ms: i64
+	pub lust_per_interval: NonZeroU8,
+	pub temptation_per_interval: NonZeroI8,
+	pub duration_ms: SaturatedU64,
+	pub accumulated_ms: SaturatedU64
 }
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub enum CharacterState {
 	Idle,
-	Grappling(State_Grappling),
+	Grappling(GrapplingState),
 	Downed  { ticks: TrackedTicks },
 	Stunned { ticks: TrackedTicks, state_before_stunned: StateBeforeStunned },
 	Charging { skill_intention: SkillIntention },
@@ -564,23 +568,37 @@ pub enum CharacterState {
 }
 
 impl CharacterState {
-	pub fn spd_charge_ms(remaining_ms: i64, character_speed: isize) -> i64 {
-		return (remaining_ms * 100) / character_speed as i64;
+	pub fn spd_charge_ms(remaining_ms: SaturatedU64, character_speed: Speed) -> SaturatedU64 {
+		let result = {
+			let mut temp = remaining_ms.clone();
+			temp *= 100;
+			temp /= character_speed.get();
+			temp
+		};
+		
+		return result;
 	}
 
-	pub fn spd_recovery_ms(remaining_ms: i64, character_speed: isize) -> i64 {
-		return (remaining_ms * 100) / character_speed as i64;
+	pub fn spd_recovery_ms(remaining_ms: SaturatedU64, character_speed: Speed) -> SaturatedU64 {
+		let result = {
+			let mut temp = remaining_ms.clone();
+			temp *= 100;
+			temp /= character_speed.get();
+			temp
+		};
+		
+		return result;
 	}
 }
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub enum StateBeforeStunned {
 	Recovering { ticks: TrackedTicks },
 	Charging { skill_intention: SkillIntention },
 	Idle,
 }
 
-#[derive(Debug, Copy, Clone)]
+#[derive(Debug, Copy, Clone, Serialize, Deserialize)]
 pub enum OnZeroStamina {
 	Vanish,
 	Corpse,

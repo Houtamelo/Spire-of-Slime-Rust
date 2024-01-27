@@ -1,186 +1,324 @@
 use std::collections::HashMap;
-use rand::prelude::StdRng;
+use std::num::{NonZeroI8, NonZeroU16, NonZeroU8};
+use comfy_bounded_ints::prelude::{Bound_u8, SqueezeTo, SqueezeTo_i8, SqueezeTo_u8};
+use gdnative::log::godot_warn;
+use houta_utils::any_matches;
 use rand::Rng;
-use combat::ModifiableStat;
-use proc_macros::{get_perk, get_perk_mut};
-use crate::{iter_allies_of, iter_mut_allies_of, combat};
-use crate::combat::entity::character::*;
-use crate::combat::effects::MoveDirection;
-use crate::combat::effects::onTarget::{CRIT_DURATION_MULTIPLIER, CRIT_EFFECT_MULTIPLIER, TargetApplier};
-use crate::combat::effects::persistent::PersistentEffect;
-use crate::combat::entity::data::girls::ethel::perks::*;
-use crate::combat::entity::data::girls::nema::perks::*;
-use crate::combat::entity::Entity;
-use crate::combat::perk::Perk;
-use crate::combat::skill_types::CRITMode;
-use crate::util::GUID;
+use rand_xoshiro::Xoshiro256PlusPlus;
+use serde::{Deserialize, Serialize};
+use uuid::Uuid;
 
-#[derive(Debug, Clone, PartialEq, Eq)]
+use crate::{combat, util};
+use combat::perk::{get_perk, get_perk_mut};
+use combat::entity::{iter_allies_of, iter_mut_allies_of};
+use combat::entity::character::*;
+use combat::effects::MoveDirection;
+use combat::effects::onTarget::{CRIT_DURATION_MULTIPLIER, CRIT_EFFECT_MULTIPLIER, TargetApplier};
+use combat::effects::persistent::PersistentEffect;
+use combat::entity::data::girls::ethel::perks::*;
+use combat::entity::data::girls::nema::perks::*;
+use combat::entity::Entity;
+use combat::perk::Perk;
+use combat::skill_types::{ACCMode, CRITMode};
+use combat::stat::{CheckedRange, DynamicStat};
+use crate::combat::entity::stat::Power;
+use crate::util::{SaturatedU64, ToSaturatedI64, ToSaturatedU64};
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 pub enum SelfApplier {
 	Buff {
-		duration_ms: i64,
-		stat: ModifiableStat,
-		stat_increase: usize,
+		duration_ms: SaturatedU64,
+		stat: DynamicStat,
+		stat_increase: NonZeroU16,
 	},
 	ChangeExhaustion {
-		delta: isize,
+		delta: NonZeroI8,
 	},
 	Heal { 
-		base_multiplier: isize,
+		multiplier: NonZeroU16,
 	},
 	Lust {
-		min: usize,
-		max: usize,
+		delta: CheckedRange,
 	},
 	Mark { 
-		duration_ms: i64,
+		duration_ms: SaturatedU64,
 	},
 	Move { 
 		direction: MoveDirection,
 	},
 	PersistentHeal {
-		duration_ms: i64,
-		heal_per_sec: usize,
+		duration_ms: SaturatedU64,
+		heal_per_interval: NonZeroU8,
 	},
 	Riposte {
-		duration_ms: i64,
-		dmg_multiplier: isize,
-		acc: isize,
-		crit: CRITMode,
+		duration_ms: SaturatedU64,
+		skill_power: NonZeroU16,
+		acc_mode: ACCMode,
+		crit_mode: CRITMode,
 	},
 	Summon { 
-		character_key: Box<str>,
+		character_key: String,
 	},
 }
 
 impl SelfApplier {
-	pub fn apply(&self, caster: &mut CombatCharacter, others: &mut HashMap<GUID, Entity>, seed: &mut StdRng, is_crit: bool) {
+	pub fn apply(&self, caster: &mut CombatCharacter, others: &mut HashMap<Uuid, Entity>, 
+	             rng: &mut Xoshiro256PlusPlus, is_crit: bool) {
 		match self {
-			SelfApplier::Buff{ duration_ms, stat, mut stat_increase } => {
-				if is_crit { stat_increase = (stat_increase * CRIT_EFFECT_MULTIPLIER) / 100; }
+			SelfApplier::Buff{ duration_ms, stat, stat_increase } => {
+				let final_stat_increase_option = {
+					let mut temp = stat_increase.get().to_sat_i64();
+					if is_crit {
+						temp *= CRIT_EFFECT_MULTIPLIER;
+						temp /= 100;
+					}
+					NonZeroU16::new(temp.squeeze_to())
+				};
+				final_stat_increase_option.map(|final_stat_increase| {
+					let effect = PersistentEffect::Buff {
+						duration_ms: *duration_ms,
+						stat: *stat,
+						stat_increase: final_stat_increase
+					};
 
-				caster.persistent_effects.push(PersistentEffect::Buff{ duration_ms: *duration_ms, stat: *stat, stat_increase });
+					caster.persistent_effects.push(effect);
+				});
 			}
 			SelfApplier::ChangeExhaustion { delta } => { // ignores crit
-				if let Some(girl) = &mut caster.girl_stats {
-					girl.exhaustion += *delta;
-				}
+				let Some(girl) = &mut caster.girl_stats
+					else {
+						godot_warn!("{}(): Trying to change exhaustion of non-girl character: {caster:?}",
+							util::full_fn_name(&Self::apply));
+						return;
+					};
+
+				*girl.exhaustion += delta.get();
 			},
-			SelfApplier::Heal{ base_multiplier } => {
-				let mut base_multiplier = isize::max(*base_multiplier, 0) as usize;
-				if is_crit { base_multiplier = (base_multiplier * CRIT_EFFECT_MULTIPLIER) / 100; }
-
-				let max: usize = usize::max(*caster.dmg.end(), 0);
-				let min: usize = usize::clamp(*caster.dmg.start(), 0, max);
-
-				let mut healAmount: usize;
-
-				if max <= 0 {
-					return;
-				} else if max == min {
-					healAmount = (max * base_multiplier) / 100;
-				} else {
-					healAmount = (seed.gen_range(min..=max) * (base_multiplier)) / 100;
-				}
-
-				if let Some(Perk::Nema(NemaPerk::Healer_Affection)) = get_perk!(caster, Perk::Nema(NemaPerk::Healer_Affection)) {
-					if caster.persistent_effects.iter().any(|effect| matches!(effect, PersistentEffect::Debuff(_) | PersistentEffect::Poison { .. })) {
-						healAmount = (healAmount * 130) / 100;
+			SelfApplier::Heal { multiplier } => {
+				let final_multiplier = {
+					let mut temp = multiplier.get().to_sat_i64();
+					if is_crit {
+						temp *= CRIT_EFFECT_MULTIPLIER;
+						temp /= 100;
 					}
+					temp
+				};
+
+				let caster_dmg = caster.dmg;
+				let (min, max) = (caster_dmg.bound_lower(), caster_dmg.bound_upper());
+
+				if max == 0 {
+					return;
 				}
 
-				if let Some(Perk::Nema(NemaPerk::Healer_Awe { accumulated_ms })) = get_perk_mut!(caster, Perk::Nema(NemaPerk::Healer_Awe {..})) {
-					let stacks = i64::clamp(*accumulated_ms / 1000, 0, 8) as usize;
-					healAmount = (healAmount * (100 + stacks * 5)) / 100;
-					*accumulated_ms = 0;
-				}
+				let heal_amount_option = {
+					let range_result =
+						if max == min {
+							max
+						} else {
+							rng.gen_range(min..=max)
+						};
+
+					let mut temp = range_result.to_sat_i64();
+					temp *= final_multiplier;
+					temp /= 100;
+
+					if let Some(Perk::Nema(NemaPerk::Healer_Affection)) = get_perk!(caster, Perk::Nema(NemaPerk::Healer_Affection))
+						&& any_matches!(caster.persistent_effects, PersistentEffect::Debuff{..} | PersistentEffect::Poison{..}) {
+						temp *= 130;
+						temp /= 100;
+					}
+
+					if let Some(Perk::Nema(NemaPerk::Healer_Awe { accumulated_ms })) = get_perk_mut!(caster, Perk::Nema(NemaPerk::Healer_Awe {..})) {
+						let stacks: u64 = u64::clamp(accumulated_ms.get() / 1000, 0, 8);
+						temp *= 100 + stacks * 5;
+						temp /= 100;
+						accumulated_ms.set(0);
+					}
+
+					NonZeroU16::new(temp.squeeze_to())
+				};
+				
+				let Some(heal_amount) = heal_amount_option
+					else { return; };
 
 				if let Some(Perk::Nema(NemaPerk::Healer_Adoration)) = get_perk!(caster, Perk::Nema(NemaPerk::Healer_Adoration)) {
 					let toughness_buff = TargetApplier::Buff {
-						duration_ms: 4000,
-						stat: ModifiableStat::TOUGHNESS,
-						stat_increase: 10,
+						duration_ms: 4000.to_sat_u64(),
+						stat: DynamicStat::Toughness,
+						stat_increase: unsafe { NonZeroU16::new_unchecked(10) }, // SOUNDNESS: 10 is not 0
 					};
 
-					toughness_buff.apply_self(caster, others, seed, false);
+					toughness_buff.apply_self(caster, others, rng, false);
 
 					if let Some(girl) = &mut caster.girl_stats {
-						girl.lust -= 4;
+						*girl.lust -= 4;
 
 						let composure_buff = TargetApplier::Buff {
-							duration_ms: 4000,
-							stat: ModifiableStat::COMPOSURE,
-							stat_increase: 10,
+							duration_ms: 4000.to_sat_u64(),
+							stat: DynamicStat::Composure,
+							stat_increase: unsafe { NonZeroU16::new_unchecked(10) }, // SOUNDNESS: 10 is not 0
 						};
 
-						composure_buff.apply_self(caster, others, seed, false);
+						composure_buff.apply_self(caster, others, rng, false);
 					}
 				}
 
-				caster.stamina_cur = isize::clamp(caster.stamina_cur + healAmount as isize,0, caster.get_max_stamina());
-			}
-			SelfApplier::Lust{ mut min, mut max } => {
-				if is_crit {
-					min = (min * CRIT_EFFECT_MULTIPLIER) / 100;
-					max = (max * CRIT_EFFECT_MULTIPLIER) / 100;
+				*caster.stamina_cur += heal_amount.get();
+				
+				let max_stamina: u16 = caster.max_stamina().get();
+				if caster.stamina_cur.get() > max_stamina {
+					caster.stamina_cur.set(max_stamina);
 				}
+			},
+			SelfApplier::Lust{ delta } => {
+				let Some(girl) = &mut caster.girl_stats
+					else {
+						godot_warn!("{}(): Trying to apply lust on-non girl self: {caster:?}",
+							util::full_fn_name(&Self::apply));
+						return;
+					};
 
-				if let Some(girl) = &mut caster.girl_stats {
-					let actual_min = min.min(max - 1);
-					let lustAmount = seed.gen_range(actual_min..=max);
-					girl.lust += lustAmount as isize;
-				}
-			}
-			SelfApplier::Mark{ mut duration_ms } => {
-				if is_crit { duration_ms = (duration_ms * CRIT_DURATION_MULTIPLIER) / 100; }
+				let (min, max) = {
+					let mut min_temp = delta.bound_lower().to_sat_i64();
+					let mut max_temp = delta.bound_upper().to_sat_i64();
 
-				caster.persistent_effects.push(PersistentEffect::Marked { duration_ms });
-			}
+					if is_crit {
+						min_temp *= CRIT_EFFECT_MULTIPLIER;
+						min_temp /= 100;
+						max_temp *= CRIT_EFFECT_MULTIPLIER;
+						max_temp /= 100;
+					}
+
+					(min_temp.squeeze_to_u8(), max_temp.squeeze_to_u8())
+				};
+
+				let lust_amount =
+					if min == max {
+						max
+					} else {
+						rng.gen_range(min..=max)
+					};
+
+				*girl.lust += lust_amount;
+			},
+			SelfApplier::Mark{ duration_ms } => {
+				let final_duration_ms = {
+					let mut temp = duration_ms.to_sat_i64();
+					if is_crit {
+						temp *= CRIT_DURATION_MULTIPLIER;
+						temp /= 100;
+					}
+					temp.to_sat_u64()
+				};
+
+				let effect = PersistentEffect::Marked { 
+					duration_ms: final_duration_ms
+				};
+				caster.persistent_effects.push(effect);
+			},
 			SelfApplier::Move{ direction } => {
-				let direction: isize = match *direction {
-					MoveDirection::ToCenter(amount) => { -1 * amount.abs() }
+				let direction = match direction {
+					MoveDirection::ToCenter(amount) => { -amount.abs() }
 					MoveDirection::ToEdge  (amount) => { amount.abs() }
 				};
 
-				let mut allies_space_occupied = 0;
-				for ally in iter_allies_of!(caster, others) {
-					allies_space_occupied += ally.position().size();
+				let allies_space_occupied = iter_allies_of!(caster, others)
+					.fold(0, |sum, ally| sum + ally.position().size().get());
+
+				let (order_old, order_current) = {
+					let temp: &mut Bound_u8<0, {u8::MAX}> = caster.position.order_mut();
+					let old_temp = *temp;
+					*temp += direction.get();
+					if temp.get() > allies_space_occupied {
+						temp.set(allies_space_occupied);
+					}
+					(old_temp.squeeze_to_i8(), temp.squeeze_to_i8())
+				};
+
+				let order_delta = order_current - order_old;
+				let inverse_delta = -1 * order_delta;
+
+				for caster_ally in iter_mut_allies_of!(caster, others) {
+					*caster_ally.position_mut().order_mut() += inverse_delta;
 				}
+			},
+			SelfApplier::PersistentHeal{ duration_ms, heal_per_interval } => {
+				let final_heal_per_interval_option = {
+					let mut temp = heal_per_interval.get().to_sat_i64();
 
-				let index_current : &mut usize = caster.position.order_mut();
-				let index_old = *index_current as isize;
-				*index_current = usize::clamp(((*index_current as isize) + direction) as usize, 0, allies_space_occupied);
-				let index_delta = *index_current as isize - index_old;
-				let inverse_delta = -1 * index_delta;
+					if is_crit {
+						temp *= CRIT_EFFECT_MULTIPLIER;
+						temp /= 100;
+					}
 
-				for ally in iter_mut_allies_of!(caster, others) {
-					let order = ally.position_mut().order_mut();
-					*order = (*order as isize + inverse_delta) as usize;
-				}
-			}
-			SelfApplier::PersistentHeal{ duration_ms, mut heal_per_sec } => {
-				if is_crit { heal_per_sec = (heal_per_sec * CRIT_EFFECT_MULTIPLIER) / 100; }
+					if let Some(Perk::Nema(NemaPerk::Healer_Affection)) = get_perk!(caster, Perk::Nema(NemaPerk::Healer_Affection))
+						&& any_matches!(caster.persistent_effects, PersistentEffect::Debuff {..} | PersistentEffect::Poison {..}) {
+						temp *= 130;
+						temp /= 100;
+					}
 
-				if let Some(Perk::Nema(NemaPerk::Healer_Affection)) = get_perk!(caster, Perk::Nema(NemaPerk::Healer_Affection)) {
-					if caster.persistent_effects.iter().any(|effect| matches!(effect, PersistentEffect::Debuff(_) | PersistentEffect::Poison { .. })) {
-						heal_per_sec = (heal_per_sec * 130) / 100;
+					if let Some(Perk::Nema(NemaPerk::Healer_Awe { accumulated_ms })) = get_perk_mut!(caster, Perk::Nema(NemaPerk::Healer_Awe {..})) {
+						let stacks = u64::clamp(accumulated_ms.get() / 1000, 0, 8);
+						temp *= 100 + stacks * 5;
+						temp /= 100;
+						accumulated_ms.set(0);
+					}
+
+					NonZeroU8::new(temp.squeeze_to())
+				};
+				
+				let Some(final_heal_per_interval) = final_heal_per_interval_option
+					else { return; };
+
+				if let Some(Perk::Nema(NemaPerk::Healer_Adoration)) = get_perk!(caster, Perk::Nema(NemaPerk::Healer_Adoration)) {
+					let toughness_buff = TargetApplier::Buff {
+						duration_ms: 4000.to_sat_u64(),
+						stat: DynamicStat::Toughness,
+						stat_increase: unsafe { NonZeroU16::new_unchecked(10) }, // SOUNDNESS: 10 is not 0
+					};
+
+					toughness_buff.apply_self(caster, others, rng, false);
+
+					if let Some(girl) = &mut caster.girl_stats {
+						*girl.lust -= 4;
+
+						let composure_buff = TargetApplier::Buff {
+							duration_ms: 4000.to_sat_u64(),
+							stat: DynamicStat::Composure,
+							stat_increase: unsafe { NonZeroU16::new_unchecked(10) }, // SOUNDNESS: 10 is not 0
+						};
+
+						composure_buff.apply_self(caster, others, rng, false);
 					}
 				}
+				
+				let effect = PersistentEffect::Heal {
+					duration_ms: *duration_ms,
+					accumulated_ms: 0.to_sat_u64(),
+					heal_per_interval: final_heal_per_interval
+				};
 
-				if let Some(Perk::Nema(NemaPerk::Healer_Awe { accumulated_ms })) = get_perk_mut!(caster, Perk::Nema(NemaPerk::Healer_Awe {..})) {
-					let stacks = i64::clamp(*accumulated_ms / 1000, 0, 8) as usize;
-					heal_per_sec = (heal_per_sec * (100 + stacks * 5)) / 100;
-					*accumulated_ms = 0;
-				}
-
-				caster.persistent_effects.push(PersistentEffect::Heal { duration_ms: *duration_ms, accumulated_ms: 0, heal_per_sec });
+				caster.persistent_effects.push(effect);
 			}
-			SelfApplier::Riposte{ duration_ms, mut dmg_multiplier, acc, crit } => {
-				if let Some(Perk::Ethel(EthelPerk::Duelist_EnGarde)) = get_perk!(caster, Perk::Ethel(EthelPerk::Duelist_EnGarde)) {
-					dmg_multiplier += 30;
-				}
+			SelfApplier::Riposte{ duration_ms, skill_power, 
+				acc_mode, crit_mode } => {
+				let final_skill_power = {
+					let mut temp = skill_power.get().to_sat_i64();
+					if let Some(Perk::Ethel(EthelPerk::Duelist_EnGarde)) = get_perk!(caster, Perk::Ethel(EthelPerk::Duelist_EnGarde)) {
+						temp += 30;
+					}
+					Power::new(temp.squeeze_to())
+				};
+				
+				let effect = PersistentEffect::Riposte {
+					duration_ms: *duration_ms,
+					skill_power: final_skill_power,
+					acc_mode: *acc_mode,
+					crit_mode: *crit_mode
+				};
 
-				caster.persistent_effects.push( PersistentEffect::Riposte { duration_ms: *duration_ms, dmg_multiplier, acc: *acc, crit: *crit });
+				caster.persistent_effects.push(effect);
 			}
 			SelfApplier::Summon{ .. } => {} //todo!
 		}

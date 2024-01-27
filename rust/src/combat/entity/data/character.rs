@@ -1,33 +1,33 @@
-use std::ops::RangeInclusive;
-use rand::prelude::StdRng;
-use houta_utils::prelude::{BoundISize, BoundUSize};
+use rand_xoshiro::Xoshiro256PlusPlus;
+use serde::{Deserialize, Serialize};
 use crate::combat::entity::data::girls::GirlData;
-use crate::combat::entity::data::npc::NPCData;
+use crate::combat::entity::data::npc::NPCName;
 use crate::combat::skill_types::Skill;
+use crate::combat::stat::*;
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub enum CharacterData {
 	Girl(GirlData),
-	NPC(NPCData),
+	NPC(NPCName),
 }
 
 pub trait CharacterDataTrait {
-	fn stamina_max(&self, level: usize, rng: Option<&mut StdRng>) -> BoundUSize  <1, 500>;
-	fn dmg        (&self, level: usize) -> RangeInclusive<usize>;
-	fn spd        (&self, level: usize) -> BoundUSize<  20, 300>;
-	fn acc        (&self, level: usize) -> BoundISize<-300, 300>;
-	fn crit       (&self, level: usize) -> BoundISize<-300, 300>;
-	fn dodge      (&self, level: usize) -> BoundISize<-300, 300>;
-	fn toughness  (&self, level: usize) -> BoundISize<-100, 100>;
-	fn stun_def   (&self, level: usize) -> BoundISize<-100, 300>;
-	fn debuff_res (&self, level: usize) -> BoundISize<-300, 300>;
-	fn debuff_rate(&self, level: usize) -> BoundISize<-300, 300>;
-	fn move_res   (&self, level: usize) -> BoundISize<-300, 300>;
-	fn move_rate  (&self, level: usize) -> BoundISize<-300, 300>;
-	fn poison_res (&self, level: usize) -> BoundISize<-300, 300>;
-	fn poison_rate(&self, level: usize) -> BoundISize<-300, 300>;
+	fn max_stamina(&self, level: u8, rng: Option<&mut Xoshiro256PlusPlus>) -> MaxStamina;
+	fn dmg  (&self, level: u8) -> CheckedRange;
+	fn spd  (&self, level: u8) -> Speed;
+	fn acc  (&self, level: u8) -> Accuracy;
+	fn crit (&self, level: u8) -> CritChance;
+	fn dodge(&self, level: u8) -> Dodge;
+	fn toughness  (&self, level: u8) -> Toughness;
+	fn stun_def   (&self, level: u8) -> StunDef;
+	fn debuff_res (&self, level: u8) -> DebuffRes;
+	fn debuff_rate(&self, level: u8) -> DebuffRate;
+	fn move_res   (&self, level: u8) -> MoveRes;
+	fn move_rate  (&self, level: u8) -> MoveRate;
+	fn poison_res (&self, level: u8) -> PoisonRes;
+	fn poison_rate(&self, level: u8) -> PoisonRate;
 }
 
-pub trait SkillUserTrait {
-	fn skills(&self) -> &Vec<&Skill>;
+pub trait SkillUser {
+	fn skills(&self) -> &[Skill];
 }

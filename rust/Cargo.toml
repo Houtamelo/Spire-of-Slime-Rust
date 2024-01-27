@@ -8,12 +8,18 @@ edition = "2021"
 crate-type = ["cdylib"]
 
 [dependencies]
-gdnative = "0.11.3"
-rand = "0.8.5"
+gdnative = "0.11"
+rand = { version =  "0.8", features = ["serde1"] }
+rand_xoshiro = { version = "0.6", features = ["serde1"] }
 proc_macros = { path = "proc_macros" }
-lazy_static = "1.4.0"
-serde = { version = "1.0.193", features = ["derive"] }
-ron = "0.8.1"
-houta_utils = { package = "houtamelo_utils", git = "https://github.com/Houtamelo/houtamelo_utils.git" }
+serde = { version = "1.0", features = ["derive"] }
+ron = "0.8"
+houta_utils = { version = "2.0.0", package = "houtamelo_utils", git = "https://github.com/Houtamelo/houtamelo_utils.git" }
 houta_utils_gdnative = { package = "houtamelo_utils_gdnative", git = "https://github.com/Houtamelo/houtamelo_utils_gdnative.git" }
-gdrust_export_nodepath = { version = "0.1.2", package = "gdrust_export_node_path_macro", git = "https://github.com/Houtamelo/gdrust_export_node_path_macro.git" }
+gdnative_export_node_as_path = "0.1"
+getrandom = "0.2"
+float-cmp = "0.9"
+noise = "0.8"
+comfy-bounded-ints = { version = "0.2", features = ["serde", "div_assign_zero"] }
+parking_lot = "0.12"
+uuid = { version = "1.7", features = ["serde"] }

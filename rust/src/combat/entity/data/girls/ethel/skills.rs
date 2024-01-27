@@ -1,16 +1,22 @@
-use lazy_static::lazy_static;
+use std::num::{NonZeroI8, NonZeroU16};
+use comfy_bounded_ints::prelude::Bound_u8;
+use houta_utils::prelude::DynamicArray;
+use serde::{Deserialize, Serialize};
 use proc_macros::positions;
 use crate::combat::effects::MoveDirection;
 use crate::combat::effects::onSelf::SelfApplier;
 use crate::combat::effects::onTarget::TargetApplier;
+use crate::combat::entity::data::character::SkillUser;
+use crate::combat::entity::data::girls::ethel::stats::EthelData;
 use crate::combat::entity::data::skill_name::SkillName;
-use crate::combat::ModifiableStat;
 use crate::combat::skill_types::*;
 use crate::combat::skill_types::defensive::*;
 use crate::combat::skill_types::offensive::*;
+use crate::combat::stat::{Accuracy, CritChance, DynamicStat, Power};
+use crate::util::SaturatedU64;
 
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
-pub enum EthelSkillName {
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Serialize, Deserialize)]
+pub enum EthelSkill {
 	Safeguard,
 	Clash,
 	Jolt,
@@ -19,101 +25,159 @@ pub enum EthelSkillName {
 	Challenge,
 }
 
-lazy_static! { pub static ref skill_ethel_safeguard: Skill = Skill::Defensive(DefensiveSkill {
-	skill_name: SkillName::FromEthel(EthelSkillName::Safeguard),
-	recovery_ms: 1000,
-	charge_ms  : 0,
-	crit: CRITMode::NeverCrit,
-	effects_self  : vec![SelfApplier::Buff { duration_ms: 5000, stat: ModifiableStat::DODGE, stat_increase: 15 }],
-	effects_target: vec![TargetApplier::MakeSelfGuardTarget { duration_ms: 5000 }],
+impl SkillUser for EthelData { 
+	fn skills(&self) -> &[Skill] { 
+		return &self.skills;
+	}
+}
+
+const SAFEGUARD_EFFECTS_SELF: &[SelfApplier; 1] = &[
+	SelfApplier::Buff {
+		duration_ms: SaturatedU64::new(5000),
+		stat: DynamicStat::Dodge,
+		stat_increase: NonZeroU16::new(15).unwrap(),
+	}
+];
+const SAFEGUARD_EFFECTS_TARGET: &[TargetApplier; 1] = &[
+	TargetApplier::MakeSelfGuardTarget {
+		duration_ms: SaturatedU64::new(5000)
+	}
+];
+pub static SAFEGUARD: Skill = SAFEGUARD_CONST;
+pub const SAFEGUARD_CONST: Skill = Skill::Defensive(DefensiveSkill {
+	skill_name: SkillName::FromEthel(EthelSkill::Safeguard),
+	recovery_ms: SaturatedU64::new(1000),
+	charge_ms  : SaturatedU64::new(0),
+	crit_mode: CRITMode::NeverCrit,
+	effects_self  : DynamicArray::Static(SAFEGUARD_EFFECTS_SELF),
+	effects_target: DynamicArray::Static(SAFEGUARD_EFFECTS_TARGET),
 	caster_positions: positions!("✔️|✔️|✔️|✔️"),
 	target_positions: positions!("✔️|✔️|✔️|✔️"),
 	ally_requirement: AllyRequirement::NotSelf,
 	multi_target: false,
 	use_counter: UseCounter::Unlimited,
-});}
+});
 
-pub static skill_ethel_clash: Skill = Skill::Offensive(OffensiveSkill {
-	skill_name: SkillName::FromEthel(EthelSkillName::Clash),
-	recovery_ms: 1500,
-	charge_ms: 0,
+pub static CLASH: Skill = CLASH_CONST;
+pub const CLASH_CONST: Skill = Skill::Offensive(OffensiveSkill {
+	skill_name: SkillName::FromEthel(EthelSkill::Clash),
+	recovery_ms: SaturatedU64::new(1500),
+	charge_ms: SaturatedU64::new(0),
 	can_be_riposted: true,
-	acc_mode: ACCMode ::CanMiss { acc: 95 },
-	dmg     : DMGMode ::Power   { power: 100, toughness_reduction: 5 },
-	crit    : CRITMode::CanCrit { crit_chance: 9 },
-	custom_modifiers: vec![],
-	effects_self  : vec![],
-	effects_target: vec![],
-	caster_positions: positions!("✔️|✔️|❌|❌"),
-	target_positions: positions!("✔️|✔️|❌|❌"),
+	acc_mode : ACCMode ::CanMiss { acc: Accuracy::new(95) },
+	dmg_mode : DMGMode ::Power   { power: Power::new(100), toughness_reduction: Bound_u8::new(5) },
+	crit_mode: CRITMode::CanCrit { chance: CritChance::new(9) },
+	custom_modifiers: DynamicArray::Static(&[]),
+	effects_self  : DynamicArray::Static(&[]),
+	effects_target: DynamicArray::Static(&[]),
+	caster_positions: positions!("✔️|✔️|🛑|🛑"),
+	target_positions: positions!("✔️|✔️|🛑|🛑"),
 	multi_target: false,
 	use_counter: UseCounter::Unlimited,
 });
 
-lazy_static! { pub static ref skill_ethel_jolt: Skill = Skill::Offensive(OffensiveSkill {
-	skill_name: SkillName::FromEthel(EthelSkillName::Jolt),
-	recovery_ms: 1500,
-	charge_ms: 0,
+const JOLT_EFFECTS_SELF: &[SelfApplier; 1] = &[
+	SelfApplier::Move {
+		direction: MoveDirection::ToCenter(NonZeroI8::new(1).unwrap())
+	}
+];
+const JOLT_EFFECTS_TARGET: &[TargetApplier; 2] = &[
+	TargetApplier::Move {
+		apply_chance: Some(NonZeroU16::new(100).unwrap()),
+		direction: MoveDirection::ToEdge(NonZeroI8::new(1).unwrap())
+	},
+	TargetApplier::Stun {
+		force: NonZeroU16::new(100).unwrap()
+	}
+];
+pub static JOLT: Skill = JOLT_CONST;
+pub const JOLT_CONST: Skill = Skill::Offensive(OffensiveSkill {
+	skill_name: SkillName::FromEthel(EthelSkill::Jolt),
+	recovery_ms: SaturatedU64::new(1500),
+	charge_ms: SaturatedU64::new(0),
 	can_be_riposted: true,
-	acc_mode: ACCMode ::CanMiss { acc: 95 },
-	dmg     : DMGMode ::Power   { power: 50, toughness_reduction: 0 },
-	crit    : CRITMode::CanCrit { crit_chance: 5 },
-	custom_modifiers: vec![],
-	effects_self  : vec![SelfApplier  ::Move { direction: MoveDirection::ToCenter(1) }],
-	effects_target: vec![TargetApplier::Move { apply_chance: Some(100), direction: MoveDirection::ToEdge(1) }, TargetApplier::Stun { force: 100 }],
-	caster_positions: positions!("✔️|✔️|❌|❌"),
-	target_positions: positions!("✔️|❌|❌|❌"),
+	acc_mode : ACCMode ::CanMiss { acc: Accuracy::new(95) },
+	dmg_mode : DMGMode ::Power   { power: Power::new(50), toughness_reduction: Bound_u8::new(0) },
+	crit_mode: CRITMode::CanCrit { chance: CritChance::new(5) },
+	custom_modifiers: DynamicArray::Static(&[]),
+	effects_self  : DynamicArray::Static(JOLT_EFFECTS_SELF),
+	effects_target: DynamicArray::Static(JOLT_EFFECTS_TARGET),
+	caster_positions: positions!("✔️|✔️|🛑|🛑"),
+	target_positions: positions!("✔️|🛑|🛑|🛑"),
 	multi_target: false,
 	use_counter: UseCounter::Unlimited,
-});}
+});
 
-pub static skill_ethel_sever: Skill = Skill::Offensive(OffensiveSkill {
-	skill_name: SkillName::FromEthel(EthelSkillName::Sever),
-	recovery_ms: 1500,
-	charge_ms: 0,
+pub static SEVER: Skill = SEVER_CONST;
+pub const SEVER_CONST: Skill = Skill::Offensive(OffensiveSkill {
+	skill_name: SkillName::FromEthel(EthelSkill::Sever),
+	recovery_ms: SaturatedU64::new(1500),
+	charge_ms: SaturatedU64::new(0),
 	can_be_riposted: true,
-	acc_mode: ACCMode ::CanMiss { acc: 90 },
-	dmg     : DMGMode ::Power   { power: 60, toughness_reduction: 0 },
-	crit    : CRITMode::CanCrit { crit_chance: 0 },
-	custom_modifiers: vec![],
-	effects_self  : vec![],
-	effects_target: vec![],
-	caster_positions: positions!("✔️|❌|❌|❌"),
-	target_positions: positions!("✔️|✔️|❌|❌"),
+	acc_mode : ACCMode ::CanMiss { acc: Accuracy::new(90) },
+	dmg_mode : DMGMode ::Power   { power: Power::new(60), toughness_reduction: Bound_u8::new(0) },
+	crit_mode: CRITMode::CanCrit { chance: CritChance::new(0) },
+	custom_modifiers: DynamicArray::Static(&[]),
+	effects_self  : DynamicArray::Static(&[]),
+	effects_target: DynamicArray::Static(&[]),
+	caster_positions: positions!("✔️|🛑|🛑|🛑"),
+	target_positions: positions!("✔️|✔️|🛑|🛑"),
 	multi_target: true,
 	use_counter: UseCounter::Unlimited,
 });
 
-lazy_static! { pub static ref skill_ethel_pierce: Skill = Skill::Offensive(OffensiveSkill {
-	skill_name: SkillName::FromEthel(EthelSkillName::Pierce),
-	recovery_ms: 1500,
-	charge_ms: 0,
+const PIERCE_CUSTOM_MODIFIERS: &[CustomOffensiveModifier; 1] = &[
+	CustomOffensiveModifier::BonusVsMarked { 
+		power: 50, 
+		acc: 10, 
+		crit: 0 
+	}
+];
+pub static PIERCE: Skill = PIERCE_CONST;
+pub const PIERCE_CONST: Skill = Skill::Offensive(OffensiveSkill {
+	skill_name: SkillName::FromEthel(EthelSkill::Pierce),
+	recovery_ms: SaturatedU64::new(1500),
+	charge_ms: SaturatedU64::new(0),
 	can_be_riposted: true,
-	acc_mode: ACCMode ::CanMiss { acc: 100 },
-	dmg     : DMGMode ::Power   { power: 80, toughness_reduction: 15 },
-	crit    : CRITMode::CanCrit { crit_chance: 13 },
-	custom_modifiers: vec![CustomOffensiveModifier::BonusVsMarked { power: 50, acc: 10, crit: 0 }],
-	effects_self  : vec![],
-	effects_target: vec![],
-	caster_positions: positions!("✔️|❌|❌|❌"),
-	target_positions: positions!("✔️|✔️|✔️|❌"),
+	acc_mode : ACCMode ::CanMiss { acc: Accuracy::new(100) },
+	dmg_mode : DMGMode ::Power   { power: Power::new(80), toughness_reduction: Bound_u8::new(15) },
+	crit_mode: CRITMode::CanCrit { chance: CritChance::new(13) },
+	custom_modifiers: DynamicArray::Static(PIERCE_CUSTOM_MODIFIERS),
+	effects_self  : DynamicArray::Static(&[]),
+	effects_target: DynamicArray::Static(&[]),
+	caster_positions: positions!("✔️|🛑|🛑|🛑"),
+	target_positions: positions!("✔️|✔️|✔️|🛑"),
 	multi_target: false,
 	use_counter: UseCounter::Unlimited,
-});}
+});
 
-lazy_static! { pub static ref skill_ethel_challenge: Skill = Skill::Offensive(OffensiveSkill {
-	skill_name: SkillName::FromEthel(EthelSkillName::Challenge),
-	recovery_ms: 1750,
-	charge_ms: 0,
+const CHALLENGE_EFFECTS_SELF: &[SelfApplier; 1] = &[
+	SelfApplier::Riposte {
+		duration_ms: SaturatedU64::new(4000),
+		acc_mode: ACCMode::CanMiss { acc: Accuracy::new(75) },
+		crit_mode: CRITMode::CanCrit { chance: CritChance::new(-5) },
+		skill_power: NonZeroU16::new(65).unwrap()
+	}
+];
+const CHALLENGE_EFFECTS_TARGET: &[TargetApplier; 1] = &[
+	TargetApplier::Mark {
+		duration_ms: SaturatedU64::new(5000)
+	}
+];
+pub static CHALLENGE: Skill = CHALLENGE_CONST;
+pub const CHALLENGE_CONST: Skill = Skill::Offensive(OffensiveSkill {
+	skill_name: SkillName::FromEthel(EthelSkill::Challenge),
+	recovery_ms: SaturatedU64::new(1750),
+	charge_ms: SaturatedU64::new(0),
 	can_be_riposted: false,
-	acc_mode: ACCMode ::NeverMiss,
-	dmg     : DMGMode ::NoDamage,
-	crit    : CRITMode::NeverCrit,
-	custom_modifiers: vec![],
-	effects_self  : vec![SelfApplier::Riposte { duration_ms: 4000, acc: 75, crit: CRITMode::CanCrit { crit_chance: -5 }, dmg_multiplier: 65 }],
-	effects_target: vec![TargetApplier::Mark { duration_ms: 5000 }],
-	caster_positions: positions!("✔️|❌|❌|❌"),
+	acc_mode : ACCMode ::NeverMiss,
+	dmg_mode : DMGMode ::NoDamage,
+	crit_mode: CRITMode::NeverCrit,
+	custom_modifiers: DynamicArray::Static(&[]),
+	effects_self  : DynamicArray::Static(CHALLENGE_EFFECTS_SELF),
+	effects_target: DynamicArray::Static(CHALLENGE_EFFECTS_TARGET),
+	caster_positions: positions!("✔️|🛑|🛑|🛑"),
 	target_positions: positions!("✔️|✔️|✔️|✔️"),
 	multi_target: false,
 	use_counter: UseCounter::Unlimited,
-});}
+});

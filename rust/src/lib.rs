@@ -10,9 +10,12 @@
 #![allow(clippy::match_like_matches_macro)]
 #![allow(clippy::never_loop)]
 #![allow(clippy::clone_on_copy)]
+#![allow(illegal_floating_point_literal_pattern)]
+#![warn(clippy::missing_const_for_fn)]
 #![feature(step_trait)]
-#![feature(const_trait_impl)]
 #![feature(let_chains)]
+#![feature(const_type_name)]
+#![feature(const_option)]
 
 mod audio;
 pub use audio::bus;
@@ -22,16 +25,21 @@ mod util;
 mod main_menu;
 mod settings_menu;
 mod game_states;
-pub mod saves;
+mod saves;
+
+mod world_map;
+mod local_map;
+
+pub use world_map::MapLocation;
 
 use gdnative::prelude::*;
 use gdnative::api::*;
-use gdrust_export_nodepath::extends;
+use gdnative_export_node_as_path::extends;
 use houta_utils_gdnative::prelude::*;
 use game_states::GameState;
 use game_states::main_menu::MainMenuState;
 
-pub const MAX_CHARACTERS_PER_TEAM: usize = 4;
+pub const MAX_CHARACTERS_PER_TEAM: u8 = 4;
 pub static config_path: &str = "user://config.cfg";
 
 // Function that registers all exposed classes to Godot
@@ -125,7 +133,7 @@ impl GameManager {
 				match state {
 					MainMenuState::Idle => { godot_warn!("_on_main_menu_session_load_fade_complete: MainMenuState::Idle"); }
 					MainMenuState::Settings => { godot_warn!("_on_main_menu_session_load_fade_complete: MainMenuState::Settings"); }
-					MainMenuState::LoadingSave { save_name } => {
+					MainMenuState::LoadingSave { .. } => {
 						let main_menu_inst = main_menu.unwrap_inst();
 						let main_menu_base = main_menu_inst.base();
 						if let Some(parent) = main_menu_base.get_parent().map(|parent| unsafe { parent.assume_safe() }) {

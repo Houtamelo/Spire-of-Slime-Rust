@@ -1,130 +1,178 @@
-use std::ops::{RangeInclusive};
-use proc_macros::get_perk;
-use houta_utils::prelude::BoundUSize;
-use crate::combat::ModifiableStat;
+use comfy_bounded_ints::prelude::{SqueezeTo, SqueezeTo_i64};
+use houta_utils::any_matches;
+use houta_utils::prelude::DynamicArray;
 use crate::combat::effects::onSelf::SelfApplier;
 use crate::combat::effects::onTarget::TargetApplier;
 use crate::combat::effects::persistent::PersistentEffect;
 use crate::combat::entity::character::*;
 use crate::combat::entity::data::girls::nema::perks::NemaPerk;
-use crate::combat::perk::Perk;
+use crate::combat::entity::stat::ToughnessReduction;
+use crate::combat::perk::{has_perk, Perk};
 use crate::combat::skill_types::*;
+use crate::combat::stat::{CheckedRange, Dodge, Toughness};
+use crate::util::{PercentageU8, SaturatedU64, ToSaturatedI64, ToU8Percentage};
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct OffensiveSkill {
 	pub skill_name: SkillName,
-	pub recovery_ms     : i64,
-	pub charge_ms       : i64,
+	pub recovery_ms: SaturatedU64,
+	pub charge_ms  : SaturatedU64,
 	pub can_be_riposted : bool,
-	pub acc_mode        : ACCMode,
-	pub dmg             : DMGMode,
-	pub crit            : CRITMode,
-	pub custom_modifiers: Vec<CustomOffensiveModifier>,
-	pub effects_self    : Vec<SelfApplier>,
-	pub effects_target  : Vec<TargetApplier>,
+	pub acc_mode: ACCMode,
+	pub dmg_mode: DMGMode,
+	pub crit_mode: CRITMode,
+	pub custom_modifiers: DynamicArray<CustomOffensiveModifier>,
+	pub effects_self    : DynamicArray<SelfApplier>,
+	pub effects_target  : DynamicArray<TargetApplier>,
 	pub caster_positions: PositionMatrix,
 	pub target_positions: PositionMatrix,
 	pub multi_target    : bool,
 	pub use_counter     : UseCounter,
 }
 
+// todo! This is used as data but the calculations don't use it
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub enum CustomOffensiveModifier {
+	BonusVsMarked {
+		power: i16,
+		acc: i16,
+		crit: i16,
+	}
+}
+
 impl OffensiveSkill {
-	pub fn calc_dmg(&self, caster: &CombatCharacter, target: &CombatCharacter, crit: bool) -> Option<RangeInclusive<isize>> {
-		let (power, toughness_reduction) = match self.dmg {
-			DMGMode::Power { power, toughness_reduction } => { (power, toughness_reduction) } 
-			DMGMode::NoDamage => { return None; }
+	pub fn calc_dmg(&self, caster: &CombatCharacter, target: &CombatCharacter, is_crit: bool) -> Option<CheckedRange> {
+		let DMGMode::Power { power, toughness_reduction} = self.dmg_mode 
+			else { return None; };
+
+		let toughness = {
+			let base = target.dyn_stat::<Toughness>().squeeze_to_i64();
+			let min = i64::min(base, 0);
+			i64::max(min, base - toughness_reduction.squeeze_to_i64())
 		};
-		
-		let (mut dmg_min, mut dmg_max) = (*caster.dmg.start() as isize, *caster.dmg.end() as isize);
-		
-		let base_toughness = target.get_stat(ModifiableStat::TOUGHNESS);
-		let min_toughness = isize::min(base_toughness, 0);
-		let final_toughness = isize::max(min_toughness, base_toughness - toughness_reduction);
-		
-		let total_power = power * caster.get_stat(ModifiableStat::POWER) * (100 - final_toughness);
 
-		dmg_max = (dmg_max * total_power) / 1000000;
-		dmg_min = isize::min((dmg_min * total_power) / 1000000, dmg_max);
-		
-		if crit {
-			dmg_max = (dmg_max * 150) / 100;
-			dmg_min = (dmg_min * 150) / 100;
-		}
-		
-		return Some(dmg_min..=dmg_max);
-	}
-	
-	pub fn calc_dmg_independent(power: isize, toughness_reduction: isize, caster: &CombatCharacter, target: &CombatCharacter, crit: bool) -> RangeInclusive<isize> {
-		let (mut dmg_min, mut dmg_max) = (*caster.dmg.start() as isize, *caster.dmg.end() as isize);
-		
-		let base_toughness = target.get_stat(ModifiableStat::TOUGHNESS);
-		let min_toughness = isize::min(base_toughness, 0);
-		let final_toughness = isize::max(min_toughness, base_toughness - toughness_reduction);
-		
-		let total_power = power * caster.get_stat(ModifiableStat::POWER) * (100 - final_toughness);
-
-		dmg_max = (dmg_max * total_power) / 1000000;
-		dmg_min = isize::min((dmg_min * total_power) / 1000000, dmg_max);
-		
-		if crit {
-			dmg_max = (dmg_max * 150) / 100;
-			dmg_min = (dmg_min * 150) / 100;
-		}
-		
-		return dmg_min..=dmg_max;
-	}
-	
-	pub fn final_hit_chance(&self, caster: &CombatCharacter, target: &CombatCharacter) -> Option<BoundUSize<0, 100>> {
-		let acc = match self.acc_mode {
-			ACCMode::CanMiss { acc } => { acc }
-			ACCMode::NeverMiss => { return None; }
+		let total_power = {
+			let mut temp = power.to_sat_i64();
+			temp *= caster.dyn_stat::<Power>().get();
+			temp *= 100 - toughness;
+			temp /= 10000;
+			temp
 		};
-		
-		return Some(OffensiveSkill::final_hit_chance_independent(acc, caster, target));
-	}
 
-	pub fn final_hit_chance_independent(mut base_acc: isize, caster: &CombatCharacter, target: &CombatCharacter) -> BoundUSize<0, 100> {
-		if let Some(Perk::Nema(NemaPerk::Poison_Disbelief)) = get_perk!(target, Perk::Nema(NemaPerk::Poison_Disbelief)) {
-			if caster.persistent_effects.iter().any(|effect| matches!(effect, PersistentEffect::Poison {..})) {
-				base_acc -= 20;
+		let (final_min, final_max) = {
+			let dmg_range = caster.dmg;
+
+			let mut temp_min = dmg_range.bound_lower().to_sat_i64();
+			let mut temp_max = dmg_range.bound_upper().to_sat_i64();
+			temp_min *= total_power;
+			temp_min /= 100;
+			temp_max *= total_power;
+			temp_max /= 100;
+
+			if is_crit {
+				temp_min *= 15;
+				temp_min /= 10;
+				temp_max *= 15;
+				temp_max /= 10;
 			}
-		}
 
-		return (base_acc + caster.get_stat(ModifiableStat::ACC) - target.get_stat(ModifiableStat::DODGE)).into();
-	}
-	
-	pub fn final_crit_chance(&self, caster: &CombatCharacter) -> Option<BoundUSize<0, 100>> {
-		let crit = match self.crit {
-			CRITMode::CanCrit { crit_chance: crit } => { crit }
-			CRITMode::NeverCrit => { return None; }
+			(temp_min, temp_max)
 		};
 		
-		return Some(OffensiveSkill::final_crit_chance_independent(crit, caster));
+		return Some(CheckedRange::floor(final_min.squeeze_to(), final_max.squeeze_to()));
 	}
 	
-	pub fn final_crit_chance_independent(base_crit: isize, caster: &CombatCharacter) -> BoundUSize<0, 100> {
-		return (base_crit + caster.get_stat(ModifiableStat::CRIT)).into();
+	pub fn calc_dmg_independent(skill_power: Power, toughness_reduction: ToughnessReduction,
+	                            caster: &CombatCharacter, target: &CombatCharacter, is_crit: bool) 
+		-> CheckedRange {
+		let toughness = {
+			let base = target.dyn_stat::<Toughness>().squeeze_to_i64();
+			let min = i64::min(base, 0);
+			i64::max(min, base - toughness_reduction.squeeze_to_i64())
+		};
+
+		let total_power = {
+			let mut temp = skill_power.to_sat_i64();
+			temp *= caster.dyn_stat::<Power>().get();
+			temp *= 100 - toughness;
+			temp /= 10000;
+			temp
+		};
+
+		let (final_min, final_max) = {
+			let dmg_range = caster.dmg;
+
+			let mut temp_min = dmg_range.bound_lower().to_sat_i64();
+			let mut temp_max = dmg_range.bound_upper().to_sat_i64();
+			temp_min *= total_power;
+			temp_min /= 100;
+			temp_max *= total_power;
+			temp_max /= 100;
+
+			if is_crit {
+				temp_min *= 15;
+				temp_min /= 10;
+				temp_max *= 15;
+				temp_max /= 10;
+			}
+
+			(temp_min, temp_max)
+		};
+		
+		return CheckedRange::floor(final_min.squeeze_to(), final_max.squeeze_to());
+	}
+	
+	pub fn final_hit_chance(&self, caster: &CombatCharacter, target: &CombatCharacter) -> Option<PercentageU8> {
+		return match self.acc_mode {
+			ACCMode::CanMiss { acc } => Some(OffensiveSkill::final_hit_chance_independent(acc, caster, target)),
+			ACCMode::NeverMiss => None,
+		};
+	}
+
+	pub fn final_hit_chance_independent(skill_acc: Accuracy, caster: &CombatCharacter, target: &CombatCharacter) -> PercentageU8 {
+		let final_hit_chance = {
+			let mut temp = skill_acc.to_sat_i64();
+			temp += caster.dyn_stat::<Accuracy>().get();
+			temp -= target.dyn_stat::<Dodge>().get();
+
+			if has_perk!(target, Perk::Nema(NemaPerk::Poison_Disbelief))
+				&& any_matches!(caster.persistent_effects, PersistentEffect::Poison {..}) {
+				temp -= 20;
+			}
+			
+			temp.to_percent_u8()
+		};
+		
+		return final_hit_chance;
+	}
+	
+	pub fn final_crit_chance(&self, caster: &CombatCharacter) -> Option<PercentageU8> {
+		return match self.crit_mode {
+			CRITMode::CanCrit { chance } => Some(OffensiveSkill::final_crit_chance_independent(chance, caster)),
+			CRITMode::NeverCrit => None,
+		};
+	}
+	
+	pub fn final_crit_chance_independent(skill_crit: CritChance, caster: &CombatCharacter) -> PercentageU8 {
+		let final_crit_chance = {
+			let mut temp = skill_crit.to_sat_i64();
+			temp += caster.dyn_stat::<CritChance>().get();
+			temp.to_percent_u8()
+		};
+		
+		return final_crit_chance;
 	}
 }
 
 impl SkillTrait for OffensiveSkill {
-	fn name            (&self) -> SkillName           { return self.skill_name       ; }
-	fn recovery_ms     (&self) -> &i64                { return &self.recovery_ms     ; }
-	fn charge_ms       (&self) -> &i64                { return &self.charge_ms       ; }
-	fn crit            (&self) -> &CRITMode           { return &self.crit            ; }
-	fn effects_self    (&self) -> &Vec<SelfApplier>   { return &self.effects_self    ; }
-	fn effects_target  (&self) -> &Vec<TargetApplier> { return &self.effects_target  ; }
-	fn caster_positions(&self) -> &PositionMatrix     { return &self.caster_positions; }
-	fn target_positions(&self) -> &PositionMatrix     { return &self.target_positions; }
-	fn multi_target    (&self) -> &bool               { return &self.multi_target    ; }
-	fn use_counter     (&self) -> &UseCounter         { return &self.use_counter     ; }
-}
-
-#[derive(Debug, Clone)]
-pub enum CustomOffensiveModifier {
-	BonusVsMarked {
-		power: isize,
-		acc: isize,
-		crit: isize,
-	}
+	fn name(&self) -> SkillName { return self.skill_name  ; }
+	fn recovery_ms(&self) -> &SaturatedU64 { return &self.recovery_ms; }
+	fn charge_ms  (&self) -> &SaturatedU64 { return &self.charge_ms  ; }
+	fn crit(&self) -> &CRITMode { return &self.crit_mode; }
+	fn effects_self    (&self) -> &[SelfApplier]   { return &self.effects_self    ; }
+	fn effects_target  (&self) -> &[TargetApplier] { return &self.effects_target  ; }
+	fn caster_positions(&self) -> &PositionMatrix  { return &self.caster_positions; }
+	fn target_positions(&self) -> &PositionMatrix  { return &self.target_positions; }
+	fn multi_target(&self) -> &bool { return &self.multi_target; }
+	fn use_counter (&self) -> &UseCounter { return &self.use_counter ; }
 }

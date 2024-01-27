@@ -5,7 +5,7 @@ use settings::*;
 use gdnative::prelude::*;
 use gdnative::api::*;
 use houta_utils_gdnative::prelude::*;
-use gdrust_export_nodepath::extends;
+use gdnative_export_node_as_path::extends;
 use crate::util::panel_are_you_sure::PanelAreYouSure;
 use crate::util::panel_are_you_sure;
 

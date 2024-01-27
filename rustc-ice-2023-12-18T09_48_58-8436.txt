@@ -1,0 +1,69 @@
+thread 'rustc' panicked at compiler\rustc_trait_selection\src\traits\query\type_op\implied_outlives_bounds.rs:212:21:
+not implemented: Shouldn't expect a placeholder type in implied bounds (yet)
+stack backtrace:
+   0:     0x7fff55c9dc8f - std::backtrace::Backtrace::force_capture::h657826cf12b38bc1
+   1:     0x7fff55c9dbf4 - std::backtrace::Backtrace::force_capture::h657826cf12b38bc1
+   2:     0x7fff415e0749 - <tracing_subscriber[3241dc22f2572268]::util::TryInitError as core[f7f99ca7f1b1f614]::fmt::Display>::fmt
+   3:     0x7fff55cb6793 - std::panicking::rust_panic_with_hook::h1ede680ac964e03e
+   4:     0x7fff55cb65fb - <std::panicking::begin_panic_handler::StaticStrPayload as core::panic::PanicPayload>::take_box::h395c774f53ccfbea
+   5:     0x7fff55cb37d9 - <std::sys_common::backtrace::_print::DisplayBacktrace as core::fmt::Display>::fmt::hb324f41c48ee9c7b
+   6:     0x7fff55cb6344 - rust_begin_unwind
+   7:     0x7fff55d0ae17 - core::panicking::panic_fmt::hd1fa53ccc624937d
+   8:     0x7fff410c761f - rustc_trait_selection[a504e7590ff160d1]::traits::vtable::vtable_entries
+   9:     0x7fff40ff7e9a - <rustc_lint_defs[f202e52c17432efb]::builtin::UnusedDocComment as rustc_lint[3e3be3c4f1261a22]::passes::EarlyLintPass>::check_item
+  10:     0x7fff410c8350 - rustc_trait_selection[a504e7590ff160d1]::traits::query::type_op::implied_outlives_bounds::compute_implied_outlives_bounds_inner
+  11:     0x7fff40e2b014 - rustc_traits[e4e71acb2b1f102b]::normalize_projection_ty::normalize_projection_ty
+  12:     0x7fff40e20a67 - rustc_traits[e4e71acb2b1f102b]::implied_outlives_bounds::implied_outlives_bounds
+  13:     0x7fff40e749e3 - <rustc_query_impl[f0a5cba57ebb47ba]::plumbing::QueryCtxt as rustc_query_system[f11b7f199cb2a03e]::query::QueryContext>::load_side_effects
+  14:     0x7fff40f1db74 - <rustc_query_impl[f0a5cba57ebb47ba]::plumbing::QueryCtxt as rustc_query_system[f11b7f199cb2a03e]::query::QueryContext>::load_side_effects
+  15:     0x7fff400ea502 - rustc_query_impl[f0a5cba57ebb47ba]::profiling_support::alloc_self_profile_query_strings
+  16:     0x7fff4107597f - <rustc_infer[d1ea5cc9a60cd8d9]::infer::InferCtxt as rustc_trait_selection[a504e7590ff160d1]::traits::outlives_bounds::InferCtxtExt>::implied_outlives_bounds
+  17:     0x7fff408007c3 - rustc_hir_analysis[a0685fa197ab86c5]::collect::predicates_defined_on
+  18:     0x7fff41a0761e - rustc_hir_analysis[a0685fa197ab86c5]::check::compare_impl_item::collect_return_position_impl_trait_in_trait_tys
+  19:     0x7fff421287c7 - <rustc_query_impl[f0a5cba57ebb47ba]::plumbing::QueryCtxt as rustc_query_system[f11b7f199cb2a03e]::query::QueryContext>::depth_limit_error
+  20:     0x7fff42175e23 - <rustc_query_impl[f0a5cba57ebb47ba]::plumbing::QueryCtxt as rustc_query_system[f11b7f199cb2a03e]::query::QueryContext>::depth_limit_error
+  21:     0x7fff40f599e7 - <rustc_query_impl[f0a5cba57ebb47ba]::plumbing::QueryCtxt as rustc_query_system[f11b7f199cb2a03e]::query::QueryContext>::load_side_effects
+  22:     0x7fff421b0661 - <rustc_query_impl[f0a5cba57ebb47ba]::plumbing::QueryCtxt as rustc_query_system[f11b7f199cb2a03e]::query::QueryContext>::depth_limit_error
+  23:     0x7fff407de41b - <rustc_hir_analysis[a0685fa197ab86c5]::collect::resolve_bound_vars::BoundVarContext as rustc_hir[9796bcc7cb5a092e]::intravisit::Visitor>::visit_lifetime
+  24:     0x7fff407e840c - rustc_hir_analysis[a0685fa197ab86c5]::collect::type_of::type_of
+  25:     0x7fff40e74e9b - <rustc_query_impl[f0a5cba57ebb47ba]::plumbing::QueryCtxt as rustc_query_system[f11b7f199cb2a03e]::query::QueryContext>::load_side_effects
+  26:     0x7fff40e866c1 - <rustc_query_impl[f0a5cba57ebb47ba]::plumbing::QueryCtxt as rustc_query_system[f11b7f199cb2a03e]::query::QueryContext>::load_side_effects
+  27:     0x7fff40f599e7 - <rustc_query_impl[f0a5cba57ebb47ba]::plumbing::QueryCtxt as rustc_query_system[f11b7f199cb2a03e]::query::QueryContext>::load_side_effects
+  28:     0x7fff40ea37e8 - <rustc_query_impl[f0a5cba57ebb47ba]::plumbing::QueryCtxt as rustc_query_system[f11b7f199cb2a03e]::query::QueryContext>::load_side_effects
+  29:     0x7fff408388bc - <rustc_hir_analysis[a0685fa197ab86c5]::autoderef::Autoderef>::into_obligations
+  30:     0x7fff40838e13 - <rustc_hir_analysis[a0685fa197ab86c5]::autoderef::Autoderef>::into_obligations
+  31:     0x7fff40810a9d - <rustc_hir_analysis[a0685fa197ab86c5]::autoderef::Autoderef>::into_obligations
+  32:     0x7fff400dcbdf - rustc_query_impl[f0a5cba57ebb47ba]::profiling_support::alloc_self_profile_query_strings
+  33:     0x7fff4011d7cf - rustc_query_impl[f0a5cba57ebb47ba]::profiling_support::alloc_self_profile_query_strings
+  34:     0x7fff401341b1 - rustc_query_impl[f0a5cba57ebb47ba]::profiling_support::alloc_self_profile_query_strings
+  35:     0x7fff40178ab3 - rustc_query_impl[f0a5cba57ebb47ba]::profiling_support::alloc_self_profile_query_strings
+  36:     0x7fff400e967c - rustc_query_impl[f0a5cba57ebb47ba]::profiling_support::alloc_self_profile_query_strings
+  37:     0x7fff40797123 - rustc_hir_analysis[a0685fa197ab86c5]::check_crate
+  38:     0x7fff4055a01d - rustc_interface[8bd39517f8d1fe38]::passes::analysis
+  39:     0x7fff400df0fd - rustc_query_impl[f0a5cba57ebb47ba]::profiling_support::alloc_self_profile_query_strings
+  40:     0x7fff4010e049 - rustc_query_impl[f0a5cba57ebb47ba]::profiling_support::alloc_self_profile_query_strings
+  41:     0x7fff4013379c - rustc_query_impl[f0a5cba57ebb47ba]::profiling_support::alloc_self_profile_query_strings
+  42:     0x7fff4014e8a7 - rustc_query_impl[f0a5cba57ebb47ba]::profiling_support::alloc_self_profile_query_strings
+  43:     0x7fff40136af3 - rustc_query_impl[f0a5cba57ebb47ba]::profiling_support::alloc_self_profile_query_strings
+  44:     0x7fff3d5e96c6 - rustc_driver_impl[1a76545432c0b836]::main
+  45:     0x7fff3d5f837e - rustc_driver_impl[1a76545432c0b836]::main
+  46:     0x7fff3d5ef5e3 - rustc_driver_impl[1a76545432c0b836]::main
+  47:     0x7fff3d636dcc - <rustc_middle[50dd8c3ff458a347]::ty::SymbolName as core[f7f99ca7f1b1f614]::fmt::Display>::fmt
+  48:     0x7fff3d5f0111 - rustc_driver_impl[1a76545432c0b836]::main
+  49:     0x7fff3d6395cf - <rustc_middle[50dd8c3ff458a347]::ty::SymbolName as core[f7f99ca7f1b1f614]::fmt::Display>::fmt
+  50:     0x7fff3d6396e8 - <rustc_middle[50dd8c3ff458a347]::ty::SymbolName as core[f7f99ca7f1b1f614]::fmt::Display>::fmt
+  51:     0x7fff55cc89fc - std::sys::windows::thread::Thread::new::h26d1b3bdacf4cb10
+  52:     0x7fffac6f7344 - BaseThreadInitThunk
+  53:     0x7fffad7026b1 - RtlUserThreadStart
+
+
+rustc version: 1.76.0-nightly (3a85a5cfe 2023-11-20)
+platform: x86_64-pc-windows-msvc
+
+query stack during panic:
+#0 [implied_outlives_bounds] computing implied outlives bounds for `&^1`
+#1 [collect_return_position_impl_trait_in_trait_tys] comparing an impl and trait method signature, inferring any hidden `impl Trait` types in the process
+#2 [type_of] computing type of `combat::entity::data::girls::ethel::skills::<impl at rust\src\combat\entity\data\girls\ethel\skills.rs:26:1: 26:29>::{opaque#0}`
+#3 [check_mod_impl_wf] checking that impls are well-formed in module `combat::entity::data::girls::ethel::skills`
+#4 [analysis] running analysis passes on this crate
+end of query stack

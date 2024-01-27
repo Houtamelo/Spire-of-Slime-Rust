@@ -1,5 +1,5 @@
 use gdnative::prelude::*;
-use gdrust_export_nodepath::extends;
+use gdnative_export_node_as_path::extends;
 use houta_utils_gdnative::prelude::*;
 
 pub(super) const SIGNAL_LOAD: &str = "load_save";
