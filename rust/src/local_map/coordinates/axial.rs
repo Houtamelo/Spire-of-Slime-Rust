@@ -52,19 +52,19 @@ impl Axial {
 		return results;
 	}
 
-	const SQRT_3: f64 = 1.7320508075688772935274463415059;
-	const SQRT_3_div_3: f64 = Self::SQRT_3 / 3.;
-	const SQRT_3_div_2: f64 = Self::SQRT_3 / 2.;
+	const SQRT_3: f32 = 1.7320508075688772935274463415059;
+	const SQRT_3_div_3: f32 = Self::SQRT_3 / 3.;
+	const SQRT_3_div_2: f32 = Self::SQRT_3 / 2.;
 
-	pub fn to_cartesian(&self, radius: f64) -> (f64, f64) {
-		let (q, r) = (self.q as f64, self.r as f64);
+	pub fn to_cartesian(&self, radius: f32) -> (f32, f32) {
+		let (q, r) = (self.q as f32, self.r as f32);
 	
 		let x = radius * ((Self::SQRT_3 * q) + Self::SQRT_3_div_2 * r);
 		let y = radius * (1.5 * r);
 		return (x, y);
 	}
 	
-	pub fn round_from_cartesian(x: f64, y: f64, radius: f64) -> Axial {
+	pub fn round_from_cartesian(x: f32, y: f32, radius: f32) -> Axial {
 		let float_q = ((Self::SQRT_3_div_3 * x) - (y / 3.)) / radius;
 		let float_r = (2. * y) / (3. * radius);
 		let float_s = -float_q - float_r;

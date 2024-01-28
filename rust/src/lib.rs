@@ -49,6 +49,7 @@ fn init(handle: InitHandle) {
 	handle.add_class::<main_menu::MainMenu>();
 	handle.add_class::<main_menu::LoadButton>();
 	handle.add_class::<saves::SavesManager>();
+	handle.add_class::<local_map::generation::MapGenerator>()
 }
 
 godot_init!(init);

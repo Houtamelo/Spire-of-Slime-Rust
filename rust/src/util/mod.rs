@@ -18,9 +18,9 @@ pub type PercentageU8 = Bound_u8<0, 100>;
 pub fn fn_name<T: ?Sized>(_val: &T) -> &'static str {
 	let name = std::any::type_name::<T>();
 	
-	return match &name[..name.len() - 3].rfind(':') {
-		Some(pos) => &name[pos + 1..name.len() - 3],
-		None => &name[..name.len() - 3],
+	return match &name[..name.len()].rfind(':') {
+		Some(pos) => &name[pos + 1..name.len()],
+		None => &name,
 	};
 }
 

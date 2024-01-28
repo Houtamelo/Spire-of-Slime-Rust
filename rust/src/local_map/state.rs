@@ -7,14 +7,16 @@ use crate::local_map::coordinates::axial::Axial;
 use crate::local_map::tile;
 use crate::local_map::tile::{EnemyGroup, EventID, Tile, TileContents, TileMistStatus};
 use crate::local_map::tile::TileScoutStatus::ContentsRevealed;
+use crate::util;
+use crate::util::PercentageU8;
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct LocalMapState {
 	tiles: HashMap<Axial, Tile>,
 	party_pos: Axial,
 	party_state: PartyState,
-	ethel_exhaustion: u8, //todo! change to comfy_u8<0, 100>
-	nema_exhaustion: u8, //todo! change to comfy_u8<0, 100>
+	ethel_exhaustion: PercentageU8,
+	nema_exhaustion: PercentageU8,
 }
 
 impl LocalMapState {
@@ -25,7 +27,8 @@ impl LocalMapState {
 	pub fn input_walk(&mut self, tile_pos: Axial) -> Vec<InputResult> {
 		const COST_WALK: u8 = 1;
 
-		if (self.ethel_exhaustion + COST_WALK) > 100 || (self.nema_exhaustion + COST_WALK) > 100 {
+		if (self.ethel_exhaustion.get() + COST_WALK) > 100 
+			|| (self.nema_exhaustion.get() + COST_WALK) > 100 {
 			return Vec::new();
 		}
 
@@ -41,14 +44,14 @@ impl LocalMapState {
 			return Vec::new();
 		}
 
-		match &self.party_state {
+		return match &self.party_state {
 			state @ (PartyState::InCombat(_) | PartyState::InEvent(_))
 			=> {
 				godot_warn!(
 					"LocalMapState::tile_left_click(): Warning: Received walk input while in combat or event!\
 					state: {state:?}\
 					pos: {player_pos:?}");
-				return Vec::new();
+				Vec::new()
 			}
 			PartyState::Idle => {
 				if let TileContents::Obstacle = tile.contents {
@@ -73,15 +76,16 @@ impl LocalMapState {
 					}
 				}
 
-				return results;
+				results
 			}
-		}
+		};
 	}
 
 	pub fn input_run(&mut self, tile_pos: Axial) -> Vec<InputResult> {
 		const COST_RUN: u8 = 4;
 
-		if (self.ethel_exhaustion + COST_RUN) > 100 || (self.nema_exhaustion + COST_RUN) > 100 {
+		if (self.ethel_exhaustion.get() + COST_RUN) > 100
+			|| (self.nema_exhaustion.get() + COST_RUN) > 100 {
 			return Vec::new();
 		}
 
@@ -97,14 +101,14 @@ impl LocalMapState {
 			return Vec::new();
 		}
 
-		match &self.party_state {
+		return match &self.party_state {
 			state @ (PartyState::InCombat(_) | PartyState::InEvent(_))
 			=> {
-				godot_warn!(
-					"LocalMapState::tile_left_click(): Warning: Received run input while in combat or event!\
-					state: {state:?}\
-					pos: {player_pos:?}");
-				return Vec::new();
+				godot_warn!("{}(): Received run input while in combat or event!\n\
+					state: {state:?}\n
+					pos: {player_pos:?}",
+					util::full_fn_name(&Self::input_run));
+				Vec::new()
 			}
 			PartyState::Idle => {
 				if let TileContents::Obstacle = tile.contents {
@@ -119,9 +123,9 @@ impl LocalMapState {
 				match mem::take(&mut tile.contents) {
 					TileContents::Enemies(enemies) => { results.push(InputResult::Combat(enemies)); }
 					TileContents::RestSite => { results.push(InputResult::LongRest); }
-					TileContents::Empty => { }
-					TileContents::Trap(event_id) 
-					| TileContents::Event(event_id) => { 
+					TileContents::Empty => {}
+					TileContents::Trap(event_id)
+					| TileContents::Event(event_id) => {
 						results.push(InputResult::Event(event_id));
 					}
 					TileContents::Obstacle => {
@@ -129,15 +133,15 @@ impl LocalMapState {
 					}
 				}
 
-				return results;
+				results
 			}
-		}
+		};
 	}
 
 	pub fn input_scout(&mut self) -> Vec<InputResult> {
 		const COST_SCOUT: u8 = 3;
 
-		if (self.ethel_exhaustion + COST_SCOUT) > 100 {
+		if (self.ethel_exhaustion.get() + COST_SCOUT) > 100 {
 			return Vec::new();
 		}
 
@@ -154,14 +158,14 @@ impl LocalMapState {
 		let mut any_changed = false;
 		reveal_adjacents(player_pos, &mut self.tiles, 3, &mut HashSet::new(), &mut any_changed);
 
-		if any_changed {
+		return if any_changed {
 			self.ethel_exhaustion += COST_SCOUT;
 			let mut results = vec![InputResult::Animation_Scout];
 			results.extend(self.pass_time(Self::DEFAULT_TURN_TIME));
-			return results;
+			results
 		} else {
-			return Vec::new();
-		}
+			Vec::new()
+		};
 
 		fn reveal_adjacents(axial: Axial, map: &mut HashMap<Axial, Tile>, steps: usize, already_checked: &mut HashSet<Axial>, any_changed: &mut bool) {
 			axial.neighbors().iter()
@@ -187,7 +191,7 @@ impl LocalMapState {
 	pub fn input_clear_mist(&mut self) -> Vec<InputResult> {
 		const COST_CLEAR_MIST: u8 = 3;
 
-		if (self.nema_exhaustion + COST_CLEAR_MIST) > 100 {
+		if (self.nema_exhaustion.get() + COST_CLEAR_MIST) > 100 {
 			return Vec::new();
 		}
 
@@ -205,14 +209,14 @@ impl LocalMapState {
 		let mut any_changed = false;
 		clear_mist(player_pos, &mut self.tiles, 2, &mut HashSet::new(), &mut any_changed);
 
-		if any_changed {
+		return if any_changed {
 			self.nema_exhaustion += COST_CLEAR_MIST;
 			let mut results = vec![InputResult::Animation_ClearMist];
 			results.extend(self.pass_time(Self::DEFAULT_TURN_TIME));
-			return results;
+			results
 		} else {
-			return Vec::new();
-		}
+			Vec::new()
+		};
 
 		fn clear_mist(axial: Axial, map: &mut HashMap<Axial, Tile>, steps: usize, already_checked: &mut HashSet<Axial>, any_changed: &mut bool) {
 			axial.neighbors().iter()
@@ -246,8 +250,8 @@ impl LocalMapState {
 	pub fn input_short_rest(&mut self) -> Vec<InputResult> {
 		const RESTORE_SHORT_REST: u8 = 2;
 
-		if (u8::checked_sub(self.ethel_exhaustion, RESTORE_SHORT_REST).is_none())
-			|| (u8::checked_sub(self.nema_exhaustion, RESTORE_SHORT_REST).is_none()) {
+		if (u8::checked_sub(self.ethel_exhaustion.get(), RESTORE_SHORT_REST).is_none())
+			|| (u8::checked_sub(self.nema_exhaustion.get(), RESTORE_SHORT_REST).is_none()) {
 			return Vec::new();
 		}
 

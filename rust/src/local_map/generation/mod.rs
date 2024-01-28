@@ -1,24 +1,23 @@
 mod grid;
 
 use std::collections::HashMap;
+use bracket_noise::prelude::{FastNoise, FractalType, NoiseType};
 use gdnative::prelude::*;
 use gdnative_export_node_as_path::extends;
 use houta_utils_gdnative::prelude::*;
-use noise::{Fbm, Perlin};
-use noise::utils::{NoiseMap, NoiseMapBuilder, PlaneMapBuilder};
 use rand::Rng;
 use rand_xoshiro::rand_core::{RngCore, SeedableRng};
 use rand_xoshiro::Xoshiro256PlusPlus;
 use crate::local_map::coordinates::axial::Axial;
-use crate::local_map::generation::grid::MapBounds;
+use crate::util;
 
 #[extends(Node)]
 pub struct MapGenerator {
 	#[export_path] hexagon_parent: Option<Ref<Node>>,
 	#[export_path] button_generate: Option<Ref<Button>>,
 	#[property] hexagon_prefab: Option<Ref<PackedScene>>,
-	#[property] hexagon_radius: f64,
-	#[property] altitude_threshold: f64,
+	#[property] hexagon_radius: f32,
+	#[property] altitude_threshold: f32,
 	#[property] map_width: i16,
 	#[property] map_height: i16,
 	spawned_hexagons: Vec<Ref<Sprite>>,
@@ -39,13 +38,13 @@ impl MapGenerator {
 		self.grab_nodes_by_path(owner);
 		
 		self.button_generate.unwrap_manual()
-			.connect("pressed", unsafe { owner.assume_shared() }, "_on_button_generate_pressed", 
-			               VariantArray::new_shared(), 0)
+			.connect("pressed", unsafe { owner.assume_shared() }, util::fn_name(&Self::_button_generate_pressed), 
+			         VariantArray::new_shared(), 0)
 			.log_if_err();
 	}
 	
 	#[method]
-	fn _on_button_generate_pressed(&mut self) {
+	fn _button_generate_pressed(&mut self) {
 		for hexagon in self.spawned_hexagons.drain(..) {
 			hexagon.touch_if_sane(|hex| { 
 				self.hexagon_parent.unwrap_manual().remove_child(hex);
@@ -60,7 +59,11 @@ impl MapGenerator {
 		
 		for (pos, info) in generate(self.map_width, self.map_height) {
 			let hexagon_variant = prefab.instance(0);
-			let hexagon = hexagon_variant.unwrap_manual().cast::<Sprite>().unwrap();
+			let hexagon = hexagon_variant
+				.unwrap_manual()
+				.cast::<Sprite>()
+				.unwrap();
+			
 			hex_parent.add_child(hexagon, false);
 			self.spawned_hexagons.push(unsafe { hexagon.assume_shared() });
 			
@@ -92,40 +95,51 @@ impl MapGenerator {
 }
 
 #[derive(Debug, Clone, Copy, Default)]
-struct HexInfo { pub altitude: f64, pub biome: f64 }
+struct HexInfo { pub altitude: f32, pub biome: f32 }
 
 fn generate(width: i16, height: i16) -> HashMap<Axial, HexInfo> {
 	let mut hexagons = HashMap::new();
-	let bounds = grid::fill(&mut hexagons, width, height, 1.);
+	let _ = grid::fill(&mut hexagons, width, height, 1.);
 	
-	let (altitude_map, biome_map) = noise_map(bounds);
+	let (altitude, biome) = noise_map();
 	
 	for (hex, info) in hexagons.iter_mut() {
 		let (x, y) = hex.to_cartesian(1.);
-		let (x, y) = (f64::round(x) as usize, f64::round(y) as usize);
-		info.altitude = altitude_map.get_value(x, y);
-		info.biome = biome_map.get_value(x, y);
+		info.altitude = sample_noise(&altitude, x, y, 1.);
+		info.biome = sample_noise(&biome, x, y, 1.);
 	}
 	
 	return hexagons;
 }
 
-fn noise_map(bounds: MapBounds) -> (NoiseMap, NoiseMap) {
-	let mut seed = Xoshiro256PlusPlus::from_entropy();
+fn sample_noise(noise: &FastNoise, x: f32, y: f32, radius: f32) -> f32 {
+	return 0.5 + noise.get_noise(x / radius, y / radius);
+}
+
+fn noise_map() -> (FastNoise, FastNoise) {
+	let mut rng = Xoshiro256PlusPlus::from_entropy();
+
+	let altitude = {
+		let mut temp = FastNoise::seeded(rng.next_u64());
+		temp.set_noise_type(NoiseType::PerlinFractal);
+		temp.set_fractal_type(FractalType::FBM);
+		temp.set_fractal_octaves(3);
+		temp.set_fractal_gain(0.5);
+		temp.set_fractal_lacunarity(3.);
+		temp.set_frequency(16.0);
+		temp
+	};
 	
-	let fbm = Fbm::<Perlin>::new(seed.next_u32());
-	let altitude= PlaneMapBuilder::<Fbm<Perlin>, 2>::new(fbm)
-		.set_size(bounds.width() as usize, bounds.height() as usize)
-		.set_x_bounds(0., 1.)
-		.set_y_bounds(0., 1.)
-		.build();
-	
-	let fbm = Fbm::<Perlin>::new(seed.next_u32());
-	let biome = PlaneMapBuilder::<Fbm<Perlin>, 2>::new(fbm)
-		.set_size(bounds.width() as usize, bounds.height() as usize)
-		.set_x_bounds(0., 1.)
-		.set_y_bounds(0., 1.)
-		.build();
+	let biome = {
+		let mut temp = FastNoise::seeded(rng.next_u64());
+		temp.set_noise_type(NoiseType::PerlinFractal);
+		temp.set_fractal_type(FractalType::FBM);
+		temp.set_fractal_octaves(3);
+		temp.set_fractal_gain(0.5);
+		temp.set_fractal_lacunarity(0.25);
+		temp.set_frequency(2.0);
+		temp
+	};
 	
 	return (altitude, biome);
 }
