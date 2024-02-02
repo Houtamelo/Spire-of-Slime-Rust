@@ -6,7 +6,23 @@ pub struct Tile {
 	pub scout_status: TileScoutStatus,
 	pub mist_status: TileMistStatus,
 	pub is_explored: bool,
+	pub biome: Biome,
 }
+
+impl Default for Tile {
+	fn default() -> Self {
+		return Tile {
+			contents: TileContents::default(),
+			scout_status: TileScoutStatus::Hidden,
+			mist_status: TileMistStatus::Mist_Hard,
+			is_explored: false,
+			biome: Biome { id: 0 },
+		};
+	}
+}
+
+#[derive(Debug, Serialize, Deserialize)]
+pub struct Biome { pub id: u8 }
 
 #[derive(Debug, Serialize, Deserialize)]
 pub enum TileContents {
@@ -16,6 +32,12 @@ pub enum TileContents {
 	Trap(EventID),
 	Enemies(EnemyGroup),
 	RestSite,
+}
+
+impl Tile {
+	pub fn is_obstacle(&self) -> bool {
+		return matches!(self.contents, TileContents::Obstacle);
+	}
 }
 
 impl Default for TileContents { fn default() -> Self { return TileContents::Empty; } }

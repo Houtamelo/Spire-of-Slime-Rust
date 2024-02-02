@@ -1,103 +1,368 @@
-[gd_scene load_steps=74 format=2]
+[gd_scene load_steps=9 format=2]
 
 [ext_resource path="res://Bin/world_map_test.gdns" type="Script" id=1]
-[ext_resource path="res://Core/Local Map/Tile Sprites/Tiles Forest Deciduous Dense Covered Green/tile_forest_deciduous_dense_covered_green_1.png" type="Texture" id=2]
-[ext_resource path="res://Core/Local Map/Tile Sprites/Tiles Forest Deciduous Dense Covered Green/tile_forest_deciduous_dense_covered_green_7.png" type="Texture" id=3]
-[ext_resource path="res://Core/Local Map/Tile Sprites/Tiles Moor Sparse Clear Blue/tile_moor_sparse_clear_blue_1.png" type="Texture" id=4]
-[ext_resource path="res://Core/Local Map/Tile Sprites/Tiles Moor Sparse Clear Blue/tile_moor_sparse_clear_blue_3.png" type="Texture" id=5]
-[ext_resource path="res://Core/Local Map/Tile Sprites/Tiles Moor Sparse Clear Blue/tile_moor_sparse_clear_blue_5.png" type="Texture" id=6]
-[ext_resource path="res://Core/Local Map/Tile Sprites/Tiles Moor Sparse Clear Blue/tile_moor_sparse_clear_blue_6.png" type="Texture" id=7]
-[ext_resource path="res://Core/Local Map/Tile Sprites/Tiles Moor Sparse Clear Blue/tile_moor_sparse_clear_blue_8.png" type="Texture" id=8]
-[ext_resource path="res://Core/Local Map/Tile Sprites/Tiles Mountain Peak Moor Blue/tile_mountain_peak_moor_blue_9.png" type="Texture" id=9]
-[ext_resource path="res://Core/Local Map/Tile Sprites/Tiles Moor Sparse Clear Blue/tile_moor_sparse_clear_blue_4.png" type="Texture" id=10]
-[ext_resource path="res://Core/Local Map/Tile Sprites/Tiles Moor Sparse Clear Blue/tile_moor_sparse_clear_blue_2.png" type="Texture" id=11]
-[ext_resource path="res://Core/Local Map/Tile Sprites/Tiles Moor Sparse Clear Blue/tile_moor_sparse_clear_blue_0.png" type="Texture" id=12]
-[ext_resource path="res://Core/Local Map/Tile Sprites/Tiles Forest Deciduous Dense Covered Green/tile_forest_deciduous_dense_covered_green_2.png" type="Texture" id=13]
-[ext_resource path="res://Core/Local Map/Tile Sprites/Tiles Moor Sparse Clear Blue/tile_moor_sparse_clear_blue_7.png" type="Texture" id=14]
-[ext_resource path="res://Core/Local Map/Tile Sprites/Tiles Forest Deciduous Dense Covered Green/tile_forest_deciduous_dense_covered_green_4.png" type="Texture" id=15]
-[ext_resource path="res://Core/Local Map/Tile Sprites/Tiles Forest Deciduous Dense Covered Green/tile_forest_deciduous_dense_covered_green_5.png" type="Texture" id=16]
-[ext_resource path="res://Core/Local Map/Tile Sprites/Tiles Forest Deciduous Dense Covered Green/tile_forest_deciduous_dense_covered_green_9.png" type="Texture" id=17]
-[ext_resource path="res://Core/Local Map/Tile Sprites/Tiles Forest Deciduous Dense Covered Green/tile_forest_deciduous_dense_covered_green_0.png" type="Texture" id=18]
-[ext_resource path="res://Core/Local Map/Tile Sprites/Tiles Moor Sparse Clear Blue/tile_moor_sparse_clear_blue_9.png" type="Texture" id=19]
-[ext_resource path="res://Core/Local Map/Tile Sprites/Tiles Forest Deciduous Dense Covered Green/tile_forest_deciduous_dense_covered_green_3.png" type="Texture" id=20]
-[ext_resource path="res://Core/Local Map/Tile Sprites/Tiles Forest Deciduous Dense Covered Green/tile_forest_deciduous_dense_covered_green_8.png" type="Texture" id=21]
-[ext_resource path="res://Core/Local Map/Tile Sprites/Tiles Forest Deciduous Dense Covered Green/tile_forest_deciduous_dense_covered_green_6.png" type="Texture" id=22]
-[ext_resource path="res://Core/Local Map/Tile Sprites/Tiles Mountain Peak Forest Deciduous Green/tile_mountain_peak_forest_deciduous_green_8.png" type="Texture" id=23]
-[ext_resource path="res://Core/Local Map/Tile Sprites/Tiles Mountain Peak Forest Deciduous Green/tile_mountain_peak_forest_deciduous_green_2.png" type="Texture" id=24]
-[ext_resource path="res://Core/Local Map/Tile Sprites/Tiles Mountain Peak Forest Deciduous Green/tile_mountain_peak_forest_deciduous_green_4.png" type="Texture" id=25]
-[ext_resource path="res://Core/Local Map/Tile Sprites/Tiles Mountain Peak Forest Deciduous Green/tile_mountain_peak_forest_deciduous_green_6.png" type="Texture" id=26]
-[ext_resource path="res://Core/Local Map/Tile Sprites/Tiles Mountain Peak Moor Blue/tile_mountain_peak_moor_blue_0.png" type="Texture" id=27]
-[ext_resource path="res://Core/Local Map/Tile Sprites/Tiles Mountain Peak Moor Blue/tile_mountain_peak_moor_blue_1.png" type="Texture" id=28]
-[ext_resource path="res://Core/Local Map/Tile Sprites/Tiles Mountain Peak Moor Blue/tile_mountain_peak_moor_blue_3.png" type="Texture" id=29]
-[ext_resource path="res://Core/Local Map/Tile Sprites/Tiles Mountain Peak Moor Blue/tile_mountain_peak_moor_blue_4.png" type="Texture" id=30]
-[ext_resource path="res://Core/Local Map/Tile Sprites/Tiles Mountain Peak Moor Blue/tile_mountain_peak_moor_blue_8.png" type="Texture" id=31]
-[ext_resource path="res://Core/Local Map/Tile Sprites/Tiles Mountain Peak Moor Blue/tile_mountain_peak_moor_blue_5.png" type="Texture" id=32]
-[ext_resource path="res://Core/Local Map/Tile Sprites/Tiles Mountain Peak Moor Blue/tile_mountain_peak_moor_blue_6.png" type="Texture" id=33]
-[ext_resource path="res://Core/Local Map/Tile Sprites/Tiles Mountain Peak Forest Deciduous Green/tile_mountain_peak_forest_deciduous_green_9.png" type="Texture" id=34]
-[ext_resource path="res://Core/Local Map/Tile Sprites/Tiles Mountain Peak Moor Blue/tile_mountain_peak_moor_blue_2.png" type="Texture" id=35]
-[ext_resource path="res://Core/Local Map/Tile Sprites/Tiles Mountain Peak Forest Deciduous Green/tile_mountain_peak_forest_deciduous_green_7.png" type="Texture" id=36]
-[ext_resource path="res://Core/Local Map/Tile Sprites/Tiles Mountain Peak Moor Blue/tile_mountain_peak_moor_blue_7.png" type="Texture" id=37]
-[ext_resource path="res://Core/Local Map/Tile Sprites/Tiles Mountain Peak Forest Deciduous Green/tile_mountain_peak_forest_deciduous_green_3.png" type="Texture" id=38]
-[ext_resource path="res://Core/Local Map/Tile Sprites/Tiles Mountain Peak Forest Deciduous Green/tile_mountain_peak_forest_deciduous_green_5.png" type="Texture" id=39]
-[ext_resource path="res://Core/Local Map/Tile Sprites/Tiles Forest Conifer Dense Clear Green/tile_forest_conifer_dense_clear_green_7.png" type="Texture" id=40]
-[ext_resource path="res://Core/Local Map/Tile Sprites/Tiles Forest Conifer Sparse Clear Green/tile_forest_conifer_sparse_clear_green_6.png" type="Texture" id=41]
-[ext_resource path="res://Core/Local Map/Tile Sprites/Tiles Forest Conifer Sparse Clear Green/tile_forest_conifer_sparse_clear_green_7.png" type="Texture" id=42]
-[ext_resource path="res://Core/Local Map/Tile Sprites/Tiles Forest Conifer Sparse Clear Green/tile_forest_conifer_sparse_clear_green_8.png" type="Texture" id=43]
-[ext_resource path="res://Core/Local Map/Tile Sprites/Tiles Forest Conifer Sparse Clear Green/tile_forest_conifer_sparse_clear_green_5.png" type="Texture" id=44]
-[ext_resource path="res://Core/Local Map/Tile Sprites/Tiles Forest Conifer Sparse Clear Green/tile_forest_conifer_sparse_clear_green_9.png" type="Texture" id=45]
-[ext_resource path="res://Core/Local Map/Tile Sprites/Tiles Forest Conifer Sparse Clear Green/tile_forest_conifer_sparse_clear_green_0.png" type="Texture" id=46]
-[ext_resource path="res://Core/Local Map/Tile Sprites/Tiles Mountain Peak Forest Deciduous Green/tile_mountain_peak_forest_deciduous_green_0.png" type="Texture" id=47]
-[ext_resource path="res://Core/Local Map/Tile Sprites/Tiles Mountain Peak Forest Deciduous Green/tile_mountain_peak_forest_deciduous_green_1.png" type="Texture" id=48]
-[ext_resource path="res://Core/Local Map/Tile Sprites/Tiles Forest Conifer Sparse Clear Green/tile_forest_conifer_sparse_clear_green_1.png" type="Texture" id=49]
-[ext_resource path="res://Core/Local Map/Tile Sprites/Tiles Forest Conifer Dense Clear Green/tile_forest_conifer_dense_clear_green_8.png" type="Texture" id=50]
-[ext_resource path="res://Core/Local Map/Tile Sprites/Tiles Forest Conifer Sparse Clear Green/tile_forest_conifer_sparse_clear_green_2.png" type="Texture" id=51]
-[ext_resource path="res://Core/Local Map/Tile Sprites/Tiles Forest Conifer Dense Clear Green/tile_forest_conifer_dense_clear_green_9.png" type="Texture" id=52]
-[ext_resource path="res://Core/Local Map/Tile Sprites/Tiles Forest Conifer Sparse Clear Green/tile_forest_conifer_sparse_clear_green_3.png" type="Texture" id=53]
-[ext_resource path="res://Core/Local Map/Tile Sprites/Tiles Forest Conifer Sparse Clear Green/tile_forest_conifer_sparse_clear_green_4.png" type="Texture" id=54]
-[ext_resource path="res://Core/Local Map/Tile Sprites/Tiles Forest Conifer Dense Clear Green/tile_forest_conifer_dense_clear_green_5.png" type="Texture" id=55]
-[ext_resource path="res://Core/Local Map/Tile Sprites/Tiles Forest Conifer Dense Clear Green/tile_forest_conifer_dense_clear_green_6.png" type="Texture" id=56]
-[ext_resource path="res://Core/Local Map/Tile Sprites/Tiles Mountain Peak Forest Conifer Green/tile_mountain_peak_forest_conifer_green_9.png" type="Texture" id=57]
-[ext_resource path="res://Core/Local Map/Tile Sprites/Tiles Mountain Peak Forest Conifer Green/tile_mountain_peak_forest_conifer_green_6.png" type="Texture" id=58]
-[ext_resource path="res://Core/Local Map/Tile Sprites/Tiles Mountain Peak Forest Conifer Green/tile_mountain_peak_forest_conifer_green_0.png" type="Texture" id=59]
-[ext_resource path="res://Core/Local Map/Tile Sprites/Tiles Forest Conifer Dense Clear Green/tile_forest_conifer_dense_clear_green_0.png" type="Texture" id=60]
-[ext_resource path="res://Core/Local Map/Tile Sprites/Tiles Mountain Peak Forest Conifer Green/tile_mountain_peak_forest_conifer_green_2.png" type="Texture" id=61]
-[ext_resource path="res://Core/Local Map/Tile Sprites/Tiles Forest Conifer Dense Clear Green/tile_forest_conifer_dense_clear_green_1.png" type="Texture" id=62]
-[ext_resource path="res://Core/Local Map/Tile Sprites/Tiles Forest Conifer Dense Clear Green/tile_forest_conifer_dense_clear_green_2.png" type="Texture" id=63]
-[ext_resource path="res://Core/Local Map/Tile Sprites/Tiles Forest Conifer Dense Clear Green/tile_forest_conifer_dense_clear_green_3.png" type="Texture" id=64]
-[ext_resource path="res://Core/Local Map/Tile Sprites/Tiles Forest Conifer Dense Clear Green/tile_forest_conifer_dense_clear_green_4.png" type="Texture" id=65]
-[ext_resource path="res://Core/Local Map/Tile Sprites/Tiles Mountain Peak Forest Conifer Green/tile_mountain_peak_forest_conifer_green_4.png" type="Texture" id=66]
-[ext_resource path="res://Core/Local Map/Tile Sprites/Tiles Mountain Peak Forest Conifer Green/tile_mountain_peak_forest_conifer_green_7.png" type="Texture" id=67]
-[ext_resource path="res://Core/Local Map/Tile Sprites/Tiles Mountain Peak Forest Conifer Green/tile_mountain_peak_forest_conifer_green_1.png" type="Texture" id=68]
-[ext_resource path="res://Core/Local Map/Tile Sprites/Tiles Mountain Peak Forest Conifer Green/tile_mountain_peak_forest_conifer_green_3.png" type="Texture" id=69]
-[ext_resource path="res://Core/Local Map/Tile Sprites/Tiles Mountain Peak Forest Conifer Green/tile_mountain_peak_forest_conifer_green_5.png" type="Texture" id=70]
-[ext_resource path="res://Core/Local Map/Tile Sprites/Tiles Mountain Peak Forest Conifer Green/tile_mountain_peak_forest_conifer_green_8.png" type="Texture" id=71]
-[ext_resource path="res://Fonts/font_mr-darcy_48_outline.tres" type="DynamicFont" id=72]
+[ext_resource path="res://Core/Local Map/biome_1.tres" type="Resource" id=2]
+[ext_resource path="res://Core/Local Map/hexagon-map_prefab.tscn" type="PackedScene" id=3]
+[ext_resource path="res://Core/Local Map/biome_4.tres" type="Resource" id=4]
+[ext_resource path="res://Core/Local Map/biome_2.tres" type="Resource" id=5]
+[ext_resource path="res://Core/Local Map/biome_3.tres" type="Resource" id=6]
+[ext_resource path="res://Core/Local Map/theme_local_map_generator.tres" type="Theme" id=7]
 [ext_resource path="res://Core/Local Map/hexagon_prefab.tscn" type="PackedScene" id=73]
 
-[node name="world-map_test" type="Node"]
+[node name="local_map_test" type="Node"]
 script = ExtResource( 1 )
-path_button_generate = NodePath("button-generate")
+path_biome_4_altitude_threshold_spin_box = NodePath("canvas_layer/container_biomes/spin_box_biome_4_altitude_threshold")
+path_biome_4_weight_spin_box = NodePath("canvas_layer/container_biomes/spin_box_biome_4_weight")
+path_biome_3_altitude_threshold_spin_box = NodePath("canvas_layer/container_biomes/spin_box_biome_3_altitude_threshold")
+path_biome_3_weight_spin_box = NodePath("canvas_layer/container_biomes/spin_box_biome_3_weight")
+path_biome_2_altitude_threshold_spin_box = NodePath("canvas_layer/container_biomes/spin_box_biome_2_altitude_threshold")
+path_biome_2_weight_spin_box = NodePath("canvas_layer/container_biomes/spin_box_biome_2_weight")
+path_biome_1_altitude_threshold_spin_box = NodePath("canvas_layer/container_biomes/spin_box_biome_1_altitude_threshold")
+path_biome_1_weight_spin_box = NodePath("canvas_layer/container_biomes/spin_box_biome_1_weight")
+path_biome_spin_box_frequency = NodePath("canvas_layer/container_noise/spin_box_noise_biome_frequency")
+path_biome_spin_box_lacunarity = NodePath("canvas_layer/container_noise/spin_box_noise_biome_lacunarity")
+path_biome_spin_box_octaves = NodePath("canvas_layer/container_noise/spin_box_noise_biome_octaves")
+path_altitude_spin_box_frequency = NodePath("canvas_layer/container_noise/spin_box_noise_altitude_frequency")
+path_altitude_spin_box_lacunarity = NodePath("canvas_layer/container_noise/spin_box_noise_altitude_lacunarity")
+path_altitude_spin_box_octaves = NodePath("canvas_layer/container_noise/spin_box_noise_altitude_octaves")
+path_end_direction_option_button = NodePath("canvas_layer/container_main/options_end_direction")
+path_map_shape_option_button = NodePath("canvas_layer/container_main/options_shape")
+path_map_height_spin_box = NodePath("canvas_layer/container_main/spin_box_map_height")
+path_map_width_spin_box = NodePath("canvas_layer/container_main/spin_box_map_width")
+path_hexagon_radius_spin_box = NodePath("canvas_layer/container_main/spin_box_hexagon_radius")
+path_camera = NodePath("camera_2d")
+path_button_ensure_connecteds = NodePath("canvas_layer/container_buttons/button_ensure-connecteds")
+path_button_generate_base = NodePath("canvas_layer/container_buttons/button_generate-base")
+path_button_generate_full = NodePath("canvas_layer/container_buttons/button_generate-full")
 path_hexagon_parent = NodePath("hexagon-map")
 hexagon_prefab = ExtResource( 73 )
+hexagon_parent_prefab = ExtResource( 3 )
 hexagon_radius = 92.0
-altitude_threshold = 0.57
-map_width = 32
-map_height = 32
-terrain_type_0_25_walkable = [ ExtResource( 60 ), ExtResource( 62 ), ExtResource( 63 ), ExtResource( 64 ), ExtResource( 65 ), ExtResource( 55 ), ExtResource( 56 ), ExtResource( 40 ), ExtResource( 50 ), ExtResource( 52 ) ]
-terrain_type_0_25_obstacle = [ ExtResource( 59 ), ExtResource( 68 ), ExtResource( 61 ), ExtResource( 69 ), ExtResource( 66 ), ExtResource( 70 ), ExtResource( 58 ), ExtResource( 67 ), ExtResource( 71 ), ExtResource( 57 ) ]
-terrain_type_25_50_walkable = [ ExtResource( 46 ), ExtResource( 49 ), ExtResource( 51 ), ExtResource( 53 ), ExtResource( 54 ), ExtResource( 44 ), ExtResource( 41 ), ExtResource( 42 ), ExtResource( 43 ), ExtResource( 45 ) ]
-terrain_type_25_50_obstacle = [ ExtResource( 47 ), ExtResource( 48 ), ExtResource( 38 ), ExtResource( 25 ), ExtResource( 48 ), ExtResource( 39 ), ExtResource( 34 ), ExtResource( 26 ), ExtResource( 36 ), ExtResource( 23 ) ]
-terrain_type_50_75_walkable = [ ExtResource( 12 ), ExtResource( 4 ), ExtResource( 11 ), ExtResource( 5 ), ExtResource( 10 ), ExtResource( 6 ), ExtResource( 7 ), ExtResource( 14 ), ExtResource( 8 ), ExtResource( 19 ) ]
-terrain_type_50_75_obstacle = [ ExtResource( 27 ), ExtResource( 28 ), ExtResource( 35 ), ExtResource( 29 ), ExtResource( 30 ), ExtResource( 32 ), ExtResource( 33 ), ExtResource( 37 ), ExtResource( 31 ), ExtResource( 9 ) ]
-terrain_type_75_100_walkable = [ ExtResource( 18 ), ExtResource( 2 ), ExtResource( 13 ), ExtResource( 20 ), ExtResource( 15 ), ExtResource( 16 ), ExtResource( 22 ), ExtResource( 3 ), ExtResource( 21 ), ExtResource( 17 ) ]
-terrain_type_75_100_obstacle = [ ExtResource( 47 ), ExtResource( 48 ), ExtResource( 24 ), ExtResource( 38 ), ExtResource( 25 ), ExtResource( 39 ), ExtResource( 26 ), ExtResource( 36 ), ExtResource( 23 ), ExtResource( 34 ) ]
+map_width = 24
+map_height = 24
+altitude_octaves = 3
+altitude_lacunarity = 1.0
+altitude_frequency = 4.0
+biome_octaves = 3
+biome_lacunarity = 0.5
+biome_frequency = 4.0
+biome_1 = ExtResource( 2 )
+biome_2 = ExtResource( 5 )
+biome_3 = ExtResource( 6 )
+biome_4 = ExtResource( 4 )
+biome_1_weight = 0.5
+biome_1_altitude_threshold = 0.75
+biome_2_weight = 0.5
+biome_2_altitude_threshold = 0.75
+biome_3_weight = 0.5
+biome_3_altitude_threshold = 0.75
+biome_4_weight = 0.5
+biome_4_altitude_threshold = 0.75
 
-[node name="hexagon-map" type="Node2D" parent="."]
-position = Vector2( 1752, 973 )
-scale = Vector2( 0.25, 0.25 )
+[node name="camera_2d" type="Camera2D" parent="."]
+position = Vector2( 3, 3 )
+current = true
+smoothing_enabled = true
+smoothing_speed = 10.0
 
-[node name="button-generate" type="Button" parent="."]
-margin_right = 12.0
-margin_bottom = 20.0
-custom_fonts/font = ExtResource( 72 )
-text = "Generate"
+[node name="hexagon-map" parent="." instance=ExtResource( 3 )]
+
+[node name="canvas_layer" type="CanvasLayer" parent="."]
+
+[node name="container_noise" type="VBoxContainer" parent="canvas_layer"]
+margin_left = 6.0
+margin_top = 786.0
+margin_right = 238.0
+margin_bottom = 980.0
+rect_scale = Vector2( 1.4, 1.4 )
+theme = ExtResource( 7 )
+
+[node name="spin_box_noise_altitude_frequency" type="SpinBox" parent="canvas_layer/container_noise"]
+margin_right = 297.02
+margin_bottom = 31.875
+rect_min_size = Vector2( 297.02, 0 )
+size_flags_horizontal = 0
+size_flags_vertical = 0
+min_value = 0.1
+max_value = 256.0
+step = 0.1
+value = 4.0
+prefix = "Noise_altitude_frequency: "
+
+[node name="spin_box_noise_altitude_lacunarity" type="SpinBox" parent="canvas_layer/container_noise"]
+margin_top = 35.0
+margin_right = 297.02
+margin_bottom = 66.875
+rect_min_size = Vector2( 297.02, 0 )
+size_flags_horizontal = 0
+size_flags_vertical = 0
+min_value = 0.1
+max_value = 256.0
+step = 0.1
+value = 1.0
+prefix = "Noise_altitude_lacunarity: "
+
+[node name="spin_box_noise_altitude_octaves" type="SpinBox" parent="canvas_layer/container_noise"]
+margin_top = 70.0
+margin_right = 297.02
+margin_bottom = 101.875
+rect_min_size = Vector2( 297.02, 0 )
+size_flags_horizontal = 0
+size_flags_vertical = 0
+min_value = 1.0
+max_value = 256.0
+value = 3.0
+rounded = true
+prefix = "Noise_altitude_octaves: "
+
+[node name="spin_box_noise_biome_frequency" type="SpinBox" parent="canvas_layer/container_noise"]
+margin_top = 105.0
+margin_right = 297.02
+margin_bottom = 136.875
+rect_min_size = Vector2( 297.02, 0 )
+size_flags_horizontal = 0
+size_flags_vertical = 0
+min_value = 0.1
+max_value = 256.0
+step = 0.1
+value = 4.0
+prefix = "Noise_biome_frequency: "
+
+[node name="spin_box_noise_biome_lacunarity" type="SpinBox" parent="canvas_layer/container_noise"]
+margin_top = 140.0
+margin_right = 297.02
+margin_bottom = 171.875
+rect_min_size = Vector2( 297.02, 0 )
+size_flags_horizontal = 0
+size_flags_vertical = 0
+min_value = 0.1
+max_value = 256.0
+step = 0.1
+value = 0.5
+prefix = "Noise_biome_lacunarity: "
+
+[node name="spin_box_noise_biome_octaves" type="SpinBox" parent="canvas_layer/container_noise"]
+margin_top = 175.0
+margin_right = 297.02
+margin_bottom = 206.875
+rect_min_size = Vector2( 297.02, 0 )
+size_flags_horizontal = 0
+size_flags_vertical = 0
+min_value = 1.0
+max_value = 256.0
+value = 3.0
+rounded = true
+prefix = "Noise_biome_octaves: "
+
+[node name="container_biomes" type="VBoxContainer" parent="canvas_layer"]
+margin_left = 9.0
+margin_top = 385.0
+margin_right = 345.0
+margin_bottom = 661.0
+rect_scale = Vector2( 1.4, 1.4 )
+theme = ExtResource( 7 )
+
+[node name="spin_box_biome_1_altitude_threshold" type="SpinBox" parent="canvas_layer/container_biomes"]
+margin_right = 336.0
+margin_bottom = 31.875
+rect_min_size = Vector2( 336, 0 )
+size_flags_horizontal = 0
+size_flags_vertical = 0
+max_value = 1.0
+step = 0.01
+value = 0.5
+prefix = "Biome_1_altitude_threshold: "
+
+[node name="spin_box_biome_1_weight" type="SpinBox" parent="canvas_layer/container_biomes"]
+margin_top = 35.0
+margin_right = 240.0
+margin_bottom = 66.875
+rect_min_size = Vector2( 240, 0 )
+size_flags_horizontal = 0
+size_flags_vertical = 0
+max_value = 1.0
+step = 0.01
+value = 0.5
+prefix = "Biome_1_weight: "
+
+[node name="spin_box_biome_2_altitude_threshold" type="SpinBox" parent="canvas_layer/container_biomes"]
+margin_top = 70.0
+margin_right = 336.0
+margin_bottom = 101.875
+rect_min_size = Vector2( 336, 0 )
+size_flags_horizontal = 0
+size_flags_vertical = 0
+max_value = 1.0
+step = 0.01
+value = 0.5
+prefix = "Biome_2_altitude_threshold: "
+
+[node name="spin_box_biome_2_weight" type="SpinBox" parent="canvas_layer/container_biomes"]
+margin_top = 105.0
+margin_right = 240.0
+margin_bottom = 136.875
+rect_min_size = Vector2( 240, 0 )
+size_flags_horizontal = 0
+size_flags_vertical = 0
+max_value = 1.0
+step = 0.01
+value = 0.5
+prefix = "Biome_2_weight: "
+
+[node name="spin_box_biome_3_altitude_threshold" type="SpinBox" parent="canvas_layer/container_biomes"]
+margin_top = 140.0
+margin_right = 336.0
+margin_bottom = 171.875
+rect_min_size = Vector2( 336, 0 )
+size_flags_horizontal = 0
+size_flags_vertical = 0
+max_value = 1.0
+step = 0.01
+value = 0.5
+prefix = "Biome_3_altitude_threshold: "
+
+[node name="spin_box_biome_3_weight" type="SpinBox" parent="canvas_layer/container_biomes"]
+margin_top = 175.0
+margin_right = 240.0
+margin_bottom = 206.875
+rect_min_size = Vector2( 240, 0 )
+size_flags_horizontal = 0
+size_flags_vertical = 0
+max_value = 1.0
+step = 0.01
+value = 0.5
+prefix = "Biome_3_weight: "
+
+[node name="spin_box_biome_4_altitude_threshold" type="SpinBox" parent="canvas_layer/container_biomes"]
+margin_top = 210.0
+margin_right = 336.0
+margin_bottom = 241.875
+rect_min_size = Vector2( 336, 0 )
+size_flags_horizontal = 0
+size_flags_vertical = 0
+max_value = 1.0
+step = 0.01
+value = 0.5
+prefix = "Biome_4_altitude_threshold: "
+
+[node name="spin_box_biome_4_weight" type="SpinBox" parent="canvas_layer/container_biomes"]
+margin_top = 245.0
+margin_right = 240.0
+margin_bottom = 276.875
+rect_min_size = Vector2( 240, 0 )
+size_flags_horizontal = 0
+size_flags_vertical = 0
+max_value = 1.0
+step = 0.01
+value = 0.5
+prefix = "Biome_4_weight: "
+
+[node name="container_main" type="VBoxContainer" parent="canvas_layer"]
+margin_left = 8.0
+margin_top = 148.0
+margin_right = 264.0
+margin_bottom = 311.0
+rect_scale = Vector2( 1.4, 1.4 )
+theme = ExtResource( 7 )
+
+[node name="options_shape" type="OptionButton" parent="canvas_layer/container_main"]
+margin_right = 168.0
+margin_bottom = 27.875
+rect_min_size = Vector2( 168, 0 )
+size_flags_horizontal = 0
+size_flags_vertical = 0
+text = "Shape"
+
+[node name="options_end_direction" type="OptionButton" parent="canvas_layer/container_main"]
+margin_top = 31.0
+margin_right = 168.29
+margin_bottom = 58.875
+rect_min_size = Vector2( 168.29, 0 )
+size_flags_horizontal = 0
+size_flags_vertical = 0
+text = "End Direction"
+
+[node name="spin_box_map_width" type="SpinBox" parent="canvas_layer/container_main"]
+margin_top = 62.0
+margin_right = 184.0
+margin_bottom = 93.875
+rect_min_size = Vector2( 184, 0 )
+size_flags_horizontal = 0
+size_flags_vertical = 0
+min_value = 1.0
+max_value = 512.0
+value = 32.0
+rounded = true
+prefix = "Map_width: "
+
+[node name="spin_box_map_height" type="SpinBox" parent="canvas_layer/container_main"]
+margin_top = 97.0
+margin_right = 184.0
+margin_bottom = 128.875
+rect_min_size = Vector2( 184, 0 )
+size_flags_horizontal = 0
+size_flags_vertical = 0
+min_value = 1.0
+max_value = 512.0
+value = 32.0
+rounded = true
+prefix = "Map_height: "
+
+[node name="spin_box_hexagon_radius" type="SpinBox" parent="canvas_layer/container_main"]
+margin_top = 132.0
+margin_right = 256.0
+margin_bottom = 163.875
+rect_min_size = Vector2( 256, 0 )
+size_flags_horizontal = 0
+size_flags_vertical = 0
+min_value = 1.0
+max_value = 512.0
+value = 92.0
+prefix = "Hexagon_radius(mm): "
+
+[node name="container_buttons" type="VBoxContainer" parent="canvas_layer"]
+margin_left = 12.0
+margin_top = 8.0
+margin_right = 205.68
+margin_bottom = 97.0
+rect_scale = Vector2( 1.4, 1.4 )
+theme = ExtResource( 7 )
+
+[node name="button_generate-base" type="Button" parent="canvas_layer/container_buttons"]
+margin_right = 122.125
+margin_bottom = 27.875
+size_flags_horizontal = 0
+size_flags_vertical = 0
+text = "Generate Base"
+align = 0
+
+[node name="button_generate-full" type="Button" parent="canvas_layer/container_buttons"]
+margin_top = 31.0
+margin_right = 112.5
+margin_bottom = 58.875
+size_flags_horizontal = 0
+size_flags_vertical = 0
+text = "Generate Full"
+align = 0
+
+[node name="button_ensure-connecteds" type="Button" parent="canvas_layer/container_buttons"]
+margin_top = 62.0
+margin_right = 156.625
+margin_bottom = 89.875
+size_flags_horizontal = 0
+size_flags_vertical = 0
+text = "Ensure Connecteds"
+align = 0
+
+[node name="rich_text_label" type="RichTextLabel" parent="canvas_layer"]
+margin_left = 1674.0
+margin_top = 7.0
+margin_right = 1837.19
+margin_bottom = 95.0
+rect_scale = Vector2( 1.5, 1.5 )
+theme = ExtResource( 7 )
+text = "# Camera Controls
+Move: WASD
+Zoom: Mouse Wheel
+Reset: R"
+fit_content_height = true

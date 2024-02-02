@@ -1,10 +1,11 @@
 use std::ops::{Add, AddAssign, Sub, SubAssign, Mul, MulAssign};
+use comfy_bounded_ints::prelude::SqueezeTo_u16;
 use serde::{Serialize, Deserialize};
 use crate::local_map::coordinates::direction::HexagonDirection;
 use crate::local_map::coordinates::offset::Offset;
 use super::direction;
 
-pub const ZERO: Axial = Axial { q: 0, r: 0 };
+//pub const ZERO: Axial = Axial { q: 0, r: 0 };
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Serialize, Deserialize)]
 pub struct Axial {
@@ -13,17 +14,19 @@ pub struct Axial {
 }
 
 impl Axial {
+	pub const ZERO: Axial = Axial { q: 0, r: 0 };
 	
 	pub fn s(&self) -> i16 { return -self.q - self.r; }
 	
 	pub fn abs(&self) -> i16 { return self.q.abs() + self.r.abs() + self.s().abs(); }
 	
-	pub fn are_neighbors(a: Axial, b: Axial) -> bool {
-		return Self::manhattan_distance(a, b) == 1;
+	pub fn are_neighbors(a: &Axial, b: &Axial) -> bool {
+		return a.manhattan_distance(b) == 1;
 	}
 	
-	pub fn manhattan_distance(a: Axial, b: Axial) -> i16 {
-		return ((a.q - b.q).abs() + (a.q - b.q + a.r - b.r).abs() + (a.r - b.r).abs()) / 2;
+	pub fn manhattan_distance(&self, other: &Axial) -> u16 {
+		return (((self.q - other.q).abs() + (self.q - other.q + self.r - other.r).abs() + (self.r - other.r).abs()) / 2)
+			.squeeze_to_u16();
 	}
 
 	pub fn neighbors(&self) -> [(HexagonDirection, Axial); 6] {

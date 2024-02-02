@@ -11,8 +11,12 @@ config_version=4
 [application]
 
 config/name="Spire of Slime"
-run/main_scene="res://Core/Main Menu/scene_main_menu.tscn"
+run/main_scene="res://Core/Local Map/local_map_test.tscn"
 config/use_hidden_project_data_directory=false
+
+[autoload]
+
+rust_panic_hook="*res://rust_panic_hook.gd"
 
 [debug]
 
@@ -23,7 +27,6 @@ settings/stdout/verbose_stdout=true
 
 window/size/width=1920
 window/size/height=1080
-window/size/borderless=true
 window/size/test_width=1280
 window/size/test_height=720
 window/stretch/mode="viewport"
@@ -39,7 +42,7 @@ common/drop_mouse_on_gui_input_disabled=true
 
 [locale]
 
-translations=PoolStringArray( "res://localization/english.csv" )
+translations=PoolStringArray(  )
 
 [node]
 

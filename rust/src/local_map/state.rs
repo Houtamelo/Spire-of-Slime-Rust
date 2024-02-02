@@ -40,7 +40,7 @@ impl LocalMapState {
 				return Vec::new();
 			};
 
-		if Axial::manhattan_distance(player_pos, tile_pos) != 1 {
+		if Axial::manhattan_distance(&player_pos, &tile_pos) != 1 {
 			return Vec::new();
 		}
 
@@ -97,7 +97,7 @@ impl LocalMapState {
 				return Vec::new();
 			};
 
-		if Axial::manhattan_distance(player_pos, tile_pos) != 1 {
+		if Axial::manhattan_distance(&player_pos, &tile_pos) != 1 {
 			return Vec::new();
 		}
 

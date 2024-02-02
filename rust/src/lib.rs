@@ -16,6 +16,7 @@
 #![feature(let_chains)]
 #![feature(const_type_name)]
 #![feature(const_option)]
+#![feature(hash_extract_if)]
 
 mod audio;
 pub use audio::bus;
@@ -42,14 +43,45 @@ use game_states::main_menu::MainMenuState;
 pub const MAX_CHARACTERS_PER_TEAM: u8 = 4;
 pub static config_path: &str = "user://config.cfg";
 
+fn init_panic_hook() {
+	let old_hook = std::panic::take_hook();
+	std::panic::set_hook(Box::new(move |panic_info| {
+		let loc_string;
+		if let Some(location) = panic_info.location() {
+			loc_string = format!("file '{}' at line {}", location.file(), location.line());
+		} else {
+			loc_string = "unknown location".to_owned()
+		}
+
+		let error_message;
+		if let Some(s) = panic_info.payload().downcast_ref::<&str>() {
+			error_message = format!("[RUST] {}: panic occurred: {:?}", loc_string, s);
+		} else if let Some(s) = panic_info.payload().downcast_ref::<String>() {
+			error_message = format!("[RUST] {}: panic occurred: {:?}", loc_string, s);
+		} else {
+			error_message = format!("[RUST] {}: unknown panic occurred", loc_string);
+		}
+		godot_error!("{}", error_message);
+		(*(old_hook.as_ref()))(panic_info);
+
+		unsafe {
+			if let Some(gd_panic_hook) = autoload::<Node>("rust_panic_hook") {
+				gd_panic_hook.call("rust_panic_hook", &[GodotString::from_str(error_message).to_variant()]);
+			}
+		}
+	}));
+}
+
 // Function that registers all exposed classes to Godot
 fn init(handle: InitHandle) {
+	init_panic_hook();
 	handle.add_class::<GameManager>();
 	handle.add_class::<util::panel_are_you_sure::PanelAreYouSure>();
 	handle.add_class::<main_menu::MainMenu>();
 	handle.add_class::<main_menu::LoadButton>();
 	handle.add_class::<saves::SavesManager>();
-	handle.add_class::<local_map::generation::MapGenerator>()
+	handle.add_class::<local_map::generation::generator_ui::MapGeneratorUI>();
+	handle.add_class::<local_map::generation::generator_ui::BiomeDataResource>();
 }
 
 godot_init!(init);

@@ -5,7 +5,6 @@
     <inspection_tool class="RsAssociatedTypeMismatch" enabled="true" level="ERROR" enabled_by_default="true" />
     <inspection_tool class="RsDfaConstantCondition" enabled="true" level="WARNING" enabled_by_default="true" />
     <inspection_tool class="RsExperimentalChecks" enabled="true" level="ERROR" enabled_by_default="true" />
-    <inspection_tool class="RsTraitObligations" enabled="true" level="ERROR" enabled_by_default="true" />
     <inspection_tool class="RsUnusedMustUse" enabled="true" level="INFORMATION" enabled_by_default="true" />
     <inspection_tool class="SpellCheckingInspection" enabled="false" level="TYPO" enabled_by_default="false">
       <option name="processCode" value="true" />

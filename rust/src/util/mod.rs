@@ -1,4 +1,5 @@
 pub mod panel_are_you_sure;
+pub mod weighted_rand;
 mod int_conversions;
 
 use comfy_bounded_ints::prelude::{Bound_i64, Bound_u64};
