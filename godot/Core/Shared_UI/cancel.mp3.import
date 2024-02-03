@@ -1,0 +1,15 @@
+[remap]
+
+importer="mp3"
+type="AudioStreamMP3"
+path="res://import/cancel.mp3-fa21a88c6dad73b9f828814cb3abff30.mp3str"
+
+[deps]
+
+source_file="res://Core/Shared_UI/cancel.mp3"
+dest_files=[ "res://import/cancel.mp3-fa21a88c6dad73b9f828814cb3abff30.mp3str" ]
+
+[params]
+
+loop=false
+loop_offset=0

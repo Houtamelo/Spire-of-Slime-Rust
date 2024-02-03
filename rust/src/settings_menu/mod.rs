@@ -15,6 +15,7 @@ pub(super) const CALL_OPEN_PANEL: &str = "_open_panel";
 
 #[extends(CanvasLayer)]
 #[register_with(Self::register)]
+#[derive(Debug)]
 pub struct SettingsMenu {
     #[export_path] check_box_window_maximized: Option<Ref<CheckBox>>,
     #[export_path] spin_box_window_size_x    : Option<Ref<SpinBox>>,
@@ -205,7 +206,7 @@ impl SettingsMenu {
         self.button_on_close_undo   .unwrap_manual().connect("pressed", owner_ref, "_on_button_close_panel_undo"   , VariantArray::new_shared(), Object::CONNECT_DEFERRED).log_if_err();
 
         self.button_reset_settings.unwrap_manual().connect("pressed", owner_ref, "_on_button_reset_settings", VariantArray::new_shared(), Object::CONNECT_DEFERRED).log_if_err();
-        self.panel_are_you_sure_reset.unwrap_inst().base().connect(panel_are_you_sure::signal_yes, owner_ref, "_on_panel_are_you_sure_reset_yes", VariantArray::new_shared(), Object::CONNECT_DEFERRED).log_if_err();
+        self.panel_are_you_sure_reset.unwrap_inst().base().connect(panel_are_you_sure::SIGNAL_YES, owner_ref, "_on_panel_are_you_sure_reset_yes", VariantArray::new_shared(), Object::CONNECT_DEFERRED).log_if_err();
     }
     
     #[method]

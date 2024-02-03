@@ -1,4 +1,4 @@
-pub(super) const max_presses: usize = 239;
+pub(super) const MAX_PRESSES: usize = 239;
 
 pub(super) fn get_easter(index: usize) -> &'static str {
 	return match index {
@@ -82,7 +82,7 @@ pub(super) fn get_easter(index: usize) -> &'static str {
 		77 => "Since, for some reason",
 		78 => "I'm loyal to this promise",
 		79 => "I'm gonna have to code a system to detect if you're using keyboards or macros to press the button",
-		80 => "And apparently I also have to write an entire saves system just for the idiots that actually pressed this button this many fucking times",
+		80 => "And apparently I also have to write an entire save system just for the idiots that actually pressed this button this many fucking times",
 		81 => "Please",
 		82 => "Stop",
 		83 => "I beg you",
@@ -152,7 +152,7 @@ pub(super) fn get_easter(index: usize) -> &'static str {
 		147 => "Since you're this far",
 		148 => "I'm gonna give you a deal",
 		149 => "If you tell me why you kept pressing this goddam button",
-		150 => "I will actually give you something in return instead of just lying to you about some 'non-iron gauntlet' saves mode",
+		150 => "I will actually give you something in return instead of just lying to you about some 'non-iron gauntlet' save mode",
 		151 => "That's right",
 		152 => "I was lying the whole time",
 		153 => "You think, with all this power",
@@ -164,10 +164,10 @@ pub(super) fn get_easter(index: usize) -> &'static str {
 		159 => "And what I want is that people face the consequences of their own actions",
 		160 => "So no, there is no way to disable this",
 		161 => "Simply because this is not a 'disable' case",
-		162 => "The saves game system was never meant to allow time-travel",
+		162 => "The save game system was never meant to allow time-travel",
 		163 => "It's a power too big to trust to the hands of people who FUCKING PRESS THE SAME USELESS BUTTON more than a 5005 times",
 		164 => "So not only you won't get what you want",
-		165 => "By clicking this button more than 5006 times, you just activated some code that will take special care of your saves files",
+		165 => "By clicking this button more than 5006 times, you just activated some code that will take special care of your save files",
 		166 => "What? You don't buy it?",
 		167 => "I'm dead serious",
 		168 => "So dead I'm feeling like stopping this whole writing shenanigans",

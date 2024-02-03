@@ -14,6 +14,10 @@ config/name="Spire of Slime"
 run/main_scene="res://Core/Local Map/local_map_test.tscn"
 config/use_hidden_project_data_directory=false
 
+[audio]
+
+default_bus_layout="res://audio_bus_layout.tres"
+
 [autoload]
 
 rust_panic_hook="*res://rust_panic_hook.gd"

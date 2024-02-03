@@ -1,0 +1,17 @@
+[gd_scene load_steps=4 format=2]
+
+[ext_resource path="res://Core/Audio/PlayOnHover.gdns" type="Script" id=1]
+[ext_resource path="res://Core/Shared_UI/hover.mp3" type="AudioStream" id=2]
+[ext_resource path="res://Core/Audio/PitchRandomizer.gdns" type="Script" id=3]
+
+[node name="sfx_ui_hover" type="Control"]
+anchor_right = 1.0
+anchor_bottom = 1.0
+mouse_filter = 1
+script = ExtResource( 1 )
+path_audio_stream_player = NodePath("audio_player")
+
+[node name="audio_player" type="AudioStreamPlayer2D" parent="."]
+stream = ExtResource( 2 )
+bus = "Sfx"
+script = ExtResource( 3 )

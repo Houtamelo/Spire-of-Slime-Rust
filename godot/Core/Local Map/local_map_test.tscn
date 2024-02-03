@@ -1,6 +1,6 @@
 [gd_scene load_steps=9 format=2]
 
-[ext_resource path="res://Bin/world_map_test.gdns" type="Script" id=1]
+[ext_resource path="res://Core/Local Map/world_map_test.gdns" type="Script" id=1]
 [ext_resource path="res://Core/Local Map/biome_1.tres" type="Resource" id=2]
 [ext_resource path="res://Core/Local Map/hexagon-map_prefab.tscn" type="PackedScene" id=3]
 [ext_resource path="res://Core/Local Map/biome_4.tres" type="Resource" id=4]

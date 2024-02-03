@@ -1,9 +1,10 @@
-use serde::{Deserialize, Serialize};
+mod controller;
+mod location;
 
-#[derive(Serialize, Deserialize, Clone, Copy, Debug, PartialEq, Eq, Hash)]
-pub enum MapLocation {
-	Chapel,
-	Grove,
-	Forest,
-	Cave,
-}
+pub use controller::WorldMapController;
+pub use location::WorldLocation;
+
+pub const SIGNAL_OPEN_SETTINGS_MENU: &str = "open_settings_menu";
+pub const SIGNAL_OPEN_CHARACTER_MENU: &str = "open_character_menu";
+pub const SIGNAL_LOCATION_CLICKED: &str = "location_clicked";
+

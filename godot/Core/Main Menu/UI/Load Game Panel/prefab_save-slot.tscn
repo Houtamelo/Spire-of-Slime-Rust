@@ -1,4 +1,4 @@
-[gd_scene load_steps=12 format=2]
+[gd_scene load_steps=15 format=2]
 
 [ext_resource path="res://Fonts/font_treasure-map-dead-hand_24.tres" type="DynamicFont" id=1]
 [ext_resource path="res://Fonts/font_treasure-map-dead-hand_16.tres" type="DynamicFont" id=2]
@@ -11,6 +11,9 @@
 [ext_resource path="res://Core/Main Menu/UI/Load Game Panel/style-box_confirm-delete-save_focus.tres" type="StyleBox" id=9]
 [ext_resource path="res://Core/Main Menu/UI/Load Game Panel/style-box_confirm-delete-save_hover.tres" type="StyleBox" id=10]
 [ext_resource path="res://Core/Main Menu/UI/Load Game Panel/style-box_confirm-delete-save_normal.tres" type="StyleBox" id=11]
+[ext_resource path="res://Core/Shared_UI/sfx_ui_hover.tscn" type="PackedScene" id=12]
+[ext_resource path="res://Core/Shared_UI/sfx_ui_click.tscn" type="PackedScene" id=13]
+[ext_resource path="res://Core/Shared_UI/sfx_ui_confirm.tscn" type="PackedScene" id=14]
 
 [node name="button_save-slot" type="Button"]
 margin_right = 300.0
@@ -26,6 +29,10 @@ shortcut_in_tooltip = false
 action_mode = 0
 clip_text = true
 icon_align = 1
+
+[node name="sfx_ui_confirm" parent="." instance=ExtResource( 14 )]
+
+[node name="sfx_ui_hover" parent="." instance=ExtResource( 12 )]
 
 [node name="label_save-name" type="Label" parent="."]
 anchor_left = 0.02
@@ -50,6 +57,10 @@ custom_styles/disabled = ExtResource( 8 )
 custom_styles/normal = ExtResource( 8 )
 clip_text = true
 
+[node name="sfx_ui_click" parent="button_delete" instance=ExtResource( 13 )]
+
+[node name="sfx_ui_hover" parent="button_delete" instance=ExtResource( 12 )]
+
 [node name="button_delete_confirm" type="Button" parent="."]
 visible = false
 margin_left = 328.834
@@ -63,3 +74,7 @@ custom_styles/focus = ExtResource( 9 )
 custom_styles/disabled = ExtResource( 11 )
 custom_styles/normal = ExtResource( 11 )
 clip_text = true
+
+[node name="sfx_ui_confirm" parent="button_delete_confirm" instance=ExtResource( 14 )]
+
+[node name="sfx_ui_hover" parent="button_delete_confirm" instance=ExtResource( 12 )]

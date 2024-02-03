@@ -1,6 +1,6 @@
 [gd_resource type="Resource" load_steps=2 format=2]
 
-[ext_resource path="res://Bin/biome_data_resource.gdns" type="Script" id=1]
+[ext_resource path="res://Core/Local Map/biome_data_resource.gdns" type="Script" id=1]
 
 [resource]
 script = ExtResource( 1 )

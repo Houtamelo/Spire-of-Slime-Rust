@@ -16,13 +16,24 @@ pub type SaturatedI64 = Bound_i64<{i64::MIN}, {i64::MAX}>;
 pub use int_conversions::*;
 pub type PercentageU8 = Bound_u8<0, 100>;
 
-pub fn fn_name<T: ?Sized>(_val: &T) -> &'static str {
+pub const fn fn_name<T: ?Sized>(_val: &T) -> &'static str {
 	let name = std::any::type_name::<T>();
 	
-	return match &name[..name.len()].rfind(':') {
-		Some(pos) => &name[pos + 1..name.len()],
-		None => &name,
-	};
+	let bytes = name.as_bytes(); 
+	let mut index = { bytes.len() - 1 };
+	while index > 0 {
+		if bytes[index] == b':' {
+			let(_, result) = bytes.split_at(index + 1);
+			return match std::str::from_utf8(result) {
+				Ok(str) => str,
+				Err(_) => panic!(),
+			};
+		}
+		
+		index -= 1;
+	}
+	
+	return name;
 }
 
 pub const fn full_fn_name<T: ?Sized>(_val: &T) -> &'static str {
