@@ -16,8 +16,8 @@
 [ext_resource path="res://Core/Main Menu/UI/Load Game Panel/background_load-game.png" type="Texture" id=14]
 [ext_resource path="res://Fonts/font_audimat-mono_16.tres" type="DynamicFont" id=15]
 [ext_resource path="res://Core/Main Menu/UI/New Game Panel/panel_are-you-sure.png" type="Texture" id=16]
-[ext_resource path="res://Core/Shared_UI/sfx_ui_click.tscn" type="PackedScene" id=17]
-[ext_resource path="res://Core/Shared_UI/sfx_ui_hover.tscn" type="PackedScene" id=18]
+[ext_resource path="res://Core/Shared_UI/audio/sfx_ui_click.tscn" type="PackedScene" id=17]
+[ext_resource path="res://Core/Shared_UI/audio/sfx_ui_hover.tscn" type="PackedScene" id=18]
 
 [sub_resource type="StyleBoxEmpty" id=1]
 

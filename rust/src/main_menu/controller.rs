@@ -1,13 +1,12 @@
-use gdnative_export_node_as_path::extends;
-use gdnative::prelude::*;
 use gdnative::api::*;
-use houta_utils_gdnative::prelude::{UnwrapInstance, UnwrapManual, UnwrapRefCount};
-use houta_utils_gdnative::inspectors::{ErrInspector, GodotInstanceSomeInspector, GodotManualSomeInspector};
-use houta_utils_gdnative::extensions::OptionTweenExtension;
+use gdnative::prelude::*;
+use gdnative_export_node_as_path::extends;
+use houta_utils_gdnative::prelude::*;
+
 use crate::save::singleton::SavesSingleton;
-use crate::util;
 use crate::util::panel_are_you_sure;
 use crate::util::panel_are_you_sure::PanelAreYouSure;
+
 use super::{
 	easters_iron_gauntlet,
 	easters_save_name,
@@ -79,30 +78,30 @@ impl MainMenuController {
 		let owner_ref = unsafe { owner.assume_shared() };
 
 		self.background.unwrap_manual()
-			.connect("gui_input", owner_ref, util::fn_name(&Self::_gui_input_background), 
+			.connect("gui_input", owner_ref, houta_utils::fn_name(&Self::_gui_input_background), 
 				VariantArray::new_shared(), Object::CONNECT_DEFERRED)
 			.log_if_err();
 
 		// Menu Buttons
 		{
 			self.button_new_game.unwrap_manual()
-				.connect("pressed", owner_ref, util::fn_name(&Self::_open_panel_new_game),
+				.connect("pressed", owner_ref, houta_utils::fn_name(&Self::_open_panel_new_game),
 					VariantArray::new_shared(), Object::CONNECT_DEFERRED)
 				.log_if_err();
 			self.button_load_game.unwrap_manual()
-				.connect("pressed", owner_ref, util::fn_name(&Self::_open_panel_load_game), 
+				.connect("pressed", owner_ref, houta_utils::fn_name(&Self::_open_panel_load_game), 
 					VariantArray::new_shared(), Object::CONNECT_DEFERRED)
 				.log_if_err();
 			self.button_settings.unwrap_manual()
-				.connect("pressed", owner_ref, util::fn_name(&Self::_open_settings_menu),
+				.connect("pressed", owner_ref, houta_utils::fn_name(&Self::_open_settings_menu),
 					VariantArray::new_shared(), Object::CONNECT_DEFERRED)
 				.log_if_err();
 			self.button_credit.unwrap_manual()
-				.connect("pressed", owner_ref, util::fn_name(&Self::_open_panel_credits), 
+				.connect("pressed", owner_ref, houta_utils::fn_name(&Self::_open_panel_credits), 
 					VariantArray::new_shared(), Object::CONNECT_DEFERRED)
 				.log_if_err();
 			self.button_exit.unwrap_manual()
-				.connect("pressed", owner_ref, util::fn_name(&Self::_exit_game),
+				.connect("pressed", owner_ref, houta_utils::fn_name(&Self::_exit_game),
 					VariantArray::new_shared(), Object::CONNECT_DEFERRED)
 				.log_if_err();
 		}
@@ -110,7 +109,7 @@ impl MainMenuController {
 		// Panel - NEW GAME
 		{
 			self.button_start_game.unwrap_manual()
-				.connect("pressed", owner_ref, util::fn_name(&Self::_button_pressed_start_game),
+				.connect("pressed", owner_ref, houta_utils::fn_name(&Self::_button_pressed_start_game),
 					VariantArray::new_shared(), Object::CONNECT_DEFERRED)
 				.log_if_err();
 
@@ -125,13 +124,13 @@ impl MainMenuController {
 			self.iron_gauntlet_times_pressed = config.get_value("iron_gauntlet", "times_pressed", 0).to().unwrap();
 			
 			self.fake_toggle_iron_gauntlet.unwrap_manual()
-				.connect("pressed", owner_ref, util::fn_name(&Self::_toggle_pressed_fake_iron_gauntlet), 
+				.connect("pressed", owner_ref, houta_utils::fn_name(&Self::_toggle_pressed_fake_iron_gauntlet), 
 					VariantArray::new_shared(), Object::CONNECT_DEFERRED)
 				.log_if_err();
 
 			self.panel_are_you_sure_overwrite_save.unwrap_inst()
 				.base()
-				.connect(panel_are_you_sure::SIGNAL_YES, owner_ref, util::fn_name(&Self::_are_you_sure_overwrite_save_yes), 
+				.connect(panel_are_you_sure::SIGNAL_YES, owner_ref, houta_utils::fn_name(&Self::_are_you_sure_overwrite_save_yes), 
 					VariantArray::new_shared(), Object::CONNECT_DEFERRED)
 				.log_if_err();
 		}
@@ -156,10 +155,10 @@ impl MainMenuController {
 						.expect("Failed to assume safe and sane LoadButton node from packed scene")
 				};
 
-				node.connect(load_button::SIGNAL_LOAD, owner_ref, util::fn_name(&Self::_button_pressed_save_slot_load), 
+				node.connect(load_button::SIGNAL_LOAD, owner_ref, houta_utils::fn_name(&Self::_button_pressed_save_slot_load), 
 						VariantArray::new_shared(), Object::CONNECT_DEFERRED)
 					.log_if_err();
-				node.connect(load_button::SIGNAL_DELETE, owner_ref, util::fn_name(&Self::_button_pressed_save_slot_delete),
+				node.connect(load_button::SIGNAL_DELETE, owner_ref, houta_utils::fn_name(&Self::_button_pressed_save_slot_delete),
 						VariantArray::new_shared(), Object::CONNECT_DEFERRED)
 					.log_if_err();
 				

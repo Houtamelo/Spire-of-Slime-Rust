@@ -5,7 +5,6 @@ use serde::{Deserialize, Serialize};
 
 use crate::local_map::coordinates::axial::Axial;
 use crate::local_map::tile::Tile;
-use crate::util;
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct HexagonMap {
@@ -24,7 +23,7 @@ impl BaseMap for HexagonMap {
 	fn get_available_exits(&self, index: usize) -> SmallVec<[(usize, f32); 10]> {
 		let Some(center) = self.tiles.index_to_key(&index)
 			else {
-				godot_error!("{}(): center is None", util::full_fn_name(&Self::get_available_exits));
+				godot_error!("{}(): center is None", houta_utils::full_fn_name(&Self::get_available_exits));
 				return SmallVec::new();
 			};
 		
@@ -43,12 +42,12 @@ impl BaseMap for HexagonMap {
 	fn get_pathing_distance(&self, origin_index: usize, destination_index: usize) -> f32 {
 		let Some(origin) = self.tiles.index_to_key(&origin_index)
 			else {
-				godot_error!("{}(): origin is None", util::full_fn_name(&Self::get_pathing_distance));
+				godot_error!("{}(): origin is None", houta_utils::full_fn_name(&Self::get_pathing_distance));
 				return 1000.;
 			};
 		let Some(destination) = self.tiles.index_to_key(&destination_index)
 			else {
-				godot_error!("{}(): destination is None", util::full_fn_name(&Self::get_pathing_distance));
+				godot_error!("{}(): destination is None", houta_utils::full_fn_name(&Self::get_pathing_distance));
 				return 1000.;
 			};
 		

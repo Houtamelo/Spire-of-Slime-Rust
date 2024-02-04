@@ -11,9 +11,9 @@
 [ext_resource path="res://Core/Main Menu/UI/Load Game Panel/style-box_confirm-delete-save_focus.tres" type="StyleBox" id=9]
 [ext_resource path="res://Core/Main Menu/UI/Load Game Panel/style-box_confirm-delete-save_hover.tres" type="StyleBox" id=10]
 [ext_resource path="res://Core/Main Menu/UI/Load Game Panel/style-box_confirm-delete-save_normal.tres" type="StyleBox" id=11]
-[ext_resource path="res://Core/Shared_UI/sfx_ui_hover.tscn" type="PackedScene" id=12]
-[ext_resource path="res://Core/Shared_UI/sfx_ui_click.tscn" type="PackedScene" id=13]
-[ext_resource path="res://Core/Shared_UI/sfx_ui_confirm.tscn" type="PackedScene" id=14]
+[ext_resource path="res://Core/Shared_UI/audio/sfx_ui_hover.tscn" type="PackedScene" id=12]
+[ext_resource path="res://Core/Shared_UI/audio/sfx_ui_click.tscn" type="PackedScene" id=13]
+[ext_resource path="res://Core/Shared_UI/audio/sfx_ui_confirm.tscn" type="PackedScene" id=14]
 
 [node name="button_save-slot" type="Button"]
 margin_right = 300.0

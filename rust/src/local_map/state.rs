@@ -1,13 +1,14 @@
 use std::collections::{HashMap, HashSet};
 use std::mem;
+
 use gdnative::log::godot_warn;
 use serde::{Deserialize, Serialize};
+
 use crate::combat::CombatState;
 use crate::local_map::coordinates::axial::Axial;
 use crate::local_map::tile;
 use crate::local_map::tile::{EnemyGroup, EventID, Tile, TileContents, TileMistStatus};
 use crate::local_map::tile::TileScoutStatus::ContentsRevealed;
-use crate::util;
 use crate::util::PercentageU8;
 
 #[derive(Debug, Serialize, Deserialize)]
@@ -107,7 +108,7 @@ impl LocalMapState {
 				godot_warn!("{}(): Received run input while in combat or event!\n\
 					state: {state:?}\n
 					pos: {player_pos:?}",
-					util::full_fn_name(&Self::input_run));
+					houta_utils::full_fn_name(&Self::input_run));
 				Vec::new()
 			}
 			PartyState::Idle => {

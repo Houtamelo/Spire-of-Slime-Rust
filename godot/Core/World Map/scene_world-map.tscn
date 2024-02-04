@@ -1,0 +1,356 @@
+[gd_scene load_steps=28 format=2]
+
+[ext_resource path="res://Core/World Map/LineDot-v2.png" type="Texture" id=1]
+[ext_resource path="res://Core/World Map/Background/4.png" type="Texture" id=2]
+[ext_resource path="res://Core/World Map/Background/3.png" type="Texture" id=3]
+[ext_resource path="res://Core/World Map/Background/2.png" type="Texture" id=4]
+[ext_resource path="res://Core/World Map/Background/7.png" type="Texture" id=5]
+[ext_resource path="res://Core/World Map/Background/8.png" type="Texture" id=6]
+[ext_resource path="res://Core/World Map/Background/6.png" type="Texture" id=7]
+[ext_resource path="res://Core/World Map/Background/5.png" type="Texture" id=8]
+[ext_resource path="res://Core/World Map/Background/9.png" type="Texture" id=9]
+[ext_resource path="res://Core/World Map/Background/1.png" type="Texture" id=10]
+[ext_resource path="res://Core/World Map/Markers/marker_chapel.png" type="Texture" id=11]
+[ext_resource path="res://Core/World Map/Markers/x_1.png" type="Texture" id=12]
+[ext_resource path="res://Core/World Map/Markers/x_2.png" type="Texture" id=13]
+[ext_resource path="res://Core/World Map/Markers/x_3.png" type="Texture" id=14]
+[ext_resource path="res://Core/Shared_UI/audio/sfx_ui_confirm.tscn" type="PackedScene" id=15]
+[ext_resource path="res://Core/Shared_UI/audio/sfx_ui_hover.tscn" type="PackedScene" id=16]
+[ext_resource path="res://Core/World Map/icon_player.png" type="Texture" id=17]
+[ext_resource path="res://Core/World Map/texture_light_circle.tres" type="Texture" id=18]
+[ext_resource path="res://Core/World Map/WorldMapController.gdns" type="Script" id=19]
+
+[sub_resource type="RectangleShape2D" id=2]
+extents = Vector2( 27.5, 37 )
+
+[sub_resource type="RectangleShape2D" id=4]
+extents = Vector2( 27.5, 30.5 )
+
+[sub_resource type="RectangleShape2D" id=3]
+extents = Vector2( 26.5, 24.5 )
+
+[sub_resource type="RectangleShape2D" id=5]
+extents = Vector2( 23.5, 22.5 )
+
+[sub_resource type="CapsuleShape2D" id=1]
+radius = 12.0
+height = 195.768
+
+[sub_resource type="CapsuleShape2D" id=7]
+radius = 12.0
+height = 195.768
+
+[sub_resource type="CapsuleShape2D" id=6]
+radius = 12.0
+height = 315.675
+
+[sub_resource type="CapsuleShape2D" id=8]
+radius = 12.0
+height = 789.572
+
+[node name="scene_world-map" type="Node2D"]
+script = ExtResource( 19 )
+path_line_cave_chapel = NodePath("lines/area_line_cave-chapel")
+path_line_forest_cave = NodePath("lines/area_line_forest-cave")
+path_line_grove_forest = NodePath("lines/area_line_grove-forest")
+path_line_chapel_grove = NodePath("lines/area_line_chapel-grove")
+path_light_forest = NodePath("markers/area_marker_forest/light")
+path_light_cave = NodePath("markers/area_marker_cave/light")
+path_light_grove = NodePath("markers/area_marker_grove/light")
+path_light_chapel = NodePath("markers/area_marker_chapel/light")
+path_marker_forest = NodePath("markers/area_marker_forest")
+path_marker_cave = NodePath("markers/area_marker_cave")
+path_marker_grove = NodePath("markers/area_marker_grove")
+path_marker_chapel = NodePath("markers/area_marker_chapel")
+path_player_icon = NodePath("icon_player")
+
+[node name="canvas_modulate" type="CanvasModulate" parent="."]
+visible = false
+color = Color( 0, 0, 0, 1 )
+
+[node name="background" type="Node2D" parent="."]
+
+[node name="sprite_01" type="Sprite" parent="background"]
+position = Vector2( -2962, 94 )
+texture = ExtResource( 10 )
+centered = false
+__meta__ = {
+"_edit_lock_": true
+}
+
+[node name="sprite_02" type="Sprite" parent="background"]
+position = Vector2( -914, 94 )
+texture = ExtResource( 4 )
+centered = false
+__meta__ = {
+"_edit_lock_": true
+}
+
+[node name="sprite_03" type="Sprite" parent="background"]
+position = Vector2( 1134, 94 )
+texture = ExtResource( 3 )
+centered = false
+__meta__ = {
+"_edit_lock_": true
+}
+
+[node name="sprite_04" type="Sprite" parent="background"]
+position = Vector2( -2962, -1954 )
+texture = ExtResource( 2 )
+centered = false
+__meta__ = {
+"_edit_lock_": true
+}
+
+[node name="sprite_05" type="Sprite" parent="background"]
+position = Vector2( -914, -1954 )
+texture = ExtResource( 8 )
+centered = false
+__meta__ = {
+"_edit_lock_": true
+}
+
+[node name="sprite_06" type="Sprite" parent="background"]
+position = Vector2( 1134, -1954 )
+texture = ExtResource( 7 )
+centered = false
+__meta__ = {
+"_edit_lock_": true
+}
+
+[node name="sprite_07" type="Sprite" parent="background"]
+position = Vector2( -2962, -4002 )
+texture = ExtResource( 5 )
+centered = false
+__meta__ = {
+"_edit_lock_": true
+}
+
+[node name="sprite_08" type="Sprite" parent="background"]
+position = Vector2( -914, -4002 )
+texture = ExtResource( 6 )
+centered = false
+__meta__ = {
+"_edit_lock_": true
+}
+
+[node name="sprite_09" type="Sprite" parent="background"]
+position = Vector2( 1134, -4002 )
+texture = ExtResource( 9 )
+centered = false
+__meta__ = {
+"_edit_lock_": true
+}
+
+[node name="markers" type="Node2D" parent="."]
+
+[node name="area_marker_chapel" type="Area2D" parent="markers"]
+position = Vector2( 938, 1025 )
+
+[node name="sprite" type="Sprite" parent="markers/area_marker_chapel"]
+position = Vector2( -1, -11 )
+texture = ExtResource( 11 )
+
+[node name="collision_shape" type="CollisionShape2D" parent="markers/area_marker_chapel"]
+position = Vector2( -1.5, -11 )
+shape = SubResource( 2 )
+
+[node name="light" type="Light2D" parent="markers/area_marker_chapel"]
+texture = ExtResource( 18 )
+texture_scale = 3.0
+mode = 2
+
+[node name="sfx_ui_confirm" parent="markers/area_marker_chapel" instance=ExtResource( 15 )]
+bus = "Master"
+
+[node name="sfx_ui_hover" parent="markers/area_marker_chapel" instance=ExtResource( 16 )]
+bus = "Master"
+
+[node name="area_marker_grove" type="Area2D" parent="markers"]
+position = Vector2( 853, 851 )
+
+[node name="sprite" type="Sprite" parent="markers/area_marker_grove"]
+position = Vector2( -1, -11 )
+texture = ExtResource( 12 )
+
+[node name="collision_shape" type="CollisionShape2D" parent="markers/area_marker_grove"]
+position = Vector2( -1.5, -8.5 )
+shape = SubResource( 4 )
+
+[node name="light" type="Light2D" parent="markers/area_marker_grove"]
+texture = ExtResource( 18 )
+texture_scale = 3.0
+mode = 2
+
+[node name="sfx_ui_confirm" parent="markers/area_marker_grove" instance=ExtResource( 15 )]
+bus = "Master"
+
+[node name="sfx_ui_hover" parent="markers/area_marker_grove" instance=ExtResource( 16 )]
+bus = "Master"
+
+[node name="area_marker_forest" type="Area2D" parent="markers"]
+position = Vector2( 767, 687 )
+
+[node name="sprite" type="Sprite" parent="markers/area_marker_forest"]
+position = Vector2( -1, -11 )
+texture = ExtResource( 13 )
+
+[node name="collision_shape" type="CollisionShape2D" parent="markers/area_marker_forest"]
+position = Vector2( -0.5, -10.5 )
+shape = SubResource( 3 )
+
+[node name="light" type="Light2D" parent="markers/area_marker_forest"]
+texture = ExtResource( 18 )
+texture_scale = 3.0
+mode = 2
+
+[node name="sfx_ui_confirm" parent="markers/area_marker_forest" instance=ExtResource( 15 )]
+bus = "Master"
+
+[node name="sfx_ui_hover" parent="markers/area_marker_forest" instance=ExtResource( 16 )]
+bus = "Master"
+
+[node name="area_marker_cave" type="Area2D" parent="markers"]
+position = Vector2( 542, 772 )
+
+[node name="sprite" type="Sprite" parent="markers/area_marker_cave"]
+position = Vector2( -1, -11 )
+texture = ExtResource( 14 )
+
+[node name="collision_shape" type="CollisionShape2D" parent="markers/area_marker_cave"]
+position = Vector2( -1.5, -10.5 )
+shape = SubResource( 5 )
+
+[node name="light" type="Light2D" parent="markers/area_marker_cave"]
+texture = ExtResource( 18 )
+texture_scale = 3.0
+mode = 2
+
+[node name="sfx_ui_confirm" parent="markers/area_marker_cave" instance=ExtResource( 15 )]
+bus = "Master"
+
+[node name="sfx_ui_hover" parent="markers/area_marker_cave" instance=ExtResource( 16 )]
+bus = "Master"
+
+[node name="lines" type="Node2D" parent="."]
+
+[node name="area_line_chapel-grove" type="Area2D" parent="lines"]
+position = Vector2( 868, 876 )
+rotation = 1.0472
+scale = Vector2( 0.5, 0.5 )
+
+[node name="line" type="Line2D" parent="lines/area_line_chapel-grove"]
+points = PoolVector2Array( 0, 0, 221.65, 0 )
+default_color = Color( 1, 1, 1, 1 )
+texture = ExtResource( 1 )
+texture_mode = 1
+begin_cap_mode = 2
+end_cap_mode = 2
+
+[node name="shape" type="CollisionShape2D" parent="lines/area_line_chapel-grove"]
+position = Vector2( 112.871, 0.502808 )
+rotation = 1.5708
+shape = SubResource( 1 )
+
+[node name="sfx_ui_confirm" parent="lines/area_line_chapel-grove" instance=ExtResource( 15 )]
+position = Vector2( -2385.28, 627.416 )
+rotation = -1.0472
+scale = Vector2( 2, 2 )
+bus = "Master"
+
+[node name="sfx_ui_hover" parent="lines/area_line_chapel-grove" instance=ExtResource( 16 )]
+bus = "Master"
+
+[node name="area_line_grove-forest" type="Area2D" parent="lines"]
+position = Vector2( 790, 704 )
+rotation = 1.309
+scale = Vector2( 0.5, 0.5 )
+
+[node name="line" type="Line2D" parent="lines/area_line_grove-forest"]
+points = PoolVector2Array( 0, 0, 221.65, 0 )
+default_color = Color( 1, 1, 1, 1 )
+texture = ExtResource( 1 )
+texture_mode = 1
+begin_cap_mode = 2
+end_cap_mode = 2
+
+[node name="shape" type="CollisionShape2D" parent="lines/area_line_grove-forest"]
+position = Vector2( 112.871, 0.502808 )
+rotation = 1.5708
+shape = SubResource( 7 )
+
+[node name="sfx_ui_confirm" parent="lines/area_line_grove-forest" instance=ExtResource( 15 )]
+position = Vector2( -2385.28, 627.416 )
+rotation = -1.0472
+scale = Vector2( 2, 2 )
+bus = "Master"
+
+[node name="sfx_ui_hover" parent="lines/area_line_grove-forest" instance=ExtResource( 16 )]
+bus = "Master"
+
+[node name="area_line_forest-cave" type="Area2D" parent="lines"]
+position = Vector2( 702, 700 )
+rotation = 2.81843
+scale = Vector2( 0.5, 0.5 )
+
+[node name="line" type="Line2D" parent="lines/area_line_forest-cave"]
+points = PoolVector2Array( -57.67, 0, 279.09, 0 )
+default_color = Color( 1, 1, 1, 1 )
+texture = ExtResource( 1 )
+texture_mode = 1
+begin_cap_mode = 2
+end_cap_mode = 2
+
+[node name="shape" type="CollisionShape2D" parent="lines/area_line_forest-cave"]
+position = Vector2( 112.871, 0.502808 )
+rotation = 1.5708
+shape = SubResource( 6 )
+
+[node name="sfx_ui_confirm" parent="lines/area_line_forest-cave" instance=ExtResource( 15 )]
+position = Vector2( -2385.28, 627.416 )
+rotation = -1.0472
+scale = Vector2( 2, 2 )
+bus = "Master"
+
+[node name="sfx_ui_hover" parent="lines/area_line_forest-cave" instance=ExtResource( 16 )]
+bus = "Master"
+
+[node name="area_line_cave-chapel" type="Area2D" parent="lines"]
+position = Vector2( 881, 985 )
+rotation = -2.57681
+scale = Vector2( 0.5, 0.5 )
+
+[node name="line" type="Line2D" parent="lines/area_line_cave-chapel"]
+points = PoolVector2Array( -57.67, 0, 748.44, 0 )
+default_color = Color( 1, 1, 1, 1 )
+texture = ExtResource( 1 )
+texture_mode = 1
+begin_cap_mode = 2
+end_cap_mode = 2
+
+[node name="shape" type="CollisionShape2D" parent="lines/area_line_cave-chapel"]
+position = Vector2( 343.92, 0.5 )
+rotation = 1.5708
+shape = SubResource( 8 )
+
+[node name="sfx_ui_confirm" parent="lines/area_line_cave-chapel" instance=ExtResource( 15 )]
+position = Vector2( -2385.28, 627.416 )
+rotation = -1.0472
+scale = Vector2( 2, 2 )
+bus = "Master"
+
+[node name="sfx_ui_hover" parent="lines/area_line_cave-chapel" instance=ExtResource( 16 )]
+bus = "Master"
+
+[node name="icon_player" type="Sprite" parent="."]
+position = Vector2( 938, 1016 )
+texture = ExtResource( 17 )
+
+[node name="camera" type="Camera2D" parent="."]
+position = Vector2( 938, 1022 )
+current = true
+limit_left = -2960
+limit_top = -4000
+limit_right = 3180
+limit_bottom = 2140
+editor_draw_limits = true

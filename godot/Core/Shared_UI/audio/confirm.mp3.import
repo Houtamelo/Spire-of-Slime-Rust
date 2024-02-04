@@ -1,0 +1,15 @@
+[remap]
+
+importer="mp3"
+type="AudioStreamMP3"
+path="res://import/confirm.mp3-49eb3437662c895a26a07d12a096b12a.mp3str"
+
+[deps]
+
+source_file="res://Core/Shared_UI/audio/confirm.mp3"
+dest_files=[ "res://import/confirm.mp3-49eb3437662c895a26a07d12a096b12a.mp3str" ]
+
+[params]
+
+loop=false
+loop_offset=0

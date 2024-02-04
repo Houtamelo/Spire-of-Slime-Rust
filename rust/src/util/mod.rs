@@ -1,11 +1,10 @@
 pub mod panel_are_you_sure;
-pub mod weighted_rand;
 mod int_conversions;
 
 use comfy_bounded_ints::prelude::{Bound_i64, Bound_u64};
 use comfy_bounded_ints::types::Bound_u8;
-use gdnative::api::{InputEvent, InputEventKey, InputEventMouseButton};
-use gdnative::object::TRef;
+use gdnative::api::{GlobalConstants, InputEvent, InputEventKey, InputEventMouseButton};
+use gdnative::object::{Ref, TRef};
 use houta_utils::prelude::*;
 use rand::Rng;
 use rand_xoshiro::Xoshiro256PlusPlus;
@@ -16,34 +15,26 @@ pub type SaturatedI64 = Bound_i64<{i64::MIN}, {i64::MAX}>;
 pub use int_conversions::*;
 pub type PercentageU8 = Bound_u8<0, 100>;
 
-pub const fn fn_name<T: ?Sized>(_val: &T) -> &'static str {
-	let name = std::any::type_name::<T>();
-	
-	let bytes = name.as_bytes(); 
-	let mut index = { bytes.len() - 1 };
-	while index > 0 {
-		if bytes[index] == b':' {
-			let(_, result) = bytes.split_at(index + 1);
-			return match std::str::from_utf8(result) {
-				Ok(str) => str,
-				Err(_) => panic!(),
-			};
-		}
-		
-		index -= 1;
-	}
-	
-	return name;
-}
-
-pub const fn full_fn_name<T: ?Sized>(_val: &T) -> &'static str {
-	return std::any::type_name::<T>();
-}
-
 pub fn any_cancel_input(event: &TRef<InputEvent>) -> bool {
 	return (event.is_action("ui_cancel", false))
 		|| (event.cast::<InputEventMouseButton>().is_some_and(|mouse_event| mouse_event.button_index() == 2))
 		|| (event.cast::<InputEventKey>().is_some_and(|key_event| key_event.scancode() == 16777217)); // Escape key
+}
+
+pub fn is_confirm_input(event: Ref<InputEvent>) -> bool {
+	let safe_event = unsafe { event.assume_safe() };
+	
+	if safe_event.cast::<InputEventMouseButton>().is_some_and(|mouse_event|
+		mouse_event.is_pressed() && mouse_event.button_index() == GlobalConstants::BUTTON_LEFT)
+	{
+		return true;
+	}
+	
+	if safe_event.is_action_pressed("ui_accept", false, true) {
+		return true;
+	}
+	
+	return false;
 }
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash, Serialize, Deserialize)]

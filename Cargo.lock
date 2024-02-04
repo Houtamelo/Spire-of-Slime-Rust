@@ -401,12 +401,14 @@ checksum = "28eaf72f9d21ee92f580d066b93d05742a4d188e91016b8165dc7a75c0475309"
 
 [[package]]
 name = "houtamelo_utils"
-version = "2.0.0"
-source = "git+https://github.com/Houtamelo/houtamelo_utils.git#c754708fd8b1821db63c9fac7ec99108a0963ba5"
+version = "1.0.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "90c2f8cc4def4d2e3b3eb86b2b8e71d4a89c99a96753758a4fb8d2739ca0c757"
 dependencies = [
  "bimap",
  "float-cmp",
  "num-traits",
+ "rand",
  "ron",
  "serde",
  "serde_json",
@@ -414,11 +416,16 @@ dependencies = [
 
 [[package]]
 name = "houtamelo_utils_gdnative"
-version = "1.0.0"
-source = "git+https://github.com/Houtamelo/houtamelo_utils_gdnative.git#68a918ecd61937f3f5d1f2cf372cf78560e7001a"
+version = "1.1.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "cbd61cd237a2e46eaf19a320bdcba344dfcad2e3a3e9f9565d27f2faa4c31ff3"
 dependencies = [
  "gdnative",
+ "gdnative_export_node_as_path",
+ "houtamelo_utils",
  "nameof",
+ "rand",
+ "rand_xoshiro",
 ]
 
 [[package]]
@@ -433,9 +440,9 @@ dependencies = [
 
 [[package]]
 name = "indexmap"
-version = "2.2.1"
+version = "2.2.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "433de089bd45971eecf4668ee0ee8f4cec17db4f8bd8f7bc3197a6ce37aa7d9b"
+checksum = "824b2ae422412366ba479e8111fd301f7b5faece8149317bb81925979a53f520"
 dependencies = [
  "equivalent",
  "hashbrown 0.14.3",
@@ -790,6 +797,12 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "08d43f7aa6b08d49f382cde6a7982047c3426db949b1424bc4b7ec9ae12c6ce2"
 
 [[package]]
+name = "rustversion"
+version = "1.0.14"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "7ffc183a10b4478d04cbbbfc96d0873219d962dd5accaff2ffbd4ceb7df837f4"
+
+[[package]]
 name = "ryu"
 version = "1.0.16"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -878,7 +891,28 @@ dependencies = [
  "rand_xoshiro",
  "ron",
  "serde",
+ "strum",
+ "strum_macros",
  "uuid",
+]
+
+[[package]]
+name = "strum"
+version = "0.26.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "723b93e8addf9aa965ebe2d11da6d7540fa2283fcea14b3371ff055f7ba13f5f"
+
+[[package]]
+name = "strum_macros"
+version = "0.26.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "7a3417fc93d76740d974a01654a09777cb500428cc874ca9f45edfe0c4d4cd18"
+dependencies = [
+ "heck 0.4.1",
+ "proc-macro2",
+ "quote",
+ "rustversion",
+ "syn 2.0.48",
 ]
 
 [[package]]
@@ -915,7 +949,7 @@ version = "0.19.15"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "1b5bb770da30e5cbfde35a2d7b9b8a2c4b8ef89548a7a6aeab5c9a576e3e7421"
 dependencies = [
- "indexmap 2.2.1",
+ "indexmap 2.2.2",
  "toml_datetime",
  "winnow",
 ]
@@ -1094,9 +1128,9 @@ checksum = "ed94fce61571a4006852b7389a063ab983c02eb1bb37b47f8272ce92d06d9538"
 
 [[package]]
 name = "winnow"
-version = "0.5.36"
+version = "0.5.37"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "818ce546a11a9986bc24f93d0cdf38a8a1a400f1473ea8c82e59f6e0ffab9249"
+checksum = "a7cad8365489051ae9f054164e459304af2e7e9bb407c958076c8bf4aef52da5"
 dependencies = [
  "memchr",
 ]

@@ -1,15 +1,16 @@
 use std::collections::{HashMap, HashSet};
+
 use bracket_pathfinding::prelude::{BaseMap, NavigationPath, SmallVec};
 use gdnative::godot_error;
 use houta_utils::prelude::{RemoveMany, TakeFirst};
 use rand::prelude::IteratorRandom;
 use rand_xoshiro::rand_core::SeedableRng;
 use rand_xoshiro::Xoshiro256PlusPlus;
+
 use crate::local_map::coordinates::axial::Axial;
 use crate::local_map::coordinates::direction::HexagonDirection;
 use crate::local_map::generation::map::HexagonMap;
 use crate::local_map::tile::TileContents;
-use crate::util;
 
 pub fn path_between<'a>(map: &HexagonMap, start_index: usize, end_index: usize) -> NavigationPath {
 	return bracket_pathfinding::prelude::a_star_search(start_index, end_index, map);
@@ -52,13 +53,13 @@ pub fn pick_start(map: &HexagonMap, rng: &mut Xoshiro256PlusPlus,
 	
 	let Some(highest_distance_from_farthest) = distance_map.values().max()
 		else {
-			godot_error!("{}(): highest_distance_from_farthest is None", util::full_fn_name(&pick_start));
+			godot_error!("{}(): highest_distance_from_farthest is None", houta_utils::full_fn_name(&pick_start));
 			return (farthest_towards, farthest_index);
 		};
 	
 	let max_candidate_distance = u16::min(6,highest_distance_from_farthest / 5);
 	if max_candidate_distance == 0 {
-		godot_error!("{}(): max_candidate_distance is 0", util::full_fn_name(&pick_start));
+		godot_error!("{}(): max_candidate_distance is 0", houta_utils::full_fn_name(&pick_start));
 		return (farthest_towards, farthest_index);
 	}
 
@@ -71,7 +72,7 @@ pub fn pick_start(map: &HexagonMap, rng: &mut Xoshiro256PlusPlus,
 		.choose(rng)
 		.map(|chosen| (chosen, *map.tiles.key_to_index(&chosen).unwrap()))
 		.unwrap_or_else(|| {
-			godot_error!("{}(): chosen is None", util::full_fn_name(&pick_start));
+			godot_error!("{}(): chosen is None", houta_utils::full_fn_name(&pick_start));
 			(farthest_towards, farthest_index)
 		});
 }
@@ -86,13 +87,13 @@ pub fn pick_end(map: &HexagonMap, rng: &mut Xoshiro256PlusPlus, end_direction: &
 
 	let Some(highest_distance_from_farthest) = distance_map.values().max()
 		else {
-			godot_error!("{}(): highest_distance_from_farthest is None", util::full_fn_name(&pick_start));
+			godot_error!("{}(): highest_distance_from_farthest is None", houta_utils::full_fn_name(&pick_start));
 			return (farthest_towards, farthest_index);
 		};
 
 	let max_candidate_distance = u16::min(6,highest_distance_from_farthest / 5);
 	if max_candidate_distance == 0 {
-		godot_error!("{}(): max_candidate_distance is 0", util::full_fn_name(&pick_start));
+		godot_error!("{}(): max_candidate_distance is 0", houta_utils::full_fn_name(&pick_start));
 		return (farthest_towards, farthest_index);
 	}
 
@@ -105,7 +106,7 @@ pub fn pick_end(map: &HexagonMap, rng: &mut Xoshiro256PlusPlus, end_direction: &
 		.choose(rng)
 		.map(|chosen| (chosen, *map.tiles.key_to_index(&chosen).unwrap()))
 		.unwrap_or_else(|| {
-			godot_error!("{}(): chosen is None", util::full_fn_name(&pick_start));
+			godot_error!("{}(): chosen is None", houta_utils::full_fn_name(&pick_start));
 			(farthest_towards, farthest_index)
 		});
 }
@@ -141,7 +142,7 @@ impl<'a> BaseMap for FlyingPathfinder<'a> {
 	fn get_available_exits(&self, center_index: usize) -> SmallVec<[(usize, f32); 10]> {
 		let Some(center) = self.map.tiles.index_to_key(&center_index)
 			else {
-				godot_error!("{}(): center is None", util::full_fn_name(&Self::get_available_exits));
+				godot_error!("{}(): center is None", houta_utils::full_fn_name(&Self::get_available_exits));
 				return SmallVec::new();
 			};
 
@@ -160,12 +161,12 @@ impl<'a> BaseMap for FlyingPathfinder<'a> {
 	fn get_pathing_distance(&self, origin_index: usize, destination_index: usize) -> f32 {
 		let Some(origin) = self.map.tiles.index_to_key(&origin_index)
 			else {
-				godot_error!("{}(): origin is None", util::full_fn_name(&Self::get_pathing_distance));
+				godot_error!("{}(): origin is None", houta_utils::full_fn_name(&Self::get_pathing_distance));
 				return 1000.;
 			};
 		let Some(destination) = self.map.tiles.index_to_key(&destination_index)
 			else {
-				godot_error!("{}(): destination is None", util::full_fn_name(&Self::get_pathing_distance));
+				godot_error!("{}(): destination is None", houta_utils::full_fn_name(&Self::get_pathing_distance));
 				return 1000.;
 			};
 
@@ -178,7 +179,7 @@ fn direct_path_between(start: Axial, end: Axial, map: &HexagonMap) -> Vec<Axial>
 	let end_index = *map.tiles.key_to_index(&end).unwrap();
 	
 	let path = bracket_pathfinding::prelude::a_star_search(start_index, end_index, &FlyingPathfinder { map });
-	assert!(path.success, "{}(): path.success is false", util::full_fn_name(&direct_path_between));
+	assert!(path.success, "{}(): path.success is false", houta_utils::full_fn_name(&direct_path_between));
 	return path.steps
 		.iter()
 		.map(|index| *map.tiles.index_to_key(index).unwrap())

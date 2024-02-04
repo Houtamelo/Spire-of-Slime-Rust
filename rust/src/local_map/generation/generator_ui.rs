@@ -1,6 +1,6 @@
 use std::collections::HashMap;
-
 use bracket_noise::prelude::{FastNoise, FractalType, NoiseType};
+
 use gdnative::api::*;
 use gdnative::prelude::*;
 use gdnative_export_node_as_path::extends;
@@ -11,13 +11,11 @@ use rand_xoshiro::Xoshiro256PlusPlus;
 
 use noise_grid::GridShape;
 
+use crate::local_map::generation::pathing;
 use crate::local_map::coordinates::axial::Axial;
 use crate::local_map::coordinates::direction::HexagonDirection;
 use crate::local_map::generation::{BiomeData, noise_grid};
 use crate::local_map::generation::map::HexagonMap;
-use crate::util;
-
-use super::pathing;
 
 #[derive(Debug, Default, ToVariant, FromVariant)]
 #[derive(NativeClass)]
@@ -178,34 +176,34 @@ impl MapGeneratorUI {
 		self.grab_nodes_by_path(owner);
 
 		self.button_generate_full.unwrap_manual()
-		    .connect("pressed", unsafe { owner.assume_shared() }, util::fn_name(&Self::_button_pressed_generate_full),
+		    .connect("pressed", unsafe { owner.assume_shared() }, houta_utils::fn_name(&Self::_button_pressed_generate_full),
 		             VariantArray::new_shared(), 0)
 		    .log_if_err();
 		self.button_generate_base.unwrap_manual()
-		    .connect("pressed", unsafe { owner.assume_shared() }, util::fn_name(&Self::_button_pressed_generate_base),
+		    .connect("pressed", unsafe { owner.assume_shared() }, houta_utils::fn_name(&Self::_button_pressed_generate_base),
 		             VariantArray::new_shared(), 0)
 		    .log_if_err();
 		self.button_ensure_connecteds.unwrap_manual()
-			.connect("pressed", unsafe { owner.assume_shared() }, util::fn_name(&Self::_button_pressed_ensure_connecteds),
+			.connect("pressed", unsafe { owner.assume_shared() }, houta_utils::fn_name(&Self::_button_pressed_ensure_connecteds),
 		             VariantArray::new_shared(), 0)
 		    .log_if_err();
 		
 		self.hexagon_radius_spin_box.touch_assert_sane(|spin_box| {
 			spin_box.set_value(self.hexagon_radius);
 			spin_box.connect("value_changed", unsafe { owner.assume_shared() }, 
-			                 util::fn_name(&Self::_hexagon_radius_changed), VariantArray::new_shared(), 0)
+			                 houta_utils::fn_name(&Self::_hexagon_radius_changed), VariantArray::new_shared(), 0)
 			        .log_if_err();
 		});
 		self.map_width_spin_box.touch_assert_sane(|spin_box| {
 			spin_box.set_value(self.map_width as f64);
 			spin_box.connect("value_changed", unsafe { owner.assume_shared() }, 
-			                 util::fn_name(&Self::_map_width_changed), VariantArray::new_shared(), 0)
+			                 houta_utils::fn_name(&Self::_map_width_changed), VariantArray::new_shared(), 0)
 			        .log_if_err();
 		});
 		self.map_height_spin_box.touch_assert_sane(|spin_box| {
 			spin_box.set_value(self.map_height as f64);
 			spin_box.connect("value_changed", unsafe { owner.assume_shared() }, 
-			                 util::fn_name(&Self::_map_height_changed), VariantArray::new_shared(), 0)
+			                 houta_utils::fn_name(&Self::_map_height_changed), VariantArray::new_shared(), 0)
 			        .log_if_err();
 		});
 		self.map_shape_option_button.touch_assert_sane(|option_button| {
@@ -216,7 +214,7 @@ impl MapGeneratorUI {
 			
 			option_button.select(self.map_shape as i64);
 			option_button.connect("item_selected", unsafe { owner.assume_shared() }, 
-			                      util::fn_name(&Self::_map_shape_changed), VariantArray::new_shared(), 0)
+			                      houta_utils::fn_name(&Self::_map_shape_changed), VariantArray::new_shared(), 0)
 			             .log_if_err();
 		});
 		self.end_direction_option_button.touch_assert_sane(|option_button| {
@@ -229,45 +227,45 @@ impl MapGeneratorUI {
 			
 			option_button.select(self.end_direction as i64);
 			option_button.connect("item_selected", unsafe { owner.assume_shared() },
-				util::fn_name(&Self::_end_direction_changed), VariantArray::new_shared(), 0)
+				houta_utils::fn_name(&Self::_end_direction_changed), VariantArray::new_shared(), 0)
 			             .log_if_err();
 		});
 		
 		self.altitude_spin_box_octaves.touch_assert_sane(|spin_box| {
 			spin_box.set_value(self.altitude_octaves as f64);
 			spin_box.connect("value_changed", unsafe { owner.assume_shared() }, 
-			                 util::fn_name(&Self::_altitude_octaves_changed), VariantArray::new_shared(), 0)
+			                 houta_utils::fn_name(&Self::_altitude_octaves_changed), VariantArray::new_shared(), 0)
 			        .log_if_err();
 		});
 		self.altitude_spin_box_lacunarity.touch_assert_sane(|slider| {
 			slider.set_value(self.altitude_lacunarity as f64);
 			slider.connect("value_changed", unsafe { owner.assume_shared() }, 
-			               util::fn_name(&Self::_altitude_lacunarity_changed), VariantArray::new_shared(), 0)
+			               houta_utils::fn_name(&Self::_altitude_lacunarity_changed), VariantArray::new_shared(), 0)
 			      .log_if_err();
 		});
 		self.altitude_spin_box_frequency.touch_assert_sane(|slider| {
 			slider.set_value(self.altitude_frequency as f64);
 			slider.connect("value_changed", unsafe { owner.assume_shared() }, 
-			               util::fn_name(&Self::_altitude_frequency_changed), VariantArray::new_shared(), 0)
+			               houta_utils::fn_name(&Self::_altitude_frequency_changed), VariantArray::new_shared(), 0)
 			      .log_if_err();
 		});
 		
 		self.biome_spin_box_octaves.touch_assert_sane(|spin_box| {
 			spin_box.set_value(self.biome_octaves as f64);
 			spin_box.connect("value_changed", unsafe { owner.assume_shared() }, 
-			                 util::fn_name(&Self::_biome_octaves_changed), VariantArray::new_shared(), 0)
+			                 houta_utils::fn_name(&Self::_biome_octaves_changed), VariantArray::new_shared(), 0)
 			        .log_if_err();
 		});
 		self.biome_spin_box_lacunarity.touch_assert_sane(|slider| {
 			slider.set_value(self.biome_lacunarity as f64);
 			slider.connect("value_changed", unsafe { owner.assume_shared() }, 
-			               util::fn_name(&Self::_biome_lacunarity_changed), VariantArray::new_shared(), 0)
+			               houta_utils::fn_name(&Self::_biome_lacunarity_changed), VariantArray::new_shared(), 0)
 			      .log_if_err();
 		});
 		self.biome_spin_box_frequency.touch_assert_sane(|slider| {
 			slider.set_value(self.biome_frequency as f64);
 			slider.connect("value_changed", unsafe { owner.assume_shared() }, 
-			               util::fn_name(&Self::_biome_frequency_changed), VariantArray::new_shared(), 0)
+			               houta_utils::fn_name(&Self::_biome_frequency_changed), VariantArray::new_shared(), 0)
 			      .log_if_err();
 		});
 		
@@ -291,49 +289,49 @@ impl MapGeneratorUI {
 		self.biome_1_weight_spin_box.touch_assert_sane(|spin_box| {
 			spin_box.set_value(self.biome_1_weight as f64);
 			spin_box.connect("value_changed", unsafe { owner.assume_shared() }, 
-			                 util::fn_name(&Self::_biome_1_weight_changed), VariantArray::new_shared(), 0)
+			                 houta_utils::fn_name(&Self::_biome_1_weight_changed), VariantArray::new_shared(), 0)
 			        .log_if_err();
 		});
 		self.biome_1_altitude_threshold_spin_box.touch_assert_sane(|spin_box| {
 			spin_box.set_value(self.biome_1_altitude_threshold as f64);
 			spin_box.connect("value_changed", unsafe { owner.assume_shared() }, 
-			                 util::fn_name(&Self::_biome_1_altitude_threshold_changed), VariantArray::new_shared(), 0)
+			                 houta_utils::fn_name(&Self::_biome_1_altitude_threshold_changed), VariantArray::new_shared(), 0)
 			        .log_if_err();
 		});
 		self.biome_2_weight_spin_box.touch_assert_sane(|spin_box| {
 			spin_box.set_value(self.biome_2_weight as f64);
 			spin_box.connect("value_changed", unsafe { owner.assume_shared() }, 
-			                 util::fn_name(&Self::_biome_2_weight_changed), VariantArray::new_shared(), 0)
+			                 houta_utils::fn_name(&Self::_biome_2_weight_changed), VariantArray::new_shared(), 0)
 			        .log_if_err();
 		});
 		self.biome_2_altitude_threshold_spin_box.touch_assert_sane(|spin_box| {
 			spin_box.set_value(self.biome_2_altitude_threshold as f64);
 			spin_box.connect("value_changed", unsafe { owner.assume_shared() }, 
-			                 util::fn_name(&Self::_biome_2_altitude_threshold_changed), VariantArray::new_shared(), 0)
+			                 houta_utils::fn_name(&Self::_biome_2_altitude_threshold_changed), VariantArray::new_shared(), 0)
 			        .log_if_err();
 		});
 		self.biome_3_weight_spin_box.touch_assert_sane(|spin_box| {
 			spin_box.set_value(self.biome_3_weight as f64);
 			spin_box.connect("value_changed", unsafe { owner.assume_shared() }, 
-			                 util::fn_name(&Self::_biome_3_weight_changed), VariantArray::new_shared(), 0)
+			                 houta_utils::fn_name(&Self::_biome_3_weight_changed), VariantArray::new_shared(), 0)
 			        .log_if_err();
 		});
 		self.biome_3_altitude_threshold_spin_box.touch_assert_sane(|spin_box| {
 			spin_box.set_value(self.biome_3_altitude_threshold as f64);
 			spin_box.connect("value_changed", unsafe { owner.assume_shared() }, 
-			                 util::fn_name(&Self::_biome_3_altitude_threshold_changed), VariantArray::new_shared(), 0)
+			                 houta_utils::fn_name(&Self::_biome_3_altitude_threshold_changed), VariantArray::new_shared(), 0)
 			        .log_if_err();
 		});
 		self.biome_4_weight_spin_box.touch_assert_sane(|spin_box| {
 			spin_box.set_value(self.biome_4_weight as f64);
 			spin_box.connect("value_changed", unsafe { owner.assume_shared() }, 
-			                 util::fn_name(&Self::_biome_4_weight_changed), VariantArray::new_shared(), 0)
+			                 houta_utils::fn_name(&Self::_biome_4_weight_changed), VariantArray::new_shared(), 0)
 			        .log_if_err();
 		});
 		self.biome_4_altitude_threshold_spin_box.touch_assert_sane(|spin_box| {
 			spin_box.set_value(self.biome_4_altitude_threshold as f64);
 			spin_box.connect("value_changed", unsafe { owner.assume_shared() }, 
-			                 util::fn_name(&Self::_biome_4_altitude_threshold_changed), VariantArray::new_shared(), 0)
+			                 houta_utils::fn_name(&Self::_biome_4_altitude_threshold_changed), VariantArray::new_shared(), 0)
 			        .log_if_err();
 		});
 	}
@@ -425,12 +423,12 @@ impl MapGeneratorUI {
 	fn set_hexagon_colors(&mut self, start: Axial, end: Axial) {
 		let Some(full_map) = &self.current_map
 			else {
-				godot_error!("{}(): current_map is None", util::full_fn_name(&Self::set_hexagon_colors));
+				godot_error!("{}(): current_map is None", houta_utils::full_fn_name(&Self::set_hexagon_colors));
 				return;
 			};
 		let Some(hex_parent) = self.hexagon_parent.assert_tref_if_sane()
 			else {
-				godot_error!("{}(): hex_parent is None", util::full_fn_name(&Self::set_hexagon_colors));
+				godot_error!("{}(): hex_parent is None", houta_utils::full_fn_name(&Self::set_hexagon_colors));
 				return;
 			};
 		
@@ -465,12 +463,14 @@ impl MapGeneratorUI {
 		}
 
 		let start_color = Color::from_rgb(1., 0., 1.);
-		self.spawned_hexagons.get(&start)
+		self.spawned_hexagons
+			.get(&start)
 		    .unwrap_manual()
 		    .set_self_modulate(start_color);
 
 		let end_color = Color::from_rgb(1., 0., 1.);
-		self.spawned_hexagons.get(&end)
+		self.spawned_hexagons
+			.get(&end)
 		    .unwrap_manual()
 		    .set_self_modulate(end_color);
 	}

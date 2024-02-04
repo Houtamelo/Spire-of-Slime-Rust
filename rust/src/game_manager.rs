@@ -1,10 +1,11 @@
 use gdnative::api::*;
 use gdnative::prelude::*;
-use houta_utils_gdnative::prelude::*;
 use gdnative_export_node_as_path::extends;
+use houta_utils_gdnative::prelude::*;
+
+use crate::settings_menu;
 use crate::game_states::GameState;
 use crate::game_states::state_main_menu::MainMenuState;
-use crate::{settings_menu, util};
 use crate::game_states::state_world_map::WorldMapState;
 use crate::settings_menu::SettingsMenu;
 
@@ -33,7 +34,7 @@ impl GameManagerSingleton {
 	}
 	
 	// todo! When entering main menu, register signals
-	// todo! When entering world map, register signals
+	// todo! When entering world map, call WorldMapController::initialize
 
 	#[method]
 	fn main_menu_to_settings_menu(&mut self) {
@@ -90,7 +91,7 @@ impl GameManagerSingleton {
 				tween.tween_property(fade_screen, "modulate", 
 					Color { r: 1.0, g: 1.0, b: 1.0, a: 0.0 }, 2.0);
 				
-				tween.connect("finished", game_manager_ref, util::fn_name(&Self::_main_menu_save_load_fade_complete),
+				tween.connect("finished", game_manager_ref, houta_utils::fn_name(&Self::_main_menu_save_load_fade_complete),
 						VariantArray::new_shared(), Object::CONNECT_DEFERRED)
 					.log_if_err();
 			}

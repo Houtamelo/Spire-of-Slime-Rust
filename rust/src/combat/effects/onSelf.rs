@@ -1,5 +1,6 @@
 use std::collections::HashMap;
 use std::num::{NonZeroI8, NonZeroU16, NonZeroU8};
+
 use comfy_bounded_ints::prelude::{Bound_u8, SqueezeTo, SqueezeTo_i8, SqueezeTo_u8};
 use gdnative::log::godot_warn;
 use houta_utils::any_matches;
@@ -8,19 +9,20 @@ use rand_xoshiro::Xoshiro256PlusPlus;
 use serde::{Deserialize, Serialize};
 use uuid::Uuid;
 
-use crate::{combat, util};
-use combat::perk::{get_perk, get_perk_mut};
-use combat::entity::{iter_allies_of, iter_mut_allies_of};
-use combat::entity::character::*;
 use combat::effects::MoveDirection;
 use combat::effects::onTarget::{CRIT_DURATION_MULTIPLIER, CRIT_EFFECT_MULTIPLIER, TargetApplier};
 use combat::effects::persistent::PersistentEffect;
+use combat::entity::{iter_allies_of, iter_mut_allies_of};
+use combat::entity::character::*;
 use combat::entity::data::girls::ethel::perks::*;
 use combat::entity::data::girls::nema::perks::*;
 use combat::entity::Entity;
+use combat::perk::{get_perk, get_perk_mut};
 use combat::perk::Perk;
 use combat::skill_types::{ACCMode, CRITMode};
 use combat::stat::{CheckedRange, DynamicStat};
+
+use crate::combat;
 use crate::combat::entity::stat::Power;
 use crate::util::{SaturatedU64, ToSaturatedI64, ToSaturatedU64};
 
@@ -88,7 +90,7 @@ impl SelfApplier {
 				let Some(girl) = &mut caster.girl_stats
 					else {
 						godot_warn!("{}(): Trying to change exhaustion of non-girl character: {caster:?}",
-							util::full_fn_name(&Self::apply));
+							houta_utils::full_fn_name(&Self::apply));
 						return;
 					};
 
@@ -175,7 +177,7 @@ impl SelfApplier {
 				let Some(girl) = &mut caster.girl_stats
 					else {
 						godot_warn!("{}(): Trying to apply lust on-non girl self: {caster:?}",
-							util::full_fn_name(&Self::apply));
+							houta_utils::full_fn_name(&Self::apply));
 						return;
 					};
 

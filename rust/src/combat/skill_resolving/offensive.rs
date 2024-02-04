@@ -1,5 +1,6 @@
 use std::collections::{HashMap, HashSet};
 use std::num::{NonZeroU16, NonZeroU8};
+
 use comfy_bounded_ints::prelude::{SqueezeTo_i64, SqueezeTo_u8};
 use gdnative::godot_error;
 use gdnative::log::godot_warn;
@@ -8,21 +9,23 @@ use houta_utils::prelude::Touch;
 use rand::Rng;
 use rand_xoshiro::Xoshiro256PlusPlus;
 use uuid::Uuid;
-use crate::combat;
-use combat::effects::persistent::PersistentEffect::Riposte;
-use combat::entity::character::*;
-use combat::entity::girl::*;
-use combat::entity::*;
-use combat::skill_types::*;
-use combat::skill_types::offensive::OffensiveSkill;
+
 use combat::effects::onSelf::SelfApplier;
 use combat::effects::onTarget::{DebuffApplierKind, TargetApplier};
-use combat::effects::persistent::{PersistentEffect};
+use combat::effects::persistent::PersistentEffect;
+use combat::effects::persistent::PersistentEffect::Riposte;
+use combat::entity::*;
+use combat::entity::character::*;
 use combat::entity::data::girls::ethel::perks::*;
 use combat::entity::data::girls::ethel::skills::EthelSkill;
 use combat::entity::data::girls::nema::perks::NemaPerk;
 use combat::entity::data::skill_name::SkillName;
+use combat::entity::girl::*;
 use combat::perk::Perk;
+use combat::skill_types::*;
+use combat::skill_types::offensive::OffensiveSkill;
+
+use crate::combat;
 use crate::combat::entity::stat::ToughnessReduction;
 use crate::combat::perk::{get_perk_mut, has_perk};
 use crate::combat::stat::DynamicStat;
@@ -76,12 +79,12 @@ pub fn start(mut caster: CombatCharacter, target: CombatCharacter, others: &mut 
 			},
 			Some(entity) => {
 				godot_warn!("{}(): Trying to apply skill to character with guid {guid:?}, but the entity was not a character.\n\
-						Entity: {entity:?}", crate::util::full_fn_name(&start));
+						Entity: {entity:?}", houta_utils::full_fn_name(&start));
 				others.insert(entity.guid(), entity);
 			},
 			None => {
 				godot_warn!("{}(): Trying to apply skill to character with guid {guid:?}, but it was not found.",
-						crate::util::full_fn_name(&start));
+						houta_utils::full_fn_name(&start));
 				return;
 			}
 		}
@@ -204,7 +207,7 @@ fn resolve_target(mut caster: CombatCharacter, mut target: CombatCharacter,
 			} else {
 				// this should never happen but who knows
 				godot_error!("{}(): StaggeringForce debuff was applied to target, but target died and was dropped.", 
-					crate::util::full_fn_name(&resolve_target));
+					houta_utils::full_fn_name(&resolve_target));
 				return Some(caster);
 			}
 		}
@@ -246,7 +249,7 @@ fn resolve_target(mut caster: CombatCharacter, mut target: CombatCharacter,
 			} else {
 				// this should never happen but who knows
 				godot_error!("{}(): FocusedSwings debuff was applied to target, but target died and was dropped.", 
-					crate::util::full_fn_name(&resolve_target));
+					houta_utils::full_fn_name(&resolve_target));
 				return Some(caster);
 			}
 		}
@@ -269,7 +272,7 @@ fn resolve_target(mut caster: CombatCharacter, mut target: CombatCharacter,
 			} else {
 				// this should never happen but who knows
 				godot_error!("{}(): GoForTheEyes debuff was applied to target, but target died and was dropped.", 
-					crate::util::full_fn_name(&resolve_target));
+					houta_utils::full_fn_name(&resolve_target));
 				return Some(caster);
 			}
 		}

@@ -18,6 +18,7 @@
 #![feature(const_option)]
 #![feature(hash_extract_if)]
 #![feature(ascii_char)]
+#![feature(variant_count)]
 
 mod audio;
 pub use audio::bus;
@@ -80,9 +81,10 @@ fn init(handle: InitHandle) {
 	handle.add_class::<save::singleton::SavesSingleton>();
 	handle.add_class::<local_map::generation::generator_ui::MapGeneratorUI>();
 	handle.add_class::<local_map::generation::generator_ui::BiomeDataResource>();
-	handle.add_class::<audio::PlayOnHover>();
-	handle.add_class::<audio::PitchRandomizer>();
-	handle.add_class::<audio::PlayOnClickAndPitchRandomizer>();
+	handle.add_class::<houta_utils_gdnative::prelude::PitchRandomizer>();
+	handle.add_class::<houta_utils_gdnative::prelude::PlayOnClickAndPitchRandomizer>();
+	handle.add_class::<houta_utils_gdnative::prelude::PlayOnHoverAndPitchRandomizer>();
+	handle.add_class::<houta_utils_gdnative::prelude::DisallowClickFocus>();
 }
 
 godot_init!(init);

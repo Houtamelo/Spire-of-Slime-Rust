@@ -1,7 +1,6 @@
 use gdnative::prelude::*;
 use gdnative_export_node_as_path::extends;
 use houta_utils_gdnative::prelude::*;
-use crate::util;
 
 pub(super) const SIGNAL_LOAD: &str = "load_save";
 pub(super) const SIGNAL_DELETE: &str = "delete_save_confirmed";
@@ -29,15 +28,15 @@ impl LoadButton {
 		
 		let owner_ref = unsafe { owner.assume_shared() };
 		self.button_load.unwrap_manual()
-			.connect("pressed", owner_ref, util::fn_name(&Self::_button_pressed_load), 
+			.connect("pressed", owner_ref, houta_utils::fn_name(&Self::_button_pressed_load), 
 				VariantArray::new_shared(), Object::CONNECT_DEFERRED)
 			.log_if_err();
 		self.button_delete.unwrap_manual()
-			.connect("pressed", owner_ref, util::fn_name(&Self::_button_pressed_delete), 
+			.connect("pressed", owner_ref, houta_utils::fn_name(&Self::_button_pressed_delete), 
 				VariantArray::new_shared(), Object::CONNECT_DEFERRED)
 			.log_if_err();
 		self.button_confirm_delete.unwrap_manual()
-			.connect("pressed", owner_ref, util::fn_name(&Self::_button_pressed_confirm_delete), 
+			.connect("pressed", owner_ref, houta_utils::fn_name(&Self::_button_pressed_confirm_delete), 
 				VariantArray::new_shared(), Object::CONNECT_DEFERRED)
 			.log_if_err();
 	}

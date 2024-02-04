@@ -1,8 +1,11 @@
 use std::collections::{HashMap, HashSet};
 use std::num::NonZeroU16;
+
 use gdnative::prelude::*;
+use houta_utils::full_fn_name;
 use rand_xoshiro::Xoshiro256PlusPlus;
 use uuid::Uuid;
+
 use crate::combat::effects::onTarget::{DebuffApplierKind, TargetApplier};
 use crate::combat::entity::*;
 use crate::combat::entity::character::*;
@@ -38,12 +41,12 @@ pub fn start_targeting_self(caster: &mut CombatCharacter, others: &mut HashMap<U
 				},
 				Some(entity) => {
 					godot_warn!("{}(): Trying to apply skill to character with guid {guid:?}, but the entity was not a character.\n\
-						Entity: {entity:?}", crate::util::full_fn_name(&start_targeting_ally));
+						Entity: {entity:?}", full_fn_name(&start_targeting_ally));
 					others.insert(entity.guid(), entity);
 				},
 				None => {
 					godot_warn!("{}(): Trying to apply skill to character with guid {guid:?}, but it was not found in the allies!",
-						crate::util::full_fn_name(&start_targeting_ally));
+						full_fn_name(&start_targeting_ally));
 					return;
 				}
 			});
@@ -86,7 +89,7 @@ pub fn start_targeting_ally(caster: &mut CombatCharacter, target: CombatCharacte
 				},
 				Some(entity) => {
 					godot_warn!("{}(): Trying to apply skill to character with guid {guid:?}, but the entity was not a character.\n\
-						Entity: {entity:?}", crate::util::full_fn_name(&start_targeting_ally));
+						Entity: {entity:?}", full_fn_name(&start_targeting_ally));
 					others.insert(entity.guid(), entity);
 				},
 				None if guid == caster.guid => {
@@ -94,7 +97,7 @@ pub fn start_targeting_ally(caster: &mut CombatCharacter, target: CombatCharacte
 				},
 				None => {
 					godot_warn!("{}(): Trying to apply skill to character with guid {guid:?}, but it was not found.",
-						crate::util::full_fn_name(&start_targeting_ally));
+						full_fn_name(&start_targeting_ally));
 					return;
 				}
 			});
