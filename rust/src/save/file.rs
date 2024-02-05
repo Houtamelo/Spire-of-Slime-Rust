@@ -15,13 +15,13 @@ use crate::WorldLocation;
 use crate::save::affairs::AffairMap;
 use crate::save::stats::GenericStats;
 
-#[derive(Serialize, Deserialize, Clone)]
+#[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct DateTime {
 	year: u64, month: u64, day: u64,
 	hour: u64, minute: u64, second: u64,
 }
 
-#[derive(Serialize, Deserialize, Clone)]
+#[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct SaveFile {
 	pub(super) name: String,
 	pub(super) date_time: DateTime,
@@ -109,7 +109,7 @@ impl SaveFile {
 	}
 
 	pub fn name(&self) -> &str { return &self.name; }
-	pub fn map_location(&self) -> &WorldLocation { return &self.map_location; }
+	pub fn map_location(&self) -> WorldLocation { return self.map_location; }
 	pub fn ethel(&self) -> &EthelFile { return &self.ethel; }
 	pub fn nema(&self) -> &NemaFile { return &self.nema; }
 	pub fn combat_order(&self) -> &IndexedSet<GirlName> { return &self.combat_order; }
@@ -117,20 +117,20 @@ impl SaveFile {
 	pub fn affairs(&self) -> &AffairMap { return &self.affairs; }
 }
 
-#[derive(Serialize, Deserialize, Clone, Default)] // maybe make keys &'static str?
+#[derive(Debug, Serialize, Deserialize, Clone, Default)] // maybe make keys &'static str?
 pub struct OtherVariables {
 	pub(super) bools: HashMap<String, bool>,
 	pub(super) ints: HashMap<String, i32>,
 	pub(super) strings: HashMap<String, String>,
 }
 
-#[derive(Serialize, Deserialize, Clone)]
+#[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct EthelFile {
 	stats: GenericStats,
 	skill_set: [Option<EthelSkill>; 4],
 }
 
-#[derive(Serialize, Deserialize, Clone)]
+#[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct NemaFile {
 	stats: GenericStats,
 	skill_set: [Option<NemaSkill>; 4],

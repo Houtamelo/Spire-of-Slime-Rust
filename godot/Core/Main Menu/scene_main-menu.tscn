@@ -1,0 +1,500 @@
+[gd_scene load_steps=24 format=2]
+
+[ext_resource path="res://Core/Main Menu/theme_main-menu.tres" type="Theme" id=1]
+[ext_resource path="res://Core/Main Menu/background.png" type="Texture" id=2]
+[ext_resource path="res://Fonts/font_mr-darcy_48_outline.tres" type="DynamicFont" id=3]
+[ext_resource path="res://Core/Main Menu/UI/Discord Button/style-box_button_discord_normal.tres" type="StyleBox" id=4]
+[ext_resource path="res://Core/Main Menu/UI/Discord Button/style-box_button_discord_hover.tres" type="StyleBox" id=5]
+[ext_resource path="res://Core/Main Menu/UI/New Game Panel/background_new-game.png" type="Texture" id=6]
+[ext_resource path="res://Core/Main Menu/UI/New Game Panel/style-box_button_start-game_hover.tres" type="StyleBox" id=7]
+[ext_resource path="res://Core/Main Menu/UI/New Game Panel/style-box_button_start-game_normal.tres" type="StyleBox" id=8]
+[ext_resource path="res://Fonts/font_mr-darcy_24.tres" type="DynamicFont" id=9]
+[ext_resource path="res://Fonts/font_treasure-map-dead-hand_24.tres" type="DynamicFont" id=10]
+[ext_resource path="res://Core/Main Menu/UI/New Game Panel/button_check-mark.png" type="Texture" id=11]
+[ext_resource path="res://Fonts/font_audimat-mono_24.tres" type="DynamicFont" id=12]
+[ext_resource path="res://Core/Main Menu/UI/New Game Panel/box_easter-egg.png" type="Texture" id=13]
+[ext_resource path="res://Core/Main Menu/UI/Load Game Panel/background_load-game.png" type="Texture" id=14]
+[ext_resource path="res://Fonts/font_audimat-mono_16.tres" type="DynamicFont" id=15]
+[ext_resource path="res://Core/Main Menu/UI/New Game Panel/panel_are-you-sure.png" type="Texture" id=16]
+[ext_resource path="res://Core/Shared_UI/Audio/sfx_ui_click.tscn" type="PackedScene" id=17]
+[ext_resource path="res://Core/Shared_UI/Audio/sfx_ui_hover.tscn" type="PackedScene" id=18]
+[ext_resource path="res://Core/Shared_UI/disallow-click-focus_on-parent.tscn" type="PackedScene" id=19]
+
+[sub_resource type="StyleBoxEmpty" id=1]
+
+[sub_resource type="StyleBoxEmpty" id=2]
+
+[sub_resource type="StyleBoxEmpty" id=3]
+
+[sub_resource type="StyleBoxEmpty" id=4]
+
+[node name="scene_main_menu" type="Control"]
+anchor_right = 1.0
+anchor_bottom = 1.0
+theme = ExtResource( 1 )
+
+[node name="background" type="TextureRect" parent="."]
+margin_right = 40.0
+margin_bottom = 40.0
+focus_mode = 1
+mouse_filter = 0
+texture = ExtResource( 2 )
+
+[node name="buttons_main" type="VBoxContainer" parent="."]
+margin_left = 13.0
+margin_top = 462.0
+margin_right = 202.0
+margin_bottom = 502.0
+
+[node name="new-game" type="Button" parent="buttons_main"]
+margin_right = 281.0
+margin_bottom = 58.875
+custom_fonts/font = ExtResource( 3 )
+action_mode = 0
+text = "New Game"
+align = 0
+
+[node name="disallow-click-focus_on-parent" parent="buttons_main/new-game" instance=ExtResource( 19 )]
+
+[node name="sfx_ui_click" parent="buttons_main/new-game" instance=ExtResource( 17 )]
+
+[node name="sfx_ui_hover" parent="buttons_main/new-game" instance=ExtResource( 18 )]
+
+[node name="load-game" type="Button" parent="buttons_main"]
+margin_top = 62.0
+margin_right = 281.875
+margin_bottom = 120.875
+custom_fonts/font = ExtResource( 3 )
+action_mode = 0
+text = "Load Game"
+align = 0
+
+[node name="disallow-click-focus_on-parent" parent="buttons_main/load-game" instance=ExtResource( 19 )]
+
+[node name="sfx_ui_click" parent="buttons_main/load-game" instance=ExtResource( 17 )]
+
+[node name="sfx_ui_hover" parent="buttons_main/load-game" instance=ExtResource( 18 )]
+
+[node name="options" type="Button" parent="buttons_main"]
+margin_top = 124.0
+margin_right = 281.0
+margin_bottom = 182.875
+custom_fonts/font = ExtResource( 3 )
+action_mode = 0
+text = "Options"
+align = 0
+
+[node name="disallow-click-focus_on-parent" parent="buttons_main/options" instance=ExtResource( 19 )]
+
+[node name="sfx_ui_click" parent="buttons_main/options" instance=ExtResource( 17 )]
+
+[node name="sfx_ui_hover" parent="buttons_main/options" instance=ExtResource( 18 )]
+
+[node name="credits" type="Button" parent="buttons_main"]
+margin_top = 186.0
+margin_right = 281.0
+margin_bottom = 244.875
+custom_fonts/font = ExtResource( 3 )
+action_mode = 0
+text = "Credits"
+align = 0
+
+[node name="disallow-click-focus_on-parent" parent="buttons_main/credits" instance=ExtResource( 19 )]
+
+[node name="sfx_ui_click" parent="buttons_main/credits" instance=ExtResource( 17 )]
+
+[node name="sfx_ui_hover" parent="buttons_main/credits" instance=ExtResource( 18 )]
+
+[node name="quit" type="Button" parent="buttons_main"]
+margin_top = 248.0
+margin_right = 281.0
+margin_bottom = 306.875
+custom_fonts/font = ExtResource( 3 )
+action_mode = 0
+text = "Quit"
+align = 0
+
+[node name="disallow-click-focus_on-parent" parent="buttons_main/quit" instance=ExtResource( 19 )]
+
+[node name="sfx_ui_click" parent="buttons_main/quit" instance=ExtResource( 17 )]
+
+[node name="sfx_ui_hover" parent="buttons_main/quit" instance=ExtResource( 18 )]
+
+[node name="button_discord" type="Button" parent="."]
+margin_left = 4.0
+margin_top = 1012.0
+margin_right = 132.0
+margin_bottom = 1140.0
+rect_scale = Vector2( 0.5, 0.5 )
+focus_mode = 0
+custom_styles/hover = ExtResource( 5 )
+custom_styles/pressed = ExtResource( 5 )
+custom_styles/focus = ExtResource( 5 )
+custom_styles/disabled = ExtResource( 4 )
+custom_styles/normal = ExtResource( 4 )
+shortcut_in_tooltip = false
+action_mode = 0
+expand_icon = true
+
+[node name="disallow-click-focus_on-parent" parent="button_discord" instance=ExtResource( 19 )]
+
+[node name="panel_new-game" type="TextureRect" parent="."]
+visible = false
+margin_left = 682.0
+margin_top = 425.0
+margin_right = 1288.0
+margin_bottom = 762.0
+mouse_filter = 0
+texture = ExtResource( 6 )
+expand = true
+
+[node name="fake-toggle_iron-gauntlet" type="Button" parent="panel_new-game"]
+margin_left = 180.0
+margin_top = 61.0
+margin_right = 429.188
+margin_bottom = 90.4375
+focus_mode = 0
+custom_fonts/font = ExtResource( 9 )
+shortcut_in_tooltip = false
+action_mode = 0
+enabled_focus_mode = 0
+text = "Iron Gauntlet"
+icon = ExtResource( 11 )
+align = 0
+expand_icon = true
+
+[node name="disallow-click-focus_on-parent" parent="panel_new-game/fake-toggle_iron-gauntlet" instance=ExtResource( 19 )]
+
+[node name="sfx_ui_hover" parent="panel_new-game/fake-toggle_iron-gauntlet" instance=ExtResource( 18 )]
+
+[node name="line-edit_save-name" type="LineEdit" parent="panel_new-game"]
+margin_left = 123.0
+margin_top = 167.41
+margin_right = 483.0
+margin_bottom = 217.41
+custom_fonts/font = ExtResource( 10 )
+custom_styles/read_only = SubResource( 1 )
+custom_styles/focus = SubResource( 2 )
+custom_styles/normal = SubResource( 3 )
+align = 1
+max_length = 32
+context_menu_enabled = false
+shortcut_keys_enabled = false
+placeholder_text = "Save Name"
+placeholder_alpha = 1.0
+caret_blink = true
+
+[node name="sfx_ui_hover" parent="panel_new-game/line-edit_save-name" instance=ExtResource( 18 )]
+bus = "Master"
+
+[node name="button_start-game" type="Button" parent="panel_new-game"]
+margin_left = 215.0
+margin_top = 282.68
+margin_right = 409.0
+margin_bottom = 321.93
+custom_colors/font_color_disabled = Color( 1, 1, 1, 1 )
+custom_colors/font_color_focus = Color( 0.698039, 0, 0.313726, 1 )
+custom_colors/font_color = Color( 1, 1, 1, 1 )
+custom_colors/font_color_hover = Color( 0.698039, 0, 0.219608, 1 )
+custom_colors/font_color_pressed = Color( 0.698039, 0, 0.219608, 1 )
+custom_fonts/font = ExtResource( 9 )
+custom_styles/hover = ExtResource( 7 )
+custom_styles/pressed = ExtResource( 7 )
+custom_styles/focus = ExtResource( 7 )
+custom_styles/disabled = ExtResource( 8 )
+custom_styles/normal = ExtResource( 8 )
+text = "Start Game"
+
+[node name="disallow-click-focus_on-parent" parent="panel_new-game/button_start-game" instance=ExtResource( 19 )]
+
+[node name="sfx_ui_hover" parent="panel_new-game/button_start-game" instance=ExtResource( 18 )]
+
+[node name="sfx_ui_click" parent="panel_new-game/button_start-game" instance=ExtResource( 17 )]
+
+[node name="background_easter-egg" type="TextureRect" parent="panel_new-game"]
+margin_left = -8.0
+margin_top = -100.0
+margin_right = 650.0
+margin_bottom = 31.0
+texture = ExtResource( 13 )
+
+[node name="label_easter-egg" type="Label" parent="panel_new-game/background_easter-egg"]
+anchor_left = 0.11
+anchor_top = 0.15
+anchor_right = 0.89
+anchor_bottom = 0.85
+custom_fonts/font = ExtResource( 12 )
+align = 1
+valign = 1
+autowrap = true
+clip_text = true
+
+[node name="panel_are_you_sure_overwrite_save" type="Panel" parent="panel_new-game"]
+visible = false
+anchor_right = 1.0
+anchor_bottom = 1.0
+margin_left = -1609.0
+margin_top = -911.0
+margin_right = 1625.0
+margin_bottom = 780.0
+custom_styles/panel = SubResource( 4 )
+
+[node name="background" type="TextureRect" parent="panel_new-game/panel_are_you_sure_overwrite_save"]
+margin_left = 1612.0
+margin_top = 786.0
+margin_right = 2218.0
+margin_bottom = 1127.0
+texture = ExtResource( 16 )
+expand = true
+
+[node name="label_warning" type="Label" parent="panel_new-game/panel_are_you_sure_overwrite_save/background"]
+anchor_left = 0.17
+anchor_top = 0.125
+anchor_right = 0.83
+anchor_bottom = 0.63
+margin_left = -0.0200043
+margin_top = 29.375
+margin_right = 132.02
+margin_bottom = -9.83
+rect_scale = Vector2( 0.75, 0.75 )
+text = "Save with same name already exists, are you sure you wish to overwrite?"
+align = 1
+autowrap = true
+clip_text = true
+
+[node name="button_yes" type="Button" parent="panel_new-game/panel_are_you_sure_overwrite_save/background"]
+anchor_left = 0.25
+anchor_top = 0.72
+anchor_right = 0.35
+anchor_bottom = 0.84
+text = "Yes"
+flat = true
+align = 0
+
+[node name="disallow-click-focus_on-parent" parent="panel_new-game/panel_are_you_sure_overwrite_save/background/button_yes" instance=ExtResource( 19 )]
+
+[node name="sfx_ui_click" parent="panel_new-game/panel_are_you_sure_overwrite_save/background/button_yes" instance=ExtResource( 17 )]
+
+[node name="sfx_ui_hover" parent="panel_new-game/panel_are_you_sure_overwrite_save/background/button_yes" instance=ExtResource( 18 )]
+
+[node name="button_cancel" type="Button" parent="panel_new-game/panel_are_you_sure_overwrite_save/background"]
+anchor_left = 0.54
+anchor_top = 0.72
+anchor_right = 0.75
+anchor_bottom = 0.84
+text = "Cancel"
+flat = true
+align = 2
+
+[node name="disallow-click-focus_on-parent" parent="panel_new-game/panel_are_you_sure_overwrite_save/background/button_cancel" instance=ExtResource( 19 )]
+
+[node name="sfx_ui_click" parent="panel_new-game/panel_are_you_sure_overwrite_save/background/button_cancel" instance=ExtResource( 17 )]
+
+[node name="sfx_ui_hover" parent="panel_new-game/panel_are_you_sure_overwrite_save/background/button_cancel" instance=ExtResource( 18 )]
+
+[node name="background_load-game" type="TextureRect" parent="."]
+visible = false
+margin_left = 692.0
+margin_top = 305.0
+margin_right = 1298.0
+margin_bottom = 961.0
+texture = ExtResource( 14 )
+
+[node name="scroll-container_load-game" type="ScrollContainer" parent="background_load-game"]
+anchor_left = 0.261
+anchor_top = 0.2
+anchor_right = 0.85
+anchor_bottom = 0.905
+margin_right = 12.0
+margin_bottom = 12.0
+follow_focus = true
+scroll_horizontal_enabled = false
+
+[node name="v_box_container" type="VBoxContainer" parent="background_load-game/scroll-container_load-game"]
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="background_credits" type="ColorRect" parent="."]
+visible = false
+anchor_right = 1.0
+anchor_bottom = 1.0
+color = Color( 0, 0, 0, 1 )
+
+[node name="scroll_container" type="ScrollContainer" parent="background_credits"]
+anchor_left = 0.1
+anchor_right = 0.9
+anchor_bottom = 1.0
+follow_focus = true
+scroll_horizontal_enabled = false
+
+[node name="rich_text_label" type="RichTextLabel" parent="background_credits/scroll_container"]
+margin_right = 1600.0
+margin_bottom = 1296.0
+rect_min_size = Vector2( 1600, 0 )
+custom_fonts/mono_font = ExtResource( 15 )
+custom_fonts/bold_italics_font = ExtResource( 15 )
+custom_fonts/italics_font = ExtResource( 15 )
+custom_fonts/bold_font = ExtResource( 15 )
+custom_fonts/normal_font = ExtResource( 15 )
+bbcode_enabled = true
+bbcode_text = "[center][color=#950093]Programming[/color]
+Houtamelo
+
+[color=#950093]Game Design[/color]
+Houtamelo
+Ayzunote
+Kattlarv
+Sr.Up
+CrazyPerson
+
+[color=#950093]World Design[/color]
+Sr.Up
+Kattlarv
+Houtamelo
+
+[color=#950093]Story Design[/color]
+Sr.Up
+Kattlarv
+Houtamelo
+
+[color=#950093]Art - Combat Idle Animations[/color]
+Egor \"darkpilot96\"  Khritov
+
+[color=#950093]Art - Combat Characters[/color]
+Akaonimir - [u][i][color=#00D7FF][url=\"https://twitter.com/Akaonimir\"]Twitter[/url][/color][/i][/u]
+
+[color=#950093]Art - Combat Backgrounds[/color]
+Moisesf - [u][i][color=#00D7FF][url=\"https://twitter.com/mgmdzn\"]Twitter[/url][/color][/i][/u]
+
+[color=#950093]Art - Combat Visual Effects[/color]
+Ayzunote
+Moisesf - [u][i][color=#00D7FF][url=\"https://twitter.com/mgmdzn\"]Twitter[/url][/color][/i][/u]
+Houtamelo
+
+[color=#950093]Art - CGs[/color]
+Akaonimir - [u][i][color=#00D7FF][url=\"https://twitter.com/Akaonimir\"]Twitter[/url][/color][/i][/u]
+
+[color=#950093]Art - Dialogue Portraits[/color]
+Akaonimir - [u][i][color=#00D7FF][url=\"https://twitter.com/Akaonimir\"]Twitter[/url][/color][/i][/u]
+
+[color=#950093]Art - UI[/color]
+Moisesf - [u][i][color=#00D7FF][url=\"https://twitter.com/mgmdzn\"]Twitter[/url][/color][/i][/u]
+Houtamelo
+Yue
+
+[color=#950093]Art - Concept Design[/color]
+N__u__t
+Akaonimir - [u][i][color=#00D7FF][url=\"https://twitter.com/Akaonimir\"]Twitter[/url][/color][/i][/u]
+Moisesf - [u][i][color=#00D7FF][url=\"https://twitter.com/mgmdzn\"]Twitter[/url][/color][/i][/u]
+
+[color=#950093]Music[/color]
+Wellington \"ZheroMusic\" J. Zhune - [u][i][color=#00D7FF][url=\"https://twitter.com/MusicZhero\"]Twitter[/url][/color][/i][/u] - [u][i][color=#00D7FF][url=\"https://www.youtube.com/ZheroMusic\"]Youtube[/url][/color][/i][/u]
+
+[color=#950093]Sound Effects[/color]
+Wellington \"ZheroMusic\" J. Zhune - [u][i][color=#00D7FF][url=\"https://twitter.com/MusicZhero\"]Twitter[/url][/color][/i][/u] - [u][i][color=#00D7FF][url=\"https://www.youtube.com/ZheroMusic\"]Youtube[/url][/color][/i][/u]
+TheMaskedMan
+Sounds from Zapsplat.com
+
+[color=#950093]Writing - Scene dialogues[/color]
+Kattlarv
+Elizabeth violet/elizzyviolet - [u][i][color=#00D7FF][url=\"https://www.patreon.com/ElizzyViolet\"]Patreon[/url][/color][/i][/u] - [u][i][color=#00D7FF][url=\"https://www.literotica.com/stories/memberpage.php?uid=3935448&page=submissions\"]Literotica[/url][/color][/i][/u] - [u][i][color=#00D7FF][url=\"https://elizzyviolet.itch.io/\"]Itch.io[/url][/color][/i][/u]
+
+[color=#950093]Writing - Everything else[/color]
+Kattlarv
+
+[color=#950093]Quality Assurance[/color]
+Ayzunote
+
+[color=#950093]Fonts[/color]
+Yue
+
+Some sound Effects from \"https://pixabay.com/sound-effects/\""
+text = "Programming
+Houtamelo
+
+Game Design
+Houtamelo
+Ayzunote
+Kattlarv
+Sr.Up
+CrazyPerson
+
+World Design
+Sr.Up
+Kattlarv
+Houtamelo
+
+Story Design
+Sr.Up
+Kattlarv
+Houtamelo
+
+Art - Combat Idle Animations
+Egor \"darkpilot96\"  Khritov
+
+Art - Combat Characters
+Akaonimir - Twitter
+
+Art - Combat Backgrounds
+Moisesf - Twitter
+
+Art - Combat Visual Effects
+Ayzunote
+Moisesf - Twitter
+Houtamelo
+
+Art - CGs
+Akaonimir - Twitter
+
+Art - Dialogue Portraits
+Akaonimir - Twitter
+
+Art - UI
+Moisesf - Twitter
+Houtamelo
+Yue
+
+Art - Concept Design
+N__u__t
+Akaonimir - Twitter
+Moisesf - Twitter
+
+Music
+Wellington \"ZheroMusic\" J. Zhune - Twitter - Youtube
+
+Sound Effects
+Wellington \"ZheroMusic\" J. Zhune - Twitter - Youtube
+TheMaskedMan
+Sounds from Zapsplat.com
+
+Writing - Scene dialogues
+Kattlarv
+Elizabeth violet/elizzyviolet - Patreon - Literotica - Itch.io
+
+Writing - Everything else
+Kattlarv
+
+Quality Assurance
+Ayzunote
+
+Fonts
+Yue
+
+Some sound Effects from \"https://pixabay.com/sound-effects/\""
+fit_content_height = true
+scroll_following = true
+
+[node name="button_close" type="Button" parent="background_credits"]
+anchor_left = 0.94
+anchor_top = 0.96
+anchor_right = 0.996
+anchor_bottom = 1.0
+text = "Close"
+flat = true
+align = 2
+
+[node name="disallow-click-focus_on-parent" parent="background_credits/button_close" instance=ExtResource( 19 )]
+
+[node name="sfx_ui_click" parent="background_credits/button_close" instance=ExtResource( 17 )]
+
+[node name="sfx_ui_hover" parent="background_credits/button_close" instance=ExtResource( 18 )]

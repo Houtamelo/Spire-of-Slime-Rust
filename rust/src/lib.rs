@@ -27,19 +27,19 @@ mod combat;
 mod util;
 mod main_menu;
 mod settings_menu;
-mod game_states;
 mod save;
-
 mod world_map;
 mod local_map;
 mod game_manager;
+mod start_screen;
+pub mod gdnative_macros;
 
 pub use world_map::WorldLocation;
 
 use gdnative::prelude::*;
 
 pub const MAX_CHARACTERS_PER_TEAM: u8 = 4;
-pub static config_path: &str = "user://config.cfg";
+pub static CONFIG_PATH: &str = "user://config.cfg";
 
 fn init_panic_hook() {
 	let old_hook = std::panic::take_hook();
@@ -73,18 +73,18 @@ fn init_panic_hook() {
 // Function that registers all exposed classes to Godot
 fn init(handle: InitHandle) {
 	init_panic_hook();
-	handle.add_class::<game_manager::GameManagerSingleton>();
+	handle.add_class::<start_screen::StartScreenController>();
+	handle.add_class::<game_manager::GameManager>();
 	handle.add_class::<util::panel_are_you_sure::PanelAreYouSure>();
 	handle.add_class::<main_menu::MainMenuController>();
 	handle.add_class::<main_menu::LoadButton>();
 	handle.add_class::<world_map::WorldMapController>();
-	handle.add_class::<save::singleton::SavesSingleton>();
 	handle.add_class::<local_map::generation::generator_ui::MapGeneratorUI>();
 	handle.add_class::<local_map::generation::generator_ui::BiomeDataResource>();
 	handle.add_class::<houta_utils_gdnative::prelude::PitchRandomizer>();
 	handle.add_class::<houta_utils_gdnative::prelude::PlayOnClickAndPitchRandomizer>();
 	handle.add_class::<houta_utils_gdnative::prelude::PlayOnHoverAndPitchRandomizer>();
-	handle.add_class::<houta_utils_gdnative::prelude::DisallowClickFocus>();
+	handle.add_class::<houta_utils_gdnative::prelude::DisallowClickFocusOnParent>();
 }
 
 godot_init!(init);

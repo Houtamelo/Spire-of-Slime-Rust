@@ -416,9 +416,9 @@ dependencies = [
 
 [[package]]
 name = "houtamelo_utils_gdnative"
-version = "1.1.1"
+version = "1.2.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "728bf80a27eeaf4dab8ac68782d06c8a4c2be00e148ba34859228401e66fbcc6"
+checksum = "e1be72edf06fbda5855630e55f90f91488cc266899676ac7fcc1f94b1846688b"
 dependencies = [
  "gdnative",
  "gdnative_export_node_as_path",

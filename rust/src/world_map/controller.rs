@@ -8,7 +8,12 @@ use houta_utils::{fn_name, full_fn_name};
 use crate::util;
 
 use super::location::WorldLocation;
-use super::{SIGNAL_OPEN_SETTINGS_MENU, SIGNAL_OPEN_CHARACTER_MENU, SIGNAL_MARKER_CLICKED, SIGNAL_LINE_CLICKED, WorldPath};
+use super::WorldPath;
+
+pub const SIGNAL_OPEN_SETTINGS_MENU: &str = "open_settings_menu";
+pub const SIGNAL_OPEN_CHARACTER_MENU: &str = "open_character_menu";
+pub const SIGNAL_MARKER_CLICKED: &str = "marker_clicked";
+pub const SIGNAL_LINE_CLICKED: &str = "line_clicked";
 
 #[extends(Node)]
 #[register_with(Self::register)]

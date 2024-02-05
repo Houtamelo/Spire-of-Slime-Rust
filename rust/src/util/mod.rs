@@ -37,6 +37,7 @@ pub fn is_confirm_input(event: Ref<InputEvent>) -> bool {
 	return false;
 }
 
+
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash, Serialize, Deserialize)]
 pub struct TrackedTicks {
 	pub remaining_ms: SaturatedU64,

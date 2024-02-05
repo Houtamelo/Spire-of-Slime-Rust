@@ -16,7 +16,7 @@ pub(super) const CALL_OPEN_PANEL: &str = "_open_panel";
 #[extends(CanvasLayer)]
 #[register_with(Self::register)]
 #[derive(Debug)]
-pub struct SettingsMenu {
+pub struct SettingsMenuController {
     #[export_path] check_box_window_maximized: Option<Ref<CheckBox>>,
     #[export_path] spin_box_window_size_x    : Option<Ref<SpinBox>>,
     #[export_path] spin_box_window_size_y    : Option<Ref<SpinBox>>,
@@ -47,7 +47,7 @@ pub struct SettingsMenu {
 }
 
 #[methods]
-impl SettingsMenu {
+impl SettingsMenuController {
 	fn register(builder: &ClassBuilder<Self>) {
         builder.signal(SIGNAL_LANGUAGE_CHANGED).with_param("language", VariantType::Object).done();
         builder.signal(SIGNAL_PANEL_CLOSED).done();
@@ -210,15 +210,15 @@ impl SettingsMenu {
     }
     
     #[method]
-    fn _open_panel(&mut self, #[base] _owner: &CanvasLayer) {
+    pub fn _open_panel(&mut self, #[base] owner: TRef<CanvasLayer>) {
         self.update_screen_settings();
-        _owner.show();
+        owner.show();
     }
 
     #[method]
     fn _on_check_box_window_maximized(&mut self, button_pressed: bool) {
         let new_setting = GameSetting::WindowMaximized(button_pressed);
-        SettingsMenu::replace_setting(&mut self.unsaved_settings, new_setting);
+        SettingsMenuController::replace_setting(&mut self.unsaved_settings, new_setting);
         self.enable_dirty_changes_buttons(true);
         OS::godot_singleton().set_deferred("window_maximized", button_pressed);
     }
@@ -226,14 +226,14 @@ impl SettingsMenu {
     #[method]
     fn _on_spin_box_window_size_x(&mut self, value: f64) {
         let new_setting = GameSetting::WindowSize(value as i32, self.spin_box_window_size_y.unwrap_manual().value() as i32);
-        SettingsMenu::replace_setting(&mut self.unsaved_settings, new_setting);
+        SettingsMenuController::replace_setting(&mut self.unsaved_settings, new_setting);
         self.enable_dirty_changes_buttons(true);
     }
 
     #[method]
     fn _on_spin_box_window_size_y(&mut self, value: f64) {
         let new_setting = GameSetting::WindowSize(self.spin_box_window_size_x.unwrap_manual().value() as i32, value as i32);
-        SettingsMenu::replace_setting(&mut self.unsaved_settings, new_setting);
+        SettingsMenuController::replace_setting(&mut self.unsaved_settings, new_setting);
         self.enable_dirty_changes_buttons(true);
     }
 
@@ -261,14 +261,14 @@ impl SettingsMenu {
             },
         }
 
-        SettingsMenu::replace_setting(&mut self.unsaved_settings, new_setting);
+        SettingsMenuController::replace_setting(&mut self.unsaved_settings, new_setting);
         self.enable_dirty_changes_buttons(true);
     }
 
     #[method]
     fn _on_spin_box_skill_overlay_mode_auto_delay(&mut self, value: f64) {
         let new_setting = GameSetting::SkillOverlayMode(SkillOverlayMode::Auto { delay_ms: value as i64 });
-        SettingsMenu::replace_setting(&mut self.unsaved_settings, new_setting);
+        SettingsMenuController::replace_setting(&mut self.unsaved_settings, new_setting);
         self.enable_dirty_changes_buttons(true);
     }
 
@@ -276,7 +276,7 @@ impl SettingsMenu {
     fn _on_option_button_language(&mut self, #[base] owner: &CanvasLayer, index: i64) {
         let language = settings::ALL_LANGUAGES[index as usize];
         let new_setting = GameSetting::Language(language.clone());
-        SettingsMenu::replace_setting(&mut self.unsaved_settings, new_setting);
+        SettingsMenuController::replace_setting(&mut self.unsaved_settings, new_setting);
         self.enable_dirty_changes_buttons(true);
 
         owner.emit_signal(SIGNAL_LANGUAGE_CHANGED, &[language.to_variant()]);
@@ -285,21 +285,21 @@ impl SettingsMenu {
     #[method]
     fn _on_spin_box_target_framerate(&mut self, value: f64) {
         let new_setting = GameSetting::TargetFramerate(value as i64);
-        SettingsMenu::replace_setting(&mut self.unsaved_settings, new_setting);
+        SettingsMenuController::replace_setting(&mut self.unsaved_settings, new_setting);
         self.enable_dirty_changes_buttons(true);
     }
 
     #[method]
     fn _on_h_slider_dialogue_text_speed(&mut self, value: f64) {
         let new_setting = GameSetting::DialogueTextSpeed(value as i32);
-        SettingsMenu::replace_setting(&mut self.unsaved_settings, new_setting);
+        SettingsMenuController::replace_setting(&mut self.unsaved_settings, new_setting);
         self.enable_dirty_changes_buttons(true);
     }
 
     #[method]
     fn _on_check_box_vsync(&mut self, button_pressed: bool) {
         let new_setting = GameSetting::Vsync(button_pressed);
-        SettingsMenu::replace_setting(&mut self.unsaved_settings, new_setting);
+        SettingsMenuController::replace_setting(&mut self.unsaved_settings, new_setting);
         self.enable_dirty_changes_buttons(true);
         OS::godot_singleton().set_deferred("use_vsync", button_pressed);
     }
@@ -307,37 +307,37 @@ impl SettingsMenu {
     #[method]
     fn _on_h_slider_main_volume(&mut self, value: f64) {
         let new_setting = GameSetting::MainVolume(value as i32);
-        SettingsMenu::replace_setting(&mut self.unsaved_settings, new_setting);
+        SettingsMenuController::replace_setting(&mut self.unsaved_settings, new_setting);
         self.enable_dirty_changes_buttons(true);
 
-        SettingsMenu::set_volume_percentage(value as i32, crate::bus::bus_name_main);
+        SettingsMenuController::set_volume_percentage(value as i32, crate::bus::bus_name_main);
     }
 
     #[method]
     fn _on_h_slider_music_volume(&mut self, value: f64) {
         let new_setting = GameSetting::MusicVolume(value as i32);
-        SettingsMenu::replace_setting(&mut self.unsaved_settings, new_setting);
+        SettingsMenuController::replace_setting(&mut self.unsaved_settings, new_setting);
         self.enable_dirty_changes_buttons(true);
 
-        SettingsMenu::set_volume_percentage(value as i32, crate::bus::bus_name_music);
+        SettingsMenuController::set_volume_percentage(value as i32, crate::bus::bus_name_music);
     }
 
     #[method]
     fn _on_h_slider_sfx_volume(&mut self, value: f64) {
         let new_setting = GameSetting::SfxVolume(value as i32);
-        SettingsMenu::replace_setting(&mut self.unsaved_settings, new_setting);
+        SettingsMenuController::replace_setting(&mut self.unsaved_settings, new_setting);
         self.enable_dirty_changes_buttons(true);
 
-        SettingsMenu::set_volume_percentage(value as i32, crate::bus::bus_name_sfx);
+        SettingsMenuController::set_volume_percentage(value as i32, crate::bus::bus_name_sfx);
     }
 
     #[method]
     fn _on_h_slider_voice_volume(&mut self, value: f64) {
         let new_setting = GameSetting::VoiceVolume(value as i32);
-        SettingsMenu::replace_setting(&mut self.unsaved_settings, new_setting);
+        SettingsMenuController::replace_setting(&mut self.unsaved_settings, new_setting);
         self.enable_dirty_changes_buttons(true);
 
-        SettingsMenu::set_volume_percentage(value as i32, crate::bus::bus_name_voice);
+        SettingsMenuController::set_volume_percentage(value as i32, crate::bus::bus_name_voice);
     }
 
     #[method]
@@ -360,7 +360,7 @@ impl SettingsMenu {
             self.saved_settings.insert(unsaved_setting.key(), unsaved_setting.clone());
         }
 
-        SettingsMenu::write_settings_to_config(&mut self.unsaved_settings);
+        SettingsMenuController::write_settings_to_config(&mut self.unsaved_settings);
         self.unsaved_settings.clear();
         self.enable_dirty_changes_buttons(false);
     }
@@ -405,7 +405,7 @@ impl SettingsMenu {
             self.saved_settings.insert(unsaved_setting.key(), unsaved_setting.clone());
         }
 
-        SettingsMenu::write_settings_to_config(&mut self.unsaved_settings);
+        SettingsMenuController::write_settings_to_config(&mut self.unsaved_settings);
         self.unsaved_settings.clear();
         self.enable_dirty_changes_buttons(false);
 
@@ -523,7 +523,7 @@ impl SettingsMenu {
                     h_slider.set_value(*volume as f64);
                     h_slider.set_block_signals(false);
 
-                    SettingsMenu::set_volume_percentage(*volume, crate::bus::bus_name_main);
+                    SettingsMenuController::set_volume_percentage(*volume, crate::bus::bus_name_main);
                 },
                 GameSetting::MusicVolume(volume) => {
                     let h_slider = self.h_slider_music_volume.unwrap_manual();
@@ -531,7 +531,7 @@ impl SettingsMenu {
                     h_slider.set_value(*volume as f64);
                     h_slider.set_block_signals(false);
 
-                    SettingsMenu::set_volume_percentage(*volume, crate::bus::bus_name_music);
+                    SettingsMenuController::set_volume_percentage(*volume, crate::bus::bus_name_music);
                 },
                 GameSetting::SfxVolume(volume) => {
                     let h_slider = self.h_slider_sfx_volume.unwrap_manual();
@@ -539,7 +539,7 @@ impl SettingsMenu {
                     h_slider.set_value(*volume as f64);
                     h_slider.set_block_signals(false);
 
-                    SettingsMenu::set_volume_percentage(*volume, crate::bus::bus_name_sfx);
+                    SettingsMenuController::set_volume_percentage(*volume, crate::bus::bus_name_sfx);
                 },
                 GameSetting::VoiceVolume(volume) => {
                     let h_slider = self.h_slider_voice_volume.unwrap_manual();
@@ -547,7 +547,7 @@ impl SettingsMenu {
                     h_slider.set_value(*volume as f64);
                     h_slider.set_block_signals(false);
 
-                    SettingsMenu::set_volume_percentage(*volume, crate::bus::bus_name_voice);
+                    SettingsMenuController::set_volume_percentage(*volume, crate::bus::bus_name_voice);
                 },
             }
         }
@@ -566,7 +566,7 @@ impl SettingsMenu {
 
             let new_setting = GameSetting::WindowMaximized(window_maximized);
             self.unsaved_settings.remove(new_setting.key());
-            SettingsMenu::replace_setting(&mut self.saved_settings, new_setting);
+            SettingsMenuController::replace_setting(&mut self.saved_settings, new_setting);
         }
 
         {
@@ -584,7 +584,7 @@ impl SettingsMenu {
 
             let new_setting = GameSetting::WindowSize(window_size.x as i32, window_size.y as i32);
             self.unsaved_settings.remove(new_setting.key());
-            SettingsMenu::replace_setting(&mut self.saved_settings, new_setting);
+            SettingsMenuController::replace_setting(&mut self.saved_settings, new_setting);
         }
 
         {
@@ -597,7 +597,7 @@ impl SettingsMenu {
 
             let new_setting = GameSetting::TargetFramerate(target_framerate);
             self.unsaved_settings.remove(new_setting.key());
-            SettingsMenu::replace_setting(&mut self.saved_settings, new_setting);
+            SettingsMenuController::replace_setting(&mut self.saved_settings, new_setting);
         }
 
         self.enable_dirty_changes_buttons(self.unsaved_settings.len() > 0);
@@ -615,7 +615,7 @@ impl SettingsMenu {
 
     fn write_settings_to_config(settings: &mut HashMap<&'static str, GameSetting>) {
         let config = ConfigFile::new();
-        if let Err(error) = config.load(crate::config_path) {
+        if let Err(error) = config.load(crate::CONFIG_PATH) {
             godot_warn!("Failed to load config file: {}", error);
         }
 
@@ -623,7 +623,7 @@ impl SettingsMenu {
             config.set_value("player_prefs", key, setting);
         }
 
-        if let Err(error) = config.save(crate::config_path) {
+        if let Err(error) = config.save(crate::CONFIG_PATH) {
             godot_warn!("Failed to load config file: {}", error);
         } else {
             settings.clear();
@@ -640,7 +640,7 @@ impl SettingsMenu {
     }
 
     fn set_volume_percentage(base100_percentage: i32, bus_name: &str) {
-        let volume_db = SettingsMenu::volume_percentage_to_db(base100_percentage);
+        let volume_db = SettingsMenuController::volume_percentage_to_db(base100_percentage);
         let audio_server = AudioServer::godot_singleton();
         let bus_index = audio_server.get_bus_index(bus_name);
         audio_server.set_bus_volume_db(bus_index, volume_db);

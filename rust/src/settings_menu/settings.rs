@@ -117,7 +117,7 @@ impl GameSetting {
 
     pub fn get_saved<T>(key: &str, default: T) -> T where T: FromVariant + ToVariant + Clone {
         let config = ConfigFile::new();
-        if let Err(error) = config.load(crate::config_path) {
+        if let Err(error) = config.load(crate::CONFIG_PATH) {
             godot_warn!("Failed to load config file: {}", error);
             return default;
         }

@@ -8,7 +8,7 @@ use crate::combat::entity::data::npc::NPCName;
 use crate::combat::entity::stat::{Accuracy, CheckedRange, Composure, CritChance, DebuffRate, DebuffRes, Dodge, Lust, MaxStamina, MoveRate, MoveRes, OrgasmCount, OrgasmLimit, PoisonRate, PoisonRes, Speed, StunDef, Temptation, Toughness};
 use crate::save::upgrades::{PrimaryUpgrade, PrimaryUpgradeCount, SecondaryUpgrade, SecondaryUpgradeCount};
 
-#[derive(Serialize, Deserialize, Clone)]
+#[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct GenericStats {
 	rng: Xoshiro256PlusPlus,
 	total_exp: u64,

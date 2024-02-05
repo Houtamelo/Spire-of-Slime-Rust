@@ -1,9 +1,10 @@
-[gd_scene load_steps=5 format=2]
+[gd_scene load_steps=6 format=2]
 
 [ext_resource path="res://Core/Shared_UI/Settings Menu Button/theme_button_settings-menu.tres" type="Theme" id=1]
 [ext_resource path="res://Core/Shared_UI/Settings Menu Button/shortcut_open-settings-menu.tres" type="ShortCut" id=2]
 [ext_resource path="res://Core/Shared_UI/Audio/sfx_ui_click.tscn" type="PackedScene" id=3]
 [ext_resource path="res://Core/Shared_UI/Audio/sfx_ui_hover.tscn" type="PackedScene" id=4]
+[ext_resource path="res://Core/Shared_UI/disallow-click-focus_on-parent.tscn" type="PackedScene" id=5]
 
 [node name="button_settings-menu" type="Button"]
 margin_right = 64.0
@@ -19,6 +20,8 @@ shortcut = ExtResource( 2 )
 __meta__ = {
 "_editor_description_": ""
 }
+
+[node name="disallow-click-focus_on-parent" parent="." instance=ExtResource( 5 )]
 
 [node name="sfx_ui_click" parent="." instance=ExtResource( 3 )]
 bus = "Master"

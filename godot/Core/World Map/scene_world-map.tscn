@@ -173,12 +173,6 @@ texture = ExtResource( 18 )
 texture_scale = 3.0
 mode = 2
 
-[node name="sfx_ui_confirm" parent="markers/area_marker_chapel" instance=ExtResource( 15 )]
-bus = "Master"
-
-[node name="sfx_ui_hover" parent="markers/area_marker_chapel" instance=ExtResource( 16 )]
-bus = "Master"
-
 [node name="label" type="Label" parent="markers/area_marker_chapel"]
 margin_left = 35.0
 margin_top = -19.0
@@ -186,6 +180,12 @@ margin_right = 138.0
 margin_bottom = 29.1875
 theme = ExtResource( 22 )
 text = "Chapel"
+
+[node name="sfx_ui_confirm" parent="markers/area_marker_chapel" instance=ExtResource( 15 )]
+bus = "Master"
+
+[node name="sfx_ui_hover" parent="markers/area_marker_chapel" instance=ExtResource( 16 )]
+bus = "Master"
 
 [node name="area_marker_grove" type="Area2D" parent="markers"]
 position = Vector2( 853, 851 )
@@ -203,12 +203,6 @@ texture = ExtResource( 18 )
 texture_scale = 3.0
 mode = 2
 
-[node name="sfx_ui_confirm" parent="markers/area_marker_grove" instance=ExtResource( 15 )]
-bus = "Master"
-
-[node name="sfx_ui_hover" parent="markers/area_marker_grove" instance=ExtResource( 16 )]
-bus = "Master"
-
 [node name="label" type="Label" parent="markers/area_marker_grove"]
 margin_left = 31.0
 margin_top = -34.0
@@ -216,6 +210,12 @@ margin_right = 134.0
 margin_bottom = 14.1875
 theme = ExtResource( 22 )
 text = "Grove"
+
+[node name="sfx_ui_confirm" parent="markers/area_marker_grove" instance=ExtResource( 15 )]
+bus = "Master"
+
+[node name="sfx_ui_hover" parent="markers/area_marker_grove" instance=ExtResource( 16 )]
+bus = "Master"
 
 [node name="area_marker_forest" type="Area2D" parent="markers"]
 position = Vector2( 767, 687 )
@@ -233,12 +233,6 @@ texture = ExtResource( 18 )
 texture_scale = 3.0
 mode = 2
 
-[node name="sfx_ui_confirm" parent="markers/area_marker_forest" instance=ExtResource( 15 )]
-bus = "Master"
-
-[node name="sfx_ui_hover" parent="markers/area_marker_forest" instance=ExtResource( 16 )]
-bus = "Master"
-
 [node name="label" type="Label" parent="markers/area_marker_forest"]
 margin_left = 33.0
 margin_top = -34.0
@@ -246,6 +240,12 @@ margin_right = 140.0
 margin_bottom = 14.1875
 theme = ExtResource( 22 )
 text = "Forest"
+
+[node name="sfx_ui_confirm" parent="markers/area_marker_forest" instance=ExtResource( 15 )]
+bus = "Master"
+
+[node name="sfx_ui_hover" parent="markers/area_marker_forest" instance=ExtResource( 16 )]
+bus = "Master"
 
 [node name="area_marker_cave" type="Area2D" parent="markers"]
 position = Vector2( 542, 772 )
@@ -263,12 +263,6 @@ texture = ExtResource( 18 )
 texture_scale = 3.0
 mode = 2
 
-[node name="sfx_ui_confirm" parent="markers/area_marker_cave" instance=ExtResource( 15 )]
-bus = "Master"
-
-[node name="sfx_ui_hover" parent="markers/area_marker_cave" instance=ExtResource( 16 )]
-bus = "Master"
-
 [node name="label" type="Label" parent="markers/area_marker_cave"]
 margin_left = -133.0
 margin_top = -34.0
@@ -276,6 +270,12 @@ margin_right = -30.0
 margin_bottom = 14.1875
 theme = ExtResource( 22 )
 text = "Caves"
+
+[node name="sfx_ui_confirm" parent="markers/area_marker_cave" instance=ExtResource( 15 )]
+bus = "Master"
+
+[node name="sfx_ui_hover" parent="markers/area_marker_cave" instance=ExtResource( 16 )]
+bus = "Master"
 
 [node name="lines" type="Node2D" parent="."]
 

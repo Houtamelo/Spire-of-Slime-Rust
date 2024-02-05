@@ -1,6 +1,6 @@
 use serde::{Deserialize, Serialize};
 
-#[derive(Serialize, Deserialize, Clone, Default)]
+#[derive(Debug, Serialize, Deserialize, Clone, Default)]
 pub struct PrimaryUpgradeCount {
 	acc: u8,
 	dodge: u8,
@@ -8,7 +8,7 @@ pub struct PrimaryUpgradeCount {
 	toughness: u8,
 }
 
-#[derive(Serialize, Deserialize, Clone, Default)]
+#[derive(Debug, Serialize, Deserialize, Clone, Default)]
 pub struct SecondaryUpgradeCount {
 	stun_def: u8,
 	move_res: u8,
@@ -21,7 +21,7 @@ pub struct SecondaryUpgradeCount {
 }
 
 #[repr(u8)]
-#[derive(Serialize, Deserialize, Clone, Copy, PartialEq, Eq, Hash)]
+#[derive(Debug, Serialize, Deserialize, Clone, Copy, PartialEq, Eq, Hash)]
 pub enum PrimaryUpgrade {
 	Acc = 0,
 	Dodge = 1,
@@ -30,7 +30,7 @@ pub enum PrimaryUpgrade {
 }
 
 #[repr(u8)]
-#[derive(Serialize, Deserialize, Clone, Copy, PartialEq, Eq, Hash)]
+#[derive(Debug, Serialize, Deserialize, Clone, Copy, PartialEq, Eq, Hash)]
 pub enum SecondaryUpgrade {
 	StunDef = 0,
 	MoveRes = 1,
