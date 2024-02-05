@@ -67,7 +67,7 @@ impl WorldMapController {
 		self.mapped_markers.iter()
 		    .for_each(|(location, button_ref)|
 			    button_ref.touch_assert_sane(|button| {
-				    button.connect("input_event", owner_ref, fn_name(&Self::_input_event_location_marker), 
+				    button.connect("input_event", owner_ref, fn_name(&Self::_input_event_marker), 
 					    location.to_shared_array(), Object::CONNECT_DEFERRED)
 					    .log_if_err();
 				    button.connect("mouse_entered", owner_ref, fn_name(&Self::_mouse_entered_marker), 
@@ -96,7 +96,7 @@ impl WorldMapController {
 		self.mapped_lines.iter()
 			.for_each(|(path, line_ref)| 
 				line_ref.touch_assert_sane(|line| {
-					line.connect("input_event", owner_ref, fn_name(&Self::_input_event_path_line), 
+					line.connect("input_event", owner_ref, fn_name(&Self::_input_event_line), 
 						path.to_shared_array(), Object::CONNECT_DEFERRED)
 						.log_if_err();
 					line.connect("mouse_entered", owner_ref, fn_name(&Self::_mouse_entered_line), 
@@ -189,14 +189,14 @@ impl WorldMapController {
 	}
 	
 	#[method]
-	fn _input_event_location_marker(&self, #[base] owner: &Node, input_event: Ref<InputEvent>, location: WorldLocation) {
+	fn _input_event_marker(&self, #[base] owner: &Node, _viewport: Ref<Node>, input_event: Ref<InputEvent>, _shape_idx: i64, location: WorldLocation) {
 		if util::is_confirm_input(input_event) {
 			owner.emit_signal(SIGNAL_MARKER_CLICKED, &[location.to_variant()]);
 		}
 	}
 	
 	#[method]
-	fn _input_event_path_line(&self, #[base] owner: &Node, input_event: Ref<InputEvent>, path: WorldPath) {
+	fn _input_event_line(&self, #[base] owner: &Node, _viewport: Ref<Node>, input_event: Ref<InputEvent>, _shape_idx: i64, path: WorldPath) {
 		if util::is_confirm_input(input_event) {
 			owner.emit_signal(SIGNAL_LINE_CLICKED, &[path.to_variant()]);
 		}

@@ -2,12 +2,12 @@
 
 importer="mp3"
 type="AudioStreamMP3"
-path="res://import/invalid.mp3-3c6dbcc1b140022ecb7ca431fb360eea.mp3str"
+path="res://import/invalid.mp3-1801bf3f7aa02c5c7044a1bc9652ea9a.mp3str"
 
 [deps]
 
-source_file="res://Core/Shared_UI/audio/invalid.mp3"
-dest_files=[ "res://import/invalid.mp3-3c6dbcc1b140022ecb7ca431fb360eea.mp3str" ]
+source_file="res://Core/Shared_UI/Audio/invalid.mp3"
+dest_files=[ "res://import/invalid.mp3-1801bf3f7aa02c5c7044a1bc9652ea9a.mp3str" ]
 
 [params]
 

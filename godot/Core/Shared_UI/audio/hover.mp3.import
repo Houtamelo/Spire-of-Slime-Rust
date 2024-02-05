@@ -2,12 +2,12 @@
 
 importer="mp3"
 type="AudioStreamMP3"
-path="res://import/hover.mp3-055bf06eac13a583abf2e95ae113b82b.mp3str"
+path="res://import/hover.mp3-f3d7696f5561141afae5a2eb64db0c05.mp3str"
 
 [deps]
 
-source_file="res://Core/Shared_UI/audio/hover.mp3"
-dest_files=[ "res://import/hover.mp3-055bf06eac13a583abf2e95ae113b82b.mp3str" ]
+source_file="res://Core/Shared_UI/Audio/hover.mp3"
+dest_files=[ "res://import/hover.mp3-f3d7696f5561141afae5a2eb64db0c05.mp3str" ]
 
 [params]
 
