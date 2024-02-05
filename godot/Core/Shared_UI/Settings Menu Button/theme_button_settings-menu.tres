@@ -1,0 +1,16 @@
+[gd_resource type="Theme" load_steps=7 format=2]
+
+[ext_resource path="res://Fonts/font_noto-sans_16.tres" type="DynamicFont" id=1]
+[ext_resource path="res://Core/Shared_UI/Settings Menu Button/style_normal.tres" type="StyleBox" id=2]
+[ext_resource path="res://Core/Shared_UI/Settings Menu Button/style_focus.tres" type="StyleBox" id=3]
+[ext_resource path="res://Core/Shared_UI/Settings Menu Button/style_hover.tres" type="StyleBox" id=4]
+[ext_resource path="res://Core/Shared_UI/Settings Menu Button/style_pressed.tres" type="StyleBox" id=5]
+[ext_resource path="res://Core/Shared_UI/Settings Menu Button/style_disabled.tres" type="StyleBox" id=6]
+
+[resource]
+default_font = ExtResource( 1 )
+Button/styles/disabled = ExtResource( 6 )
+Button/styles/focus = ExtResource( 3 )
+Button/styles/hover = ExtResource( 4 )
+Button/styles/normal = ExtResource( 2 )
+Button/styles/pressed = ExtResource( 5 )
