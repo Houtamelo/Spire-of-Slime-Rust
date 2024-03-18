@@ -22,7 +22,7 @@ mod timeline;
 mod skill_resolving;
 mod perk;
 pub mod entity;
-mod ui;
+pub(crate) mod ui;
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct CombatState {

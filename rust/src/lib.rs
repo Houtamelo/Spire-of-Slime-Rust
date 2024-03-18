@@ -72,6 +72,7 @@ fn init_panic_hook() {
 fn init(handle: InitHandle) {
 	init_panic_hook();
 	handle.add_class::<start_screen::StartScreenController>();
+	handle.add_class::<combat::ui::SpeedButtons>();
 	handle.add_class::<game_manager::GameManager>();
 	handle.add_class::<util::panel_are_you_sure::PanelAreYouSure>();
 	handle.add_class::<main_menu::MainMenuController>();

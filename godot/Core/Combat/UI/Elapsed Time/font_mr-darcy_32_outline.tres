@@ -1,0 +1,11 @@
+[gd_resource type="DynamicFont" load_steps=2 format=2]
+
+[ext_resource path="res://Fonts/font_mr-darcy_data.tres" type="DynamicFontData" id=1]
+
+[resource]
+size = 32
+outline_size = 2
+outline_color = Color( 0, 0, 0, 1 )
+use_filter = true
+extra_spacing_top = 2
+font_data = ExtResource( 1 )

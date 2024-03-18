@@ -1,4 +1,4 @@
-[gd_scene load_steps=45 format=2]
+[gd_scene load_steps=58 format=2]
 
 [ext_resource path="res://Core/Combat/UI/Announcer/announcer_background.png" type="Texture" id=1]
 [ext_resource path="res://Core/Combat/UI/Announcer/font_announcer.tres" type="DynamicFont" id=2]
@@ -43,6 +43,19 @@
 [ext_resource path="res://Core/Combat/UI/Character Stats/Right Side/bar_right_temptation_fill.png" type="Texture" id=41]
 [ext_resource path="res://Core/Combat/UI/Character Stats/Right Side/bar_right_lust.png" type="Texture" id=42]
 [ext_resource path="res://Core/Combat/UI/Character Stats/Right Side/bar_right_lust_fill.png" type="Texture" id=43]
+[ext_resource path="res://Core/Shared_UI/DisallowClickFocusOnParent.gdns" type="Script" id=44]
+[ext_resource path="res://Core/Combat/UI/Speed Buttons/speed-buttons-on.png" type="Texture" id=45]
+[ext_resource path="res://Core/Combat/UI/Speed Buttons/pause/style-box_pause_normal.tres" type="StyleBox" id=46]
+[ext_resource path="res://Core/Combat/UI/Speed Buttons/pause/style-box_pause_hover.tres" type="StyleBox" id=47]
+[ext_resource path="res://Core/Combat/UI/Speed Buttons/speed-3x/style-box_speed-3x_normal.tres" type="StyleBox" id=48]
+[ext_resource path="res://Core/Combat/UI/Speed Buttons/speed-1x/style-box_speed-1x_hover.tres" type="StyleBox" id=49]
+[ext_resource path="res://Core/Combat/UI/Speed Buttons/speed-1x/style-box_speed-1x_normal.tres" type="StyleBox" id=50]
+[ext_resource path="res://Core/Combat/UI/Speed Buttons/speed-2x/style-box_speed-2x_normal.tres" type="StyleBox" id=51]
+[ext_resource path="res://Core/Combat/UI/Speed Buttons/speed-2x/style-box_speed-2x_hover.tres" type="StyleBox" id=52]
+[ext_resource path="res://Core/Combat/UI/Speed Buttons/speed-3x/style-box_speed-3x_hover.tres" type="StyleBox" id=53]
+[ext_resource path="res://Core/Combat/UI/Elapsed Time/icon_time.png" type="Texture" id=54]
+[ext_resource path="res://Core/Combat/UI/Elapsed Time/font_mr-darcy_32_outline.tres" type="DynamicFont" id=55]
+[ext_resource path="res://Core/Combat/UI/Speed Buttons/SpeedButtons.gdns" type="Script" id=56]
 
 [sub_resource type="Animation" id=1]
 length = 0.001
@@ -116,6 +129,133 @@ text = "Clash"
 align = 1
 valign = 1
 clip_text = true
+
+[node name="speed-buttons" type="GridContainer" parent="canvas_layer"]
+anchor_right = 0.144
+anchor_bottom = 0.059
+margin_right = -236.48
+margin_bottom = -23.72
+custom_constants/hseparation = 8
+columns = 4
+script = ExtResource( 56 )
+
+[node name="pause" type="Button" parent="canvas_layer/speed-buttons"]
+margin_right = 63.0
+margin_bottom = 64.0
+rect_min_size = Vector2( 63, 64 )
+custom_styles/hover = ExtResource( 47 )
+custom_styles/pressed = ExtResource( 47 )
+custom_styles/focus = ExtResource( 47 )
+custom_styles/disabled = ExtResource( 46 )
+custom_styles/normal = ExtResource( 46 )
+action_mode = 0
+
+[node name="disallow_click_focus_on_parent" type="Node" parent="canvas_layer/speed-buttons/pause"]
+script = ExtResource( 44 )
+
+[node name="indicator" type="TextureRect" parent="canvas_layer/speed-buttons/pause"]
+visible = false
+modulate = Color( 0.513726, 0, 0.447059, 1 )
+anchor_right = 1.0
+anchor_bottom = 1.0
+rect_min_size = Vector2( 63, 64 )
+texture = ExtResource( 45 )
+
+[node name="speed_1x" type="Button" parent="canvas_layer/speed-buttons"]
+margin_left = 71.0
+margin_right = 134.0
+margin_bottom = 64.0
+rect_min_size = Vector2( 63, 64 )
+custom_styles/hover = ExtResource( 49 )
+custom_styles/pressed = ExtResource( 49 )
+custom_styles/focus = ExtResource( 49 )
+custom_styles/disabled = ExtResource( 50 )
+custom_styles/normal = ExtResource( 50 )
+action_mode = 0
+
+[node name="disallow_click_focus_on_parent" type="Node" parent="canvas_layer/speed-buttons/speed_1x"]
+script = ExtResource( 44 )
+
+[node name="indicator" type="TextureRect" parent="canvas_layer/speed-buttons/speed_1x"]
+visible = false
+modulate = Color( 0.513726, 0, 0.447059, 1 )
+anchor_right = 1.0
+anchor_bottom = 1.0
+rect_min_size = Vector2( 63, 64 )
+texture = ExtResource( 45 )
+
+[node name="speed_2x" type="Button" parent="canvas_layer/speed-buttons"]
+margin_left = 142.0
+margin_right = 205.0
+margin_bottom = 64.0
+rect_min_size = Vector2( 63, 64 )
+custom_styles/hover = ExtResource( 52 )
+custom_styles/pressed = ExtResource( 52 )
+custom_styles/focus = ExtResource( 52 )
+custom_styles/disabled = ExtResource( 51 )
+custom_styles/normal = ExtResource( 51 )
+action_mode = 0
+
+[node name="disallow_click_focus_on_parent" type="Node" parent="canvas_layer/speed-buttons/speed_2x"]
+script = ExtResource( 44 )
+
+[node name="indicator" type="TextureRect" parent="canvas_layer/speed-buttons/speed_2x"]
+visible = false
+modulate = Color( 0.513726, 0, 0.447059, 1 )
+anchor_right = 1.0
+anchor_bottom = 1.0
+rect_min_size = Vector2( 63, 64 )
+texture = ExtResource( 45 )
+
+[node name="speed_3x" type="Button" parent="canvas_layer/speed-buttons"]
+margin_left = 213.0
+margin_right = 276.0
+margin_bottom = 64.0
+rect_min_size = Vector2( 63, 64 )
+custom_styles/hover = ExtResource( 53 )
+custom_styles/pressed = ExtResource( 53 )
+custom_styles/focus = ExtResource( 53 )
+custom_styles/disabled = ExtResource( 48 )
+custom_styles/normal = ExtResource( 48 )
+action_mode = 0
+
+[node name="disallow_click_focus_on_parent" type="Node" parent="canvas_layer/speed-buttons/speed_3x"]
+script = ExtResource( 44 )
+
+[node name="indicator" type="TextureRect" parent="canvas_layer/speed-buttons/speed_3x"]
+visible = false
+modulate = Color( 0.513726, 0, 0.447059, 1 )
+anchor_right = 1.0
+anchor_bottom = 1.0
+rect_min_size = Vector2( 63, 64 )
+texture = ExtResource( 45 )
+
+[node name="elapsed time" type="Control" parent="canvas_layer"]
+anchor_left = 0.167
+anchor_top = 0.009
+anchor_right = 0.231
+anchor_bottom = 0.049
+margin_left = -0.640015
+margin_top = 0.28
+margin_right = 0.47998
+margin_bottom = 0.079998
+
+[node name="icon" type="TextureRect" parent="canvas_layer/elapsed time"]
+modulate = Color( 0.694118, 0, 1, 1 )
+margin_right = 28.0
+margin_bottom = 43.0
+rect_min_size = Vector2( 28, 43 )
+texture = ExtResource( 54 )
+
+[node name="value" type="Label" parent="canvas_layer/elapsed time"]
+modulate = Color( 0.521569, 0, 0.45098, 1 )
+margin_left = 44.0
+margin_right = 140.0
+margin_bottom = 43.0
+rect_min_size = Vector2( 96, 43 )
+custom_fonts/font = ExtResource( 55 )
+text = "10.5"
+valign = 1
 
 [node name="character-stats" type="Control" parent="canvas_layer"]
 anchor_right = 1.0
@@ -266,6 +406,7 @@ margin_left = -3.956
 margin_top = 2.0
 margin_right = 5.996
 margin_bottom = 0.0
+text = "5~7"
 
 [node name="crit-rate" parent="canvas_layer/character-stats/left-side/grid-stats" instance=ExtResource( 21 )]
 margin_left = 104.0
