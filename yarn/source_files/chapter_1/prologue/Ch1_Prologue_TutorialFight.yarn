@@ -1,0 +1,47 @@
+title: Ch1_Prologue_TutorialFight
+tracking: always
+starting_bg: "CG_ch01_Forest"
+starting_music: none
+starting_ambience: "footsteps_forest"
+clean_audio_when_done: music, ambience
+---
+Ethel: It's getting dark. We better set up camp. #right:ethel_neutral #left:nema_neutral
+
+Ethel: (Where is everyone? What's with all the weird flora? Where are we?) #right:ethel_thinking
+
+Ethel: (Our stuff was thankfully next to where we woke up... still have no idea why or how.) #right:ethel_thinking
+
+Ethel: (It wouldn’t be the first time I’d stumble around naked and covered in goop... but it’s not on my top ten list of activities.) #right:ethel_tired
+
+Ethel: (I'm starting to feel like we were sent to some sort of experimental island, Dr Moonrow style...) #right:ethel_thinking
+
+Ethel: (... Actually, on second thought: I hope it's something else.) #right:ethel_disgust
+
+Ethel: (Still, where could we be? It's like everyone left shop overnight.) #right:ethel_thinking
+
+Ethel: (... Did we get invaded?) #right:ethel_thinking
+
+Ethel: (But if so... why put me and sis in a goo sarcophagus?) #right:ethel_thinking
+
+Ethel: (Something isn't adding up, and I have no idea what...) #right:ethel_thinking
+
+Ethel: (I'll just have to pretend to have a plan so she doesn't freak out.) #right:ethel_thinking
+
+<<play_sfx "noise_rustle">>
+
+<<ambience_stop_all>>
+
+Ethel: (What the?) #right:ethel_fear
+
+Ethel: Is someone there? #right:ethel_angry-sword
+
+Ethel: (Must have been the wind...) #right:ethel_neutral
+
+Ethel: Wait, crap! What if it's a wild animal?! #right:ethel_angry-sword
+
+// need a roar sound here
+
+Ethel: Nema! Get behind me! #right:ethel_angry-sword #nema_confused
+
+<<transition_combat "combat_ch01_tutorial">>
+===

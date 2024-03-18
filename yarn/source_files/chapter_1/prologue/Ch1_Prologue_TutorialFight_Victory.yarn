@@ -1,0 +1,29 @@
+﻿title: Ch1_Prologue_TutorialFight_Victory
+tracking: always
+starting_bg: hidden
+starting_music: none
+starting_ambience: none
+clean_audio_when_done: music, ambience
+---
+<<award_level_ethel>>
+<<award_level_nema>>
+
+Houtamelo: Wow, you somehow won this fight.
+
+Houtamelo: This was not planned, at all.
+
+Houtamelo: In fact, the fight was supposed to be unbeatable.
+
+Houtamelo: Which means: 1 - You got extremely lucky. 2 - Hacked. 3 - I need to do some proper balancing.
+
+Houtamelo: Well, I guess you deserve something...
+
+Houtamelo: Here, an extra level should suffice.
+
+<<award_level_ethel>>
+<<award_level_nema>>
+
+Houtamelo: Anyway, the timeline ends here so I'll be sending you over to the normal, boring one. Please send me a message if you managed to beat this without hacking/insane luck.
+
+<<jump Ch1_Prologue_TutorialFight_Defeat>>
+===

@@ -1,0 +1,62 @@
+﻿title: Ch1_Prologue_Awakening
+tracking: always
+starting_bg: hidden
+starting_music: none
+starting_ambience: none
+clean_audio_when_done: music, ambience
+---
+You wake up. Something you shouldn't have done.
+
+<<wait_bg_fade_set 1.0 "CG_ch01_Not-yet-awake">>
+
+//Commented the expressions bellow because she is currently naked and the expressions are all clothed.
+
+Ethel: Ugh... where am I? Why am I in a... tomb? ... Why am I naked? ... Why am I sticky? ... At this point: Do I want to know? //#right:ethel_disgust
+
+Ethel: Last thing I remember was... I feel like I have a reverse hangover... //#right:ethel_tired
+
+You rub your eyes. Your mouth tastes of a stale metallic. //#right:ethel_tired
+
+Ethel: Did I do something stupid again? //#right:ethel_worried
+
+<<wait_bg_fade_hide 1.0>>
+
+<<bg_set "CG_ch01_Awakening">>
+
+<<wait_play_sfx "tomb_opening">>
+
+<<ambience_stop_all>>
+<<ambience_play_loop "silent_forest">>
+
+<<wait_bg_fade_show 1.0>>
+
+You scan the area. Something feels... off. ''Very'' off.
+
+You're not alone...
+
+Ethel: Sis! #right:ethel_worried #left:nema_tired
+
+You slip trying to get up. #right:ethel_worried #left:nema_tired
+
+Ethel: Are you okay? #right:ethel_worried #left:nema_tired
+
+She stirrs. #right:ethel_worried #right:ethel_worried #left:nema_tired
+
+Nema: Mnh... five more minutes... #right:ethel_worried #left:nema_tired
+
+Ethel: This isn't the time! Get up! #right:ethel_angry #left:nema_tired
+
+Nema: Are we there yet? #right:ethel_angry #left:nema_tired
+
+Ethel: Nema... we don't even know where "here" nor "there" are... #right:ethel_neutral #left:nema_neutral
+
+Ethel: (I sure need to figure it out soon however...) #right:ethel_thinking #left:nema_thinking
+
+<<wait_bg_fade_hide 1.0>>
+
+<<ambience_stop_all>>
+
+<<wait_play_sfx "dressing">>
+
+<<jump Ch1_Prologue_TutorialFight>>
+===

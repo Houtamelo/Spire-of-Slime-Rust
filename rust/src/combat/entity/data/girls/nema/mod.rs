@@ -1,17 +1,18 @@
+use houta_utils::prelude::DynamicArray;
+
+use crate::combat::entity::data::girls::nema::stats::NemaData;
+use crate::combat::entity::stat::*;
+
 pub mod stats;
 pub mod skills;
 pub mod perks;
-
-use houta_utils::prelude::DynamicArray;
-use crate::combat::entity::data::girls::nema::stats::NemaData;
-use crate::combat::entity::stat::*;
 
 pub static DEFAULT_NEMA: NemaData = NemaData {
 	size : Size::new(1),
 	dmg  : CheckedRange::new(6, 10).unwrap(),
 	spd  : Speed::new(100),
 	acc  : Accuracy::new(0),
-	crit : CritChance::new(0),
+	crit : CritRate::new(0),
 	dodge: Dodge::new(5),
 	max_stamina : MaxStamina::new(20),
 	toughness   : Toughness::new(0),

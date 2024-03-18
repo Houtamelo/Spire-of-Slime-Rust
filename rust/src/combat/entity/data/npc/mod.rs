@@ -1,12 +1,13 @@
-pub mod bellplant;
-pub mod crabdra;
-
 use comfy_bounded_ints::prelude::SqueezeTo;
 use rand::Rng;
 use rand_xoshiro::Xoshiro256PlusPlus;
 use serde::{Deserialize, Serialize};
-use crate::combat::entity::data::character::{CharacterDataTrait};
+
+use crate::combat::entity::data::character::CharacterDataTrait;
 use crate::combat::entity::stat::*;
+
+pub mod bellplant;
+pub mod crabdra;
 
 #[derive(Debug, Clone, Copy, Serialize, Deserialize, PartialEq, Eq, Hash)]
 pub enum NPCName {
@@ -92,7 +93,7 @@ impl CharacterDataTrait for NPCName {
 		return Accuracy::new(value.squeeze_to());
 	}
 
-	fn crit(&self, level: u8) -> CritChance {
+	fn crit(&self, level: u8) -> CritRate {
 		let level: i64 = level.squeeze_to();
 		
 		let value = match self {
@@ -102,7 +103,7 @@ impl CharacterDataTrait for NPCName {
 			NPCName::BellPlant => 0 + (level *  8) / 10,
 		};
 
-		return CritChance::new(value.squeeze_to());
+		return CritRate::new(value.squeeze_to());
 	}
 
 	fn dodge(&self, level: u8) -> Dodge {

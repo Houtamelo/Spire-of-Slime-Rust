@@ -1,24 +1,28 @@
+use std::collections::{HashMap, HashSet};
+
+use comfy_bounded_ints::prelude::{Bound_u8, SqueezeTo, SqueezeTo_u64};
+use gdnative::prelude::*;
+use rand_xoshiro::Xoshiro256PlusPlus;
+use serde::{Deserialize, Serialize};
+use uuid::Uuid;
+
+use entity::position::Position;
+
+use crate::combat::effects::persistent::PersistentEffect;
+use crate::combat::entity::*;
+use crate::combat::entity::character::*;
+use crate::combat::entity::girl::*;
+use crate::combat::entity::stat::{CurrentStamina, Speed};
+use crate::combat::timeline::TimelineEvent;
+use crate::util::{SaturatedU64, ToSaturatedI64};
+
 mod effects;
 mod skill_types;
 mod timeline;
 mod skill_resolving;
 mod perk;
 pub mod entity;
-
-use std::collections::{HashMap, HashSet};
-use comfy_bounded_ints::prelude::{Bound_u8, SqueezeTo, SqueezeTo_u64};
-use gdnative::prelude::*;
-use rand_xoshiro::Xoshiro256PlusPlus;
-use serde::{Deserialize, Serialize};
-use uuid::Uuid;
-use entity::position::Position;
-use crate::combat::entity::*;
-use crate::combat::effects::persistent::PersistentEffect;
-use crate::combat::entity::character::*;
-use crate::combat::entity::girl::*;
-use crate::combat::entity::stat::{CurrentStamina, Speed};
-use crate::combat::timeline::TimelineEvent;
-use crate::util::{SaturatedU64, ToSaturatedI64};
+mod ui;
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct CombatState {

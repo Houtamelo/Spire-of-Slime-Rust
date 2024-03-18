@@ -1,0 +1,160 @@
+﻿title: Ch1_Plot_Dragonkin_DeliveringFruits
+tracking: always
+starting_bg: "CG_ch01_Forest"
+starting_music: none
+starting_ambience: none
+clean_audio_when_done: music, ambience
+---
+You return to the church with your haul of fruits and other edible-looking things.
+
+Ethel: Hopefully we didn’t bring back anything completely inedible. But at least if any of these are poisonous, Mistress Tender should tell us. It’ll be good to know for when we leave this place. #right:ethel_neutral #left:nema_neutral
+
+Nema: Well, let’s go in and see what we can learn. #right:ethel_neutral #left:nema_neutral
+
+<<wait_bg_fade_hide 0.5>>
+
+<<bg_set "CG_ch01_Chapel">>
+
+<<wait_play_sfx "dorm-door-opening-6038">>
+
+<<bg_fade_show 1.0>>
+
+You enter the church and find Mistress Tender. #right:ethel_neutral #left:mistress-tender_neutral
+
+Mistress Tender: Ah! That’s a fine bounty there… you even brought back Dragonkin. I can make some excellent pies with that and some of the Eyespice I have here. #right:ethel_neutral #left:mistress-tender_content
+
+Ethel: And I trust that everything we brought back is edible, correct?  #right:ethel_curious #left:mistress-tender_content
+
+Mistress Tender: None of it looks spoiled to me. You may not know much about the wildlife, but your intuition on the plant life here is excellent. I’ll go ahead and prepare a feast for us. #right:ethel_curious #left:mistress-tender_smirk
+
+Ethel: (Hmmm… I’d love to have a good cooked meal right now, but I don’t trust her.) #right:ethel_suspicious #left:mistress-tender_smirk
+
+Ethel: Cooking was never my strong suit. How about we watch? I bet we could learn a thing or two from you. #right:ethel_thinking #left:mistress-tender_neutral
+
+Nema nods. #right:nema_content #left:mistress-tender_neutral
+
+Nema: Great idea! I’m itching to get back into some normal learning. #right:nema_content #left:mistress-tender_content
+
+Mistress Tender has a decent cooking setup, a rudimentary wood fired oven, some solid knives and utensils, and a cabinet with a few jars and bags of spices. Quite a few odd ones. #right:nema_curious #left:mistress-tender_neutral
+
+<<ambience_play_once "cooking">>
+
+Mistress Tender: So first, let’s get out the Eyespice… #right:nema_curious #left:mistress-tender_content
+
+Ethel: I swear those leaves are staring at me… I guess it’s edible though. #right:ethel_serious #left:mistress-tender_neutral
+
+Despite the strange ingredients, it all seems like normal cooking, and you lose interest after a while and start thinking about recent events, combat strategies, and other useful things to think about. #right:ethel_thinking
+
+On the other hand, Nema is absolutely enthusiastic to learn some cooking; you figure she’ll know if Mistress Tender puts anything unacceptably strange in the food. #right:ethel_thinking #left:nema_curious
+
+Mistress Tender: And then it’s almost ready, so let’s add a bit of this for extra sweetness… #right:mistress-tender_content #left:nema_content
+
+<<ambience_stop_all>>
+
+Nema: Smells great from here! #right:mistress-tender_content #left:nema_content
+
+You perk up when the wonderful smell of baked pie hits you, and then peek over at Nema and Mistress Tender’s newest creation. #right:ethel_neutral
+
+Ethel: (Okay, now that’s a good-looking pie…) #right:ethel_content
+
+Some of your suspicion fades when you finally get a chance to try the pie. The texture is fine, and it has a weird aftertaste, but the sweetness makes it all work. After trying some of it, you become downright ravenous and devour a few more slices. #right:ethel_content
+
+<<set $ethel_corruption += 2>>
+<<set $nema_corruption += 2>>
+
+Mistress Tender: And I assume you find it to be excellent? #right:ethel_content #left:mistress-tender_smirk
+
+Nema: Mmmph! Mmmm… Hmgmhg! #right:ethel_content #left:nema_content
+
+Ethel: I agree. #right:ethel_neutral #left:nema_content
+
+You finish your meal and take a moment to relax. #right:ethel_determined #left:nema_content
+
+Ethel: (Anyone who makes a pie this good can’t be all terrible.) #right:ethel_thinking
+
+Mistress Tender: It’s getting dark, so perhaps you’d like to rest for the night? We can talk more early in the morning. #right:ethel_thinking #left:mistress-tender_smirk
+
+Ethel: Good idea. #right:ethel_neutral #left:mistress-tender_smirk
+
+Nema: I think I ate too much… Yeah, laying down would be nice. #right:ethel_neutral #left:nema_tired
+
+<<wait_bg_fade_set 1.0 "CG_ch01_Chapel-night">>
+
+Ethel: (Maybe it's not all bad...) #right:ethel_neutral
+
+Ethel: (Sure, there's monsters trying to eat my spleen all over the place.) #right:ethel_thinking
+
+Ethel: (Yet, it feels safer here than back home. And the weird plant lady treats me better than my employer.) #right:ethel_thinking
+
+Ethel: (Would be nice if I could fall asleep within the hour... Nema goes blank after hitting the pillow. Imagine not being haunted by your past.) #right:ethel_tired
+
+<<play_sfx "toolbox_shuffling_3">>
+
+You are startled by a sudden rustling.
+
+You peek out from your eyelids without moving.
+
+A figure in the darkness is skulking around.
+
+Unless there's several plant ladies around. That is the silhouette of Tender.
+
+She is holding something that glimmers in the moonlight. Some liquid in a container.
+
+<<play_sfx "drawer-41055">>
+
+She opens one of the nearby cabinets and puts it inside before slinking back out.
+
+(...)
+
+(...)
+
+Ethel: (Okay, I can't see any good reason for that. Or, am I being too suspicious?) #right:ethel_suspicious
+
+Ethel: (But what reason does she have to do... inventory in the middle of the night?) #right:ethel_suspicious
+
+-> Investigate
+    <<set $investigated_crabbane = true>>
+
+    Ethel: (Okay, yeah. This is way too weird.) #right:ethel_suspicious
+
+    You carefully roll out of bed.
+
+    You sneak over to the cabinet and open it.
+
+    You eye the vial, container thing. There's something viscous, purple inside. 
+
+    Ethel: (... At least it's not pink.) #right:ethel_poker-face
+
+    Otherwise it's empty. Not even some homey cobweb.
+
+    -> Take it
+        <<set $stole_crabbane = true>>
+
+        You swipe the... whatever this type of glass container is called.
+
+        You close the door and quietly make your way back, slipping it into your backpack.
+
+        You'll inspect it closer tomorrow. Better safe than sorry.
+
+    -> Leave it
+        Ethel: (... Okay, it's not that bad. I have no idea what liquid that is. But, if it's poison, she could have used it at dinner... or while we were sleeping.) #right:ethel_neutral
+
+        Ethel: (Still weird to just... randomly put away items in the dark of the night.) #right:ethel_thinking
+
+        Ethel: (Maybe she does that often? Not like I've had a sentient potted plant as a room-mate in a dystopian forest before.) #right:ethel_thinking
+
+        You close the door and sneak back to your bed and slump down.
+
+        Ethel: (Well, if I wake up dead, at least I only have myself to blame~) #right:ethel_neutral
+
+-> Let it go
+    You reluctantly stay in bed.
+
+    Ethel: (Okay... maybe it's not THAT bad. I mean, she didn't put it next to us or anything.) #right:ethel_thinking
+
+    Ethel: (... Besides: If she wanted us dead, she'd have poisoned the food.) #right:ethel_thinking
+
+    Ethel: (Relax... Not everything is out to get you... Just most things.) #right:ethel_tired
+
+<<jump Ch1_Plot_MidnightMayhem_Begin>>
+===

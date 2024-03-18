@@ -1,0 +1,120 @@
+﻿title: Ch1_Plot_Dragonkin_DiscussingBeforeExpedition
+tracking: always
+starting_bg: hidden
+starting_music: none
+starting_ambience: "noise_scribbling_low"
+clean_audio_when_done: music, ambience
+---
+You wake up. Still not a great idea.
+
+<<bg_fade_set 1.0 "CG_ch01_Chapel">>
+
+Ethel: (Ugh... I’m seriously stiff.) #right:ethel_tired
+
+<<play_sfx "Single_Stone_Footsteps_1">>
+
+Ethel: (Wait...) #right:ethel_confused
+
+You look around, spotting a familiar, unfamiliar figure passing in the hallway. #right:ethel_confused
+
+Ethel: (Oh fuck! It wasn’t a drug induced hallucination!) #right:ethel_confused
+
+Your head snaps to where Nema was sleeping. #right:ethel_confused
+
+She’s on the bed, writing in her journal. #right:ethel_content
+
+Ethel: (Oh thank goodness.) #right:ethel_content
+
+Ethel: (Wait, no... we’re stuck in who knows where. And this weird plant lady just asked me to go collect... fruits and vegetables? And we just got beat up by some chimera thing? This is no place for her!) #right:ethel_worried
+
+Ethel: (I mean... not sure how much worse it is compared to the gangs back home... but I’m not impressed so far. We’ve almost died and we’ve been here less than a day.) #right:ethel_thinking
+
+Ethel: (... I think. I have no clue how long we were out cold.) #right:ethel_thinking
+
+You approach your sister. #right:ethel_thinking
+
+Ethel: Hey Nema... How are you doing? #right:ethel_content #left:nema_neutral
+
+<<ambience_stop_all>>
+
+She perks up when spotting that you’re awake. #right:ethel_content #left:nema_neutral
+
+Nema: Hey sis! #right:ethel_content #left:nema_content
+
+Nema: This place is so cool! I’ve had a few hours to check out this chapel! #right:ethel_content #left:nema_content
+
+You scream internally. #right:ethel_poker-face #left:nema_content
+
+Ethel: ... That’s... nice. #right:ethel_tired #left:nema_content
+
+Nema: You were sleeping a lot. #right:ethel_tired #left:nema_neutral
+
+Ethel: (Asgkslkflt! I’ve told her to not wander off without me!) #right:ethel_angry #left:nema_neutral
+
+Ethel: (Deep breaths... I can’t yell at her right now... I need to make sure she’s safe.) #right:ethel_tired #left:nema_neutral
+
+Ethel: Sis... we were just attacked by an unknown creature and lost consciousness... #right:ethel_neutral #left:nema_neutral
+
+Ethel: Running around might not be safe, okay? #right:ethel_neutral #left:nema_neutral
+
+Nema: But... this place is empty. You’ve told me there’s only people with imaginary friends that live here. #right:ethel_neutral #left:nema_curious
+
+Nema: And, there’s no people. And imaginary things are in your head. #right:ethel_neutral #left:nema_curious
+
+Nema: And thus: There’s nothing dangerous that would be here. #right:ethel_neutral #left:nema_determined
+
+Ethel: (That’s... we’re not in K-... wait, where are we from?) #right:ethel_poker-face #left:nema_determined
+
+Ethel: Uh, hey sis... do you remember our home town? #right:ethel_worried #left:nema_neutral
+
+Nema: Of course silly! It’s... #right:ethel_worried #left:nema_content
+
+She stares blankly. #right:ethel_worried #left:nema_confused
+
+Nema: Cityville? #right:ethel_confused #left:nema_confused
+
+Ethel: (What’s going on? Why can’t I remember anything?) #right:ethel_confused #left:nema_confused
+
+Nema: Huh... weird. I can’t even remember the name of my university... #right:ethel_confused #left:nema_confused
+
+Ethel: (I know booze and drugs can mess with your memory... but I’ve never heard of anything to this extent.) #right:ethel_thinking #left:nema_confused
+
+Nema: Anyhow: I’ve found out quite a bit about the herbs in this place. #right:ethel_thinking #left:nema_neutral
+
+Nema: Lady Tender told me how the plants are good. And several of their uses. #right:ethel_neutral #left:nema_neutral
+
+Nema: Oh, and how the chimera creatures are bad. #right:ethel_neutral #left:nema_determined
+
+Ethel: Well, we have some firsthand experience with those... #right:ethel_neutral #left:nema_neutral
+
+Ethel: (How do I best break this to her?) #right:ethel_thinking #left:nema_neutral
+
+Nema: When are we leaving to go to the grove by the way? #right:ethel_thinking #left:nema_neutral
+
+Ethel: (...) #right:ethel_poker-face #left:nema_neutral
+
+Ethel: (Gosh darn it...) #right:ethel_tired #left:nema_neutral
+
+Ethel: As soon as we’ve got our bearings and I’m sure we’re good to go. #right:ethel_neutral #left:nema_neutral
+
+Nema: I took the liberty of sketching down the... ‘map’ you were given. Very crude doodle. #right:ethel_neutral #left:nema_neutral
+
+Ethel: (Nema... for the love of-) #right:ethel_tired #left:nema_neutral
+
+Ethel: Sis... you gotta be more careful. We don’t know where we are. #right:ethel_neutral #left:nema_neutral
+
+Nema: We’re at Tender’s chapel. #right:ethel_neutral #left:nema_determined
+
+Ethel: ... You know what I meant. #right:ethel_poker-face #left:nema_neutral
+
+Nema: *Giggles* #right:ethel_neutral #left:nema_blep
+
+Ethel: Well, get ready. We have a long journey ahead. #right:ethel_content #left:nema_content
+
+<<ambience_stop_all>>
+<<ambience_play_loop "noise_packing">>
+
+<<wait_bg_fade_hide 1.0>>
+
+<<jump Ch1_Plot_Dragonkin_StartingExpedition>>
+===

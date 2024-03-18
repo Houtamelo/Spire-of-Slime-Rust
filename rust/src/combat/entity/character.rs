@@ -54,7 +54,7 @@ pub struct CombatCharacter {
 	pub(super) poison_rate: PoisonRate,
 	pub(super) spd  : Speed,
 	pub(super) acc  : Accuracy,
-	pub(super) crit : CritChance,
+	pub(super) crit : CritRate,
 	pub(super) dodge: Dodge,
 	pub dmg: CheckedRange,
 	pub(super) power: Power,

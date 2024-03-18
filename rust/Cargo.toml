@@ -15,7 +15,7 @@ proc_macros = { path = "proc_macros" }
 serde = { version = "1.0", features = ["derive"] }
 ron = "0.8"
 houta_utils = { package = "houtamelo_utils", version = "1.0" }
-houta_utils_gdnative = { package = "houtamelo_utils_gdnative", version = "1.2" }
+houta_utils_gdnative = { package = "houtamelo_utils_gdnative", version = "1.4" }
 gdnative_export_node_as_path = "0.1"
 getrandom = "0.2"
 float-cmp = "0.9"
@@ -26,3 +26,4 @@ parking_lot = "0.12"
 uuid = { version = "1.7", features = ["serde"] }
 strum = "0.26"
 strum_macros = "0.26"
+anyhow = { version = "1.0", features = ["backtrace", "std"] }

@@ -1,14 +1,17 @@
 use std::num::{NonZeroU16, NonZeroU8};
+
 use comfy_bounded_ints::prelude::Bound_u8;
 use houta_utils::prelude::DynamicArray;
 use serde::{Deserialize, Serialize};
+
 use proc_macros::positions;
+
 use crate::combat::effects::onTarget::TargetApplier;
 use crate::combat::entity::data::skill_name::SkillName;
-use crate::combat::entity::stat::{CheckedRange, CritChance};
+use crate::combat::entity::stat::{CheckedRange, CritRate};
 use crate::combat::skill_types::*;
-use crate::combat::skill_types::lewd::LewdSkill;
 use crate::combat::skill_types::defensive::*;
+use crate::combat::skill_types::lewd::LewdSkill;
 use crate::util::SaturatedU64;
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Serialize, Deserialize)]
@@ -51,7 +54,7 @@ pub static INVIGORATING_FLUIDS: Skill = Skill::Defensive(DefensiveSkill {
 	skill_name: SkillName::FromBellPlant(BellPlantSkill::InvigoratingFluids),
 	recovery_ms: SaturatedU64::new(0),
 	charge_ms: SaturatedU64::new(2000),
-	crit_mode: CRITMode::CanCrit { chance: CritChance::new(5) },
+	crit_mode: CRITMode::CanCrit { chance: CritRate::new(5) },
 	effects_self: DynamicArray::Static(&[]),
 	effects_target: DynamicArray::Static(INVIGORATING_FLUIDS_EFFECTS_TARGET),
 	caster_positions: positions!("🛑|✔️|✔️|✔️"),

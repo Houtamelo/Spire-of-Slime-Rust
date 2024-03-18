@@ -1,8 +1,8 @@
 use serde::{Deserialize, Serialize};
 
-pub trait AffairTrait { 
+pub trait Affair { 
 	type State;
-	fn get_from_map(map: &AffairMap) -> Self::State;
+	fn get(map: &AffairMap) -> Self::State;
 }
 
 #[derive(Debug, Clone, Default, Serialize, Deserialize)]
@@ -11,8 +11,8 @@ pub struct AffairMap {
 }
 
 impl AffairMap {
-	pub fn get<T: AffairTrait>(&self) -> T::State {
-		return T::get_from_map(self);
+	pub fn get<T: Affair>(&self) -> T::State {
+		return T::get(self);
 	}
 }
 
@@ -21,7 +21,6 @@ pub enum Happened {
 	#[default] No,
 	Yes,
 }
-
 
 macro_rules! affair_type {
     (struct $name: ident, $state: ty) => {
@@ -34,10 +33,10 @@ macro_rules! affair_type {
 		    pub fn state(&self) -> &$state { return &self.state; }
 	    }
 
-		impl AffairTrait for $name {
+		impl Affair for $name {
 			type State = $state;
 
-			fn get_from_map(map: &AffairMap) -> Self::State { return map.$name.state; }
+			fn get(map: &AffairMap) -> Self::State { return map.$name.state; }
 		}
     };
 }

@@ -1,5 +1,6 @@
 use comfy_bounded_ints::prelude::{SqueezeTo, SqueezeTo_i64};
 use houta_utils::prelude::DynamicArray;
+
 use crate::combat::effects::onSelf::SelfApplier;
 use crate::combat::effects::onTarget::TargetApplier;
 use crate::combat::entity::character::CombatCharacter;
@@ -86,7 +87,7 @@ impl LewdSkill {
 			CRITMode::CanCrit { chance } => {
 				let final_chance = {
 					let mut temp = chance.to_sat_i64();
-					temp += caster.dyn_stat::<CritChance>().get();
+					temp += caster.dyn_stat::<CritRate>().get();
 					temp.to_percent_u8()
 				};
 

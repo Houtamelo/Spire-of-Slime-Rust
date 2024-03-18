@@ -1,0 +1,112 @@
+﻿title: Ch1_Plot_Dragonkin_StartingExpedition
+tracking: always
+starting_bg: "CG_ch01_Forest"
+starting_music: none
+starting_ambience: none
+clean_audio_when_done: music, ambience
+---
+Ethel: (Finally away from that place...) #right:ethel_neutral
+
+Ethel: (I don’t trust humanoid plant women that drag our unconscious bodies to her seemingly self-made chapel; she's the only member of... then asks us to go do her freaking gardening!) #right:ethel_suspicious
+
+Ethel: (Maybe that’s a bit oddly specific. But just because she’s the first thing that hasn’t tried to eat our face, doesn’t mean she’s trustworthy.) #right:ethel_neutral
+
+Ethel: (... Why does it feel I’ll run into a talking pumpkin named Steve that’ll be the first trustworthy... “person”?) #right:ethel_poker-face
+
+///play nema running sound?
+
+Nema: Ooh! Look at this one! #right:ethel_neutral #left:nema_content
+
+Ethel: Careful, we still don’t know what those are. #right:ethel_worried #left:nema_content
+
+Nema: Relax. All plants follow the same signs for if they are toxic, have needles or similar. #right:ethel_worried #left:nema_neutral
+
+Ethel: (I want to trust you... but the plants back home didn’t have prehensile tentacles... I think... I was never into flowers. But preeetty sure they didn’t do... whatever that one is doing.) #right:ethel_disgust #left:nema_neutral
+
+Ethel: If this place has hybrid animals... I’m pretty sure that one is at least three plants merged... #right:ethel_disgust #left:nema_neutral
+
+Nema: ... That is a valid point. I will make sure to double check all flora’s warning signs. #right:ethel_neutral #left:nema_thinking
+
+Nema: That one is actually two plants and a fungi! #right:ethel_neutral #left:nema_curious
+
+Nema: ... Which makes your warning help a lot. Those two have very separate warning signs. #right:ethel_worried #left:nema_thinking
+
+Ethel: (Great. Thanks for confirming I have to worry twice as hard now...) #right:ethel_poker-face #left:nema_thinking
+
+Ethel: Finding food will be difficult with all this going on. #right:ethel_neutral #left:nema_thinking
+
+Nema: We can just watch what the local fauna eats. #right:ethel_neutral #left:nema_neutral
+
+Ethel: The local fauna was made out of tentacles, anger and teeth. And tried to eat us... #right:ethel_poker-face #left:nema_neutral
+
+Nema: Don’t be such a sourpuss! Not everything can be made out of tentacles and jagged enamel! #right:ethel_poker-face #left:nema_content
+
+Ethel: (Famous last words...) #right:ethel_poker-face #left:nema_content
+
+Ethel: (Seriously! Why is everything so... pink, sticky and... tentacly?!) #right:ethel_disgust
+
+///play mist flowing sound?
+
+Ethel: (...) #right:ethel_confused
+
+You rub your eyes. #right:ethel_confused
+
+<<mist_lerp_percent 0.5>>
+
+Ethel: (Is... that pink freaking mist?) #right:ethel_suspicious
+
+<<mist_lerp_percent 0.75>>
+
+The mist slowly engulfs you. #right:ethel_suspicious
+
+<<mist_lerp_percent 1.0>>
+
+Nema: Ooh! Pretty! #right:ethel_suspicious #left:nema_curious
+
+Ethel: (This flowed in faster than the mist in the bad parts of town.) #right:ethel_suspicious #left:nema_curious
+
+You take a hesitant inhale. #right:ethel_curious #left:nema_curious
+
+The only thing it reminds you off is the vapours inside a drug den... or whore house. Neither seem useful out here. #right:ethel_curious
+
+It's definitely affecting your head... and your smaller head. #right:ethel_worried
+
+Ethel: Nema, can you get rid of this mist? #right:ethel_suspicious #left:nema_content
+
+Nema: I guess I can try? Why? #right:ethel_suspicious #left:nema_confused
+
+Ethel: Remember what I said? For all we know, this could be spores that burrow into our lungs! #right:ethel_suspicious #left:nema_confused
+
+Nema: Oh, sure! We're likely too late if that's the case. #right:ethel_suspicious #left:nema_thinking
+
+///Play spell sound
+///Show spell animation fx?
+
+<<mist_hide>>
+
+She lets out an incantation as the mist gets forcefully pushed from your vicinity. #right:ethel_neutral #left:nema_neutral
+
+Ethel: Yeah, well... no point in tempting fate, just in case. #right:ethel_neutral #left:nema_neutral
+
+Ethel: Now let's hurry before something weirder comes along! #right:ethel_worried #left:nema_neutral
+
+///Later replace nema emotion bellow with pout/frown
+
+Nema: I can't do much else when I have to focus on this anyhow... #right:ethel_neutral #left:nema_tired
+
+Nema: This isn't as easy as just waggling a stick you know! #right:ethel_neutral #left:nema_neutral
+
+Ethel: How long do you think you can keep this up? #right:ethel_worried #left:nema_neutral
+
+Nema: A day... maybe? Depends on how much effort I put into it. #right:ethel_worried #left:nema_neutral
+
+Ethel: Please tell me when you start getting tired ok? We can stop to take a break whenever you need. #right:ethel_worried #left:nema_neutral
+
+Ethel: (Hopefully in areas free of this... hazard.) #right:ethel_suspicious
+
+Ethel: (There has to be some other way to repel it.) #right:ethel_thinking
+
+Ethel: (I'll make sure to keep an eye out. I know how she gets when not wanting to admit she's actually tired.) #right:ethel_worried
+
+<<transition_world_map>>
+===

@@ -1,13 +1,13 @@
+pub use dynamic::*;
+pub use range::*;
+pub use rigid::*;
+
 mod dynamic;
 mod range;
 mod rigid;
 
-pub use dynamic::*;
-pub use rigid::*;
-pub use range::*;
-
 macro_rules! dynamic_stat {
-    (struct $name: tt, $field: ty, $num: ty, $trait_ty: ty, $enum_ty: ty, $enum_variant: path) => {
+    (struct $name: tt, $field: ty, $num: ty, $enum_variant: path) => {
 	    #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash, Serialize, Deserialize)]
 	    pub struct $name {
 		    inner: $field
@@ -33,10 +33,10 @@ macro_rules! dynamic_stat {
 		    }
 	    }
 	    
-	    impl $trait_ty for $name {
+	    impl DynamicStatTrait for $name {
 		    type Inner = $field;
 		    
-		    fn stat_enum() -> $enum_ty {
+		    fn stat_enum() -> DynamicStat {
 			    return $enum_variant;
 		    }
 		    
@@ -62,7 +62,7 @@ macro_rules! dynamic_stat {
 use dynamic_stat;
 
 macro_rules! rigid_stat {
-    (struct $name: tt, $field: ty, $num: ty, $trait_ty: ty, $enum_ty: ty, $enum_variant: path) => {
+    (struct $name: tt, $field: ty, $num: ty, $enum_variant: path) => {
 	    #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash, Serialize, Deserialize)]
 		#[serde(transparent)]
 	    #[repr(transparent)]
@@ -90,10 +90,10 @@ macro_rules! rigid_stat {
 		    }
 	    }
 	    
-	    impl $trait_ty for $name {
+	    impl RigidStatTrait for $name {
 		    type Inner = $field;
 		    
-		    fn stat_enum() -> $enum_ty {
+		    fn stat_enum() -> RigidStat {
 			    return $enum_variant;
 		    }
 	    }

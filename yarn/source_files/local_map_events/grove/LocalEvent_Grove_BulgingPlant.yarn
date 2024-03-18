@@ -1,0 +1,174 @@
+﻿title: LocalEvent_Grove_BulgingPlant
+tracking: always
+starting_bg: hidden
+starting_music: none
+starting_ambience: none
+clean_audio_when_done: music, ambience
+---
+Ethel: (Pink... so much pink... It's like I'm back in the red light district. Except more annoying.) #right:ethel_disgust
+
+Ethel: (There's weird noises, scents and who knows what... I hope we're close to this dang place.) #right:ethel_disgust
+
+Ethel: (Wait, where'd Nema go?) #right:ethel_confused
+
+<<bg_fade_set 1.0 "CG_ch01_Strange-plant-begin">>
+
+Nema: Ooh! I haven't seen that one yet!
+
+Ethel: That combination of words is rarely good news.
+
+<<bg_set "CG_ch01_Strange-plant-Nema-close">>
+
+You look over and see Nema uncomfortably close to... what you can only describe as either a used condom or dental dam... which one you're not sure. But made out of cerise plant parts...
+
+What you ARE sure about however, is that whatever that thing is; it's not only swelling, but trembling ominously. That <b>CANNOT</b> be a good sign.
+
+Nema walks up to the threat, completely oblivious. You HAVE to act!
+
+->Warn her. (Would she react in time?)
+	<<set $nema_lust += 30>>
+
+	<<set $nema_corruption += 5>>
+
+	Ethel: NEMA! DON'T!
+
+	<<bg_fade_hide 1.0>>
+
+	Startled, your sister leaps into the air.
+
+	She loses her grip on her staff, and attempts to catch it.
+
+	You freeze in place as you watch her fumble for an uncomfortably long time before she finally manages to snatch up her staff.
+
+	<<play_sfx "plant_pop">> // like the sound of a baloon exploding but with medium volume
+
+	... Unfortunately, she does so by grabbing it, and causing it to smack into the weird plant.
+
+	<<ambience_play_loop "noise_slimy">> // should be a low-volume, subtle
+
+	<<if $nema_lust is less than 65>>
+
+	  <<bg_set "CG_ch01_Strange-plant-Nema-bukkake">>
+
+	<<else>>
+
+	  <<bg_set "CG_ch01_Strange-plant-Nema-bukkake-lots">>
+
+	<<endif>>
+
+	<<bg_fade_show 1.0>>
+
+	It explodes like an overly ripe zit. Except it contains pink goop.
+
+	Nema slowly turns to face you. Looking as if she lost a fight with a bubblegum.
+
+	Nema: What was that for?
+
+	Ethel: You were about to touch the weird explosion plant!
+
+	Nema: I just wanted to look at it... it's bioluminescent...
+
+	Ethel: It was vibrating!
+
+	Nema: Some plants do that... They upregulate. Not explode.
+
+	Nema: ... Well, there's that one plant... but that's the seed! Not the fruit!
+
+	Ethel: But I-
+
+	Nema angrily waved her staff in front of another of the weird pods.
+
+	It jiggled aggressively as long as she did, but stopped as she withdrew the staff.
+
+	Nema: Let's go find that grove...
+
+	Ethel: (Wait, but... no...)
+
+	Ethel: (I just tried to...)
+
+->Actions speak louder than words, there's no time! (I might make it)
+	<<set $ethel_lust += 30>>
+
+	<<set $ethel_corruption += 5>>
+
+	<<bg_fade_hide 1.0>>
+
+	<<play_sfx "running_2">>
+
+	You lunge into action, dashing forward with intent.
+
+	<<play_sfx "land_on_foliage">>
+
+	With a swift shove, you make sure your sister topples over into a soft pile of foliage.
+
+	As you move to correct your trajectory... you realize you didn't pay attention to where you were going.
+
+	<<play_sfx "slipping_on_tree_root">>
+
+	A root made itself very acquainted with your ankle.
+
+	The world slows to a crawl as your face rapidly approach the throbbing pod.
+
+	<<play_sfx "plant_pop">>
+
+	Your last thoughts are of your sister as the world becomes pink.
+
+	...
+
+	...
+
+	<<bg_fade_set 1.0 "CG_ch01_Strange-plant-Ethel-bukkake-frustrated">>
+
+	You slowly open your eyes.
+
+	<<ambience_play_loop "noise_slimy">>
+
+	Laying on your face coated in sticky substance brings back bad memories.
+
+	You push yourself upright.
+
+	All you can smell and taste is a sickly sweet aroma.
+
+	Nema: You okay sis?
+
+	Ethel: (Not my pride.)
+
+	Ethel: ... Maybe?
+
+	Nema: Why did you push me? And why did you tackle the nectar pod?
+
+	Ethel: ... It was about to explode?
+
+	Nema: They react to air vibrations... You're safe as long as you don't touch them.
+
+	She held out her staff close to one of the pods and it shook aggressively. But nothing else happened.
+
+	It stopped shaking as she withdrew the staff.
+
+	Ethel: (... Great. I may just have poisoned myself for no reason. Again.)
+
+	Nema helps you up.
+
+	Nema: You smell nice!
+
+	Ethel: ... How did you know this?
+
+	Nema: Oh, uh... I guessed!
+
+	Nema: It looks very similar to the plants I studied back home that did the same.
+
+	Ethel: Well... mind guessing less in the future?
+
+	Ethel: Didn't Tender tell you some of the plants here are corrosive?
+
+	Nema: Oh, right... yes... I'm sorry...
+
+	Ethel: Let's try to find that grove before anything else happens.
+
+	<<bg_set "CG_ch01_Strange-plant-Ethel-bukkake-sad">>
+
+	Ethel: (This scent better wash out...)
+<-
+
+<<transition_local_map>>
+===

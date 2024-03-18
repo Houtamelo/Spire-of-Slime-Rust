@@ -1,0 +1,1107 @@
+[gd_scene load_steps=45 format=2]
+
+[ext_resource path="res://Core/Combat/UI/Announcer/announcer_background.png" type="Texture" id=1]
+[ext_resource path="res://Core/Combat/UI/Announcer/font_announcer.tres" type="DynamicFont" id=2]
+[ext_resource path="res://Core/Combat/UI/Announcer/anim_fade-in.tres" type="Animation" id=3]
+[ext_resource path="res://Core/Combat/UI/Announcer/anim_fade-out.tres" type="Animation" id=4]
+[ext_resource path="res://Core/Combat/UI/Character Stats/background.png" type="Texture" id=5]
+[ext_resource path="res://Core/Combat/UI/Character Stats/Left Side/bar_left_lust_fill.png" type="Texture" id=6]
+[ext_resource path="res://Core/Combat/UI/Character Stats/Left Side/bar_left_lust.png" type="Texture" id=7]
+[ext_resource path="res://Core/Combat/UI/Character Stats/theme_character-stats.tres" type="Theme" id=8]
+[ext_resource path="res://Core/Combat/UI/Character Stats/Left Side/bar_left_temptation_fill.png" type="Texture" id=9]
+[ext_resource path="res://Core/Combat/UI/Character Stats/Left Side/bar_left_temptation.png" type="Texture" id=10]
+[ext_resource path="res://Core/Combat/UI/Character Stats/Left Side/bar_left_stamina_fill.png" type="Texture" id=11]
+[ext_resource path="res://Core/Combat/UI/Character Stats/Left Side/bar_left_stamina.png" type="Texture" id=12]
+[ext_resource path="res://Core/Combat/UI/Character Stats/font_mr-darcy_24_outline.tres" type="DynamicFont" id=13]
+[ext_resource path="res://Core/Combat/UI/Character Stats/Left Side/frame_left.png" type="Texture" id=14]
+[ext_resource path="res://Core/Combat/UI/Character Stats/theme_stat-grid.tres" type="Theme" id=15]
+[ext_resource path="res://Core/Combat/UI/Character Stats/Stat Icons/speed.png" type="Texture" id=16]
+[ext_resource path="res://Core/Combat/UI/Character Stats/Stat Icons/power.png" type="Texture" id=17]
+[ext_resource path="res://Core/Combat/UI/Character Stats/Stat Icons/dodge.png" type="Texture" id=18]
+[ext_resource path="res://Core/Combat/UI/Character Stats/Stat Icons/accuracy.png" type="Texture" id=19]
+[ext_resource path="res://Core/Combat/UI/Character Stats/Stat Icons/critical.png" type="Texture" id=20]
+[ext_resource path="res://Core/Combat/UI/Character Stats/prefab_grid-icon.tscn" type="PackedScene" id=21]
+[ext_resource path="res://Core/Combat/UI/Character Stats/Stat Icons/poison-apply-chance.png" type="Texture" id=22]
+[ext_resource path="res://Core/Combat/UI/Character Stats/Stat Icons/stun-mitigation.png" type="Texture" id=23]
+[ext_resource path="res://Core/Combat/UI/Character Stats/Stat Icons/poison-resistance.png" type="Texture" id=24]
+[ext_resource path="res://Core/Combat/UI/Character Stats/Stat Icons/debuff-apply-chance.png" type="Texture" id=25]
+[ext_resource path="res://Core/Combat/UI/Character Stats/Stat Icons/debuff-resistance.png" type="Texture" id=26]
+[ext_resource path="res://Core/Combat/UI/Character Stats/Stat Icons/move-resistance.png" type="Texture" id=27]
+[ext_resource path="res://Core/Combat/UI/Character Stats/Stat Icons/move-apply-chance.png" type="Texture" id=28]
+[ext_resource path="res://Core/Combat/UI/Character Stats/Stat Icons/composure.png" type="Texture" id=29]
+[ext_resource path="res://Core/Combat/UI/Character Stats/Stat Icons/toughness.png" type="Texture" id=30]
+[ext_resource path="res://Core/Shared_UI/AutoTextResize.gdns" type="Script" id=31]
+[ext_resource path="res://Core/Combat/UI/Character Stats/font_mr-darcy_34_outline.tres" type="DynamicFont" id=32]
+[ext_resource path="res://Core/Combat/Characters/Ethel/ethel_portrait.png" type="Texture" id=33]
+[ext_resource path="res://Core/Combat/UI/Character Stats/Orgasm Counter/orgasm_off.png" type="Texture" id=34]
+[ext_resource path="res://Core/Combat/UI/Character Stats/Skills/skillbar.png" type="Texture" id=35]
+[ext_resource path="res://Core/Combat/UI/Character Stats/Skills/prefab_skill_button.tscn" type="PackedScene" id=36]
+[ext_resource path="res://Core/Combat/UI/Character Stats/Right Side/bar_right_stamina_fill.png" type="Texture" id=37]
+[ext_resource path="res://Core/Combat/UI/Character Stats/Right Side/bar_right_stamina.png" type="Texture" id=38]
+[ext_resource path="res://Core/Combat/UI/Character Stats/Right Side/frame_right.png" type="Texture" id=39]
+[ext_resource path="res://Core/Combat/UI/Character Stats/Right Side/bar_right_temptation.png" type="Texture" id=40]
+[ext_resource path="res://Core/Combat/UI/Character Stats/Right Side/bar_right_temptation_fill.png" type="Texture" id=41]
+[ext_resource path="res://Core/Combat/UI/Character Stats/Right Side/bar_right_lust.png" type="Texture" id=42]
+[ext_resource path="res://Core/Combat/UI/Character Stats/Right Side/bar_right_lust_fill.png" type="Texture" id=43]
+
+[sub_resource type="Animation" id=1]
+length = 0.001
+tracks/0/type = "value"
+tracks/0/path = NodePath("animation_announcer/announcer:margin_left")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/keys = {
+"times": PoolRealArray( 0 ),
+"transitions": PoolRealArray( 1 ),
+"update": 1,
+"values": [ 0.0 ]
+}
+tracks/1/type = "value"
+tracks/1/path = NodePath("animation_announcer/announcer:margin_right")
+tracks/1/interp = 1
+tracks/1/loop_wrap = true
+tracks/1/imported = false
+tracks/1/enabled = true
+tracks/1/keys = {
+"times": PoolRealArray( 0 ),
+"transitions": PoolRealArray( 1 ),
+"update": 1,
+"values": [ 0.0 ]
+}
+tracks/2/type = "value"
+tracks/2/path = NodePath("animation_announcer/announcer:rect_scale")
+tracks/2/interp = 1
+tracks/2/loop_wrap = true
+tracks/2/imported = false
+tracks/2/enabled = true
+tracks/2/keys = {
+"times": PoolRealArray( 0 ),
+"transitions": PoolRealArray( 1 ),
+"update": 1,
+"values": [ Vector2( 1, 1 ) ]
+}
+
+[node name="scene_combat" type="Node2D"]
+
+[node name="canvas_layer" type="CanvasLayer" parent="."]
+
+[node name="animation_announcer" type="AnimationPlayer" parent="canvas_layer"]
+anims/RESET = SubResource( 1 )
+anims/anim_fade-in = ExtResource( 3 )
+anims/anim_fade-out = ExtResource( 4 )
+
+[node name="announcer" type="TextureRect" parent="canvas_layer/animation_announcer"]
+modulate = Color( 1, 1, 1, 0 )
+self_modulate = Color( 1, 0, 0.752941, 1 )
+anchor_left = 0.5
+anchor_right = 0.5
+margin_bottom = 250.0
+grow_horizontal = 2
+grow_vertical = 2
+rect_pivot_offset = Vector2( 400, 125 )
+texture = ExtResource( 1 )
+expand = true
+stretch_mode = 1
+
+[node name="label" type="Label" parent="canvas_layer/animation_announcer/announcer"]
+anchor_top = 0.34
+anchor_right = 1.0
+anchor_bottom = 0.704
+grow_horizontal = 2
+grow_vertical = 2
+custom_fonts/font = ExtResource( 2 )
+text = "Clash"
+align = 1
+valign = 1
+clip_text = true
+
+[node name="character-stats" type="Control" parent="canvas_layer"]
+anchor_right = 1.0
+anchor_bottom = 1.0
+theme = ExtResource( 8 )
+
+[node name="background" type="TextureRect" parent="canvas_layer/character-stats"]
+anchor_right = 1.0
+anchor_bottom = 1.0
+texture = ExtResource( 5 )
+
+[node name="left-side" type="Control" parent="canvas_layer/character-stats"]
+anchor_right = 0.5
+anchor_bottom = 1.0
+
+[node name="stamina" type="TextureRect" parent="canvas_layer/character-stats/left-side"]
+margin_top = 761.0
+margin_right = 36.0
+margin_bottom = 1080.0
+texture = ExtResource( 12 )
+
+[node name="fill" type="TextureProgress" parent="canvas_layer/character-stats/left-side/stamina"]
+anchor_right = 1.0
+anchor_bottom = 1.0
+margin_top = 1.0
+margin_right = -2.0
+value = 60.0
+texture_progress = ExtResource( 11 )
+fill_mode = 3
+
+[node name="value" type="Label" parent="canvas_layer/character-stats/left-side/stamina"]
+anchor_left = 0.722
+anchor_top = -0.113
+anchor_right = 4.278
+anchor_bottom = -0.013
+margin_left = 0.00799751
+margin_top = 0.0470009
+margin_right = -0.00801086
+margin_bottom = -2.415
+rect_min_size = Vector2( 0, 32 )
+custom_colors/font_color = Color( 0.313726, 0.858824, 0.368627, 1 )
+custom_fonts/font = ExtResource( 13 )
+text = "20 / 30"
+valign = 1
+autowrap = true
+max_lines_visible = 1
+script = ExtResource( 31 )
+min_size = 16
+max_size = 24
+
+[node name="temptation" type="TextureRect" parent="canvas_layer/character-stats/left-side"]
+margin_left = 45.0
+margin_top = 1039.0
+margin_right = 305.0
+margin_bottom = 1063.0
+texture = ExtResource( 10 )
+
+[node name="fill" type="TextureProgress" parent="canvas_layer/character-stats/left-side/temptation"]
+anchor_right = 1.0
+anchor_bottom = 1.0
+margin_top = 1.0
+margin_right = -1.0
+margin_bottom = -5.0
+value = 53.0
+texture_progress = ExtResource( 9 )
+
+[node name="value" type="Label" parent="canvas_layer/character-stats/left-side/temptation"]
+anchor_left = 1.047
+anchor_right = 1.343
+anchor_bottom = 0.818
+margin_left = -0.220001
+margin_top = 1.0
+margin_right = 0.819977
+margin_bottom = 1.368
+rect_min_size = Vector2( 78, 20 )
+custom_colors/font_color = Color( 0.698039, 0, 0.219608, 1 )
+text = "50 / 100"
+align = 2
+valign = 1
+autowrap = true
+max_lines_visible = 1
+script = ExtResource( 31 )
+min_size = 12
+max_size = 16
+
+[node name="lust" type="TextureRect" parent="canvas_layer/character-stats/left-side"]
+margin_left = 46.0
+margin_top = 1061.0
+margin_right = 304.0
+margin_bottom = 1080.0
+texture = ExtResource( 7 )
+
+[node name="low_fill" type="TextureProgress" parent="canvas_layer/character-stats/left-side/lust"]
+modulate = Color( 0.34902, 0.34902, 0.34902, 1 )
+anchor_right = 1.0
+anchor_bottom = 1.0
+margin_left = 5.0
+margin_top = 3.0
+margin_right = -3.0
+margin_bottom = -0.999989
+value = 100.0
+texture_progress = ExtResource( 6 )
+
+[node name="high_fill" type="TextureProgress" parent="canvas_layer/character-stats/left-side/lust"]
+anchor_right = 1.0
+anchor_bottom = 1.0
+margin_left = 5.0
+margin_top = 3.0
+margin_right = -3.0
+margin_bottom = -0.999989
+value = 50.0
+texture_progress = ExtResource( 6 )
+
+[node name="value" type="Label" parent="canvas_layer/character-stats/left-side/lust"]
+anchor_left = 1.047
+anchor_right = 1.345
+anchor_bottom = 1.0
+margin_left = -0.126007
+margin_top = 1.0
+margin_right = 0.98999
+margin_bottom = 2.0
+rect_min_size = Vector2( 78, 20 )
+custom_colors/font_color = Color( 0.996078, 0.105882, 0.701961, 1 )
+text = "150 / 200"
+align = 2
+valign = 1
+autowrap = true
+max_lines_visible = 1
+script = ExtResource( 31 )
+min_size = 12
+max_size = 16
+
+[node name="grid-stats" type="GridContainer" parent="canvas_layer/character-stats/left-side"]
+margin_left = 315.0
+margin_top = 864.0
+margin_right = 823.0
+margin_bottom = 998.0
+theme = ExtResource( 15 )
+custom_constants/vseparation = 0
+custom_constants/hseparation = 12
+columns = 5
+
+[node name="damage" parent="canvas_layer/character-stats/left-side/grid-stats" instance=ExtResource( 21 )]
+margin_right = 92.0
+
+[node name="value" parent="canvas_layer/character-stats/left-side/grid-stats/damage" index="1"]
+margin_left = -3.956
+margin_top = 2.0
+margin_right = 5.996
+margin_bottom = 0.0
+
+[node name="crit-rate" parent="canvas_layer/character-stats/left-side/grid-stats" instance=ExtResource( 21 )]
+margin_left = 104.0
+margin_right = 196.0
+
+[node name="icon" parent="canvas_layer/character-stats/left-side/grid-stats/crit-rate" index="0"]
+texture = ExtResource( 20 )
+region_rect = Rect2( 8, 9, 48, 48 )
+
+[node name="value" parent="canvas_layer/character-stats/left-side/grid-stats/crit-rate" index="1"]
+margin_left = -3.956
+margin_top = 2.0
+margin_right = 5.996
+margin_bottom = 0.0
+text = "+8"
+
+[node name="toughness" parent="canvas_layer/character-stats/left-side/grid-stats" instance=ExtResource( 21 )]
+margin_left = 208.0
+margin_right = 300.0
+
+[node name="icon" parent="canvas_layer/character-stats/left-side/grid-stats/toughness" index="0"]
+texture = ExtResource( 30 )
+region_rect = Rect2( 10, 7, 48, 48 )
+
+[node name="value" parent="canvas_layer/character-stats/left-side/grid-stats/toughness" index="1"]
+margin_left = -3.956
+margin_top = 2.0
+margin_right = 5.996
+margin_bottom = 0.0
+text = "20"
+
+[node name="debuff-resistance" parent="canvas_layer/character-stats/left-side/grid-stats" instance=ExtResource( 21 )]
+margin_left = 312.0
+margin_right = 404.0
+
+[node name="icon" parent="canvas_layer/character-stats/left-side/grid-stats/debuff-resistance" index="0"]
+texture = ExtResource( 26 )
+region_rect = Rect2( 11, 7, 48, 48 )
+
+[node name="value" parent="canvas_layer/character-stats/left-side/grid-stats/debuff-resistance" index="1"]
+margin_left = -3.956
+margin_top = 2.0
+margin_right = 5.996
+margin_bottom = 0.0
+text = "20"
+
+[node name="debuff-rate" parent="canvas_layer/character-stats/left-side/grid-stats" instance=ExtResource( 21 )]
+margin_left = 416.0
+margin_right = 508.0
+
+[node name="icon" parent="canvas_layer/character-stats/left-side/grid-stats/debuff-rate" index="0"]
+texture = ExtResource( 25 )
+region_rect = Rect2( 11, 7, 48, 48 )
+
+[node name="value" parent="canvas_layer/character-stats/left-side/grid-stats/debuff-rate" index="1"]
+margin_left = -3.956
+margin_top = 2.0
+margin_right = 5.996
+margin_bottom = 0.0
+text = "20"
+
+[node name="power" parent="canvas_layer/character-stats/left-side/grid-stats" instance=ExtResource( 21 )]
+margin_top = 42.0
+margin_right = 92.0
+margin_bottom = 84.0
+
+[node name="icon" parent="canvas_layer/character-stats/left-side/grid-stats/power" index="0"]
+texture = ExtResource( 17 )
+
+[node name="value" parent="canvas_layer/character-stats/left-side/grid-stats/power" index="1"]
+margin_left = -3.956
+margin_top = 2.0
+margin_right = 5.996
+margin_bottom = 0.0
+text = "100"
+
+[node name="speed" parent="canvas_layer/character-stats/left-side/grid-stats" instance=ExtResource( 21 )]
+margin_left = 104.0
+margin_top = 42.0
+margin_right = 196.0
+margin_bottom = 84.0
+
+[node name="icon" parent="canvas_layer/character-stats/left-side/grid-stats/speed" index="0"]
+texture = ExtResource( 16 )
+region_rect = Rect2( 9, 8, 48, 48 )
+
+[node name="value" parent="canvas_layer/character-stats/left-side/grid-stats/speed" index="1"]
+margin_left = -3.956
+margin_top = 2.0
+margin_right = 5.996
+margin_bottom = 0.0
+text = "120"
+
+[node name="composure" parent="canvas_layer/character-stats/left-side/grid-stats" instance=ExtResource( 21 )]
+margin_left = 208.0
+margin_top = 42.0
+margin_right = 300.0
+margin_bottom = 84.0
+
+[node name="icon" parent="canvas_layer/character-stats/left-side/grid-stats/composure" index="0"]
+texture = ExtResource( 29 )
+region_rect = Rect2( 10, 7, 48, 48 )
+
+[node name="value" parent="canvas_layer/character-stats/left-side/grid-stats/composure" index="1"]
+margin_left = -3.956
+margin_top = 2.0
+margin_right = 5.996
+margin_bottom = 0.0
+text = "20"
+
+[node name="move-resistance" parent="canvas_layer/character-stats/left-side/grid-stats" instance=ExtResource( 21 )]
+margin_left = 312.0
+margin_top = 42.0
+margin_right = 404.0
+margin_bottom = 84.0
+
+[node name="icon" parent="canvas_layer/character-stats/left-side/grid-stats/move-resistance" index="0"]
+texture = ExtResource( 27 )
+region_rect = Rect2( 11, 7, 48, 48 )
+
+[node name="value" parent="canvas_layer/character-stats/left-side/grid-stats/move-resistance" index="1"]
+margin_left = -3.956
+margin_top = 2.0
+margin_right = 5.996
+margin_bottom = 0.0
+text = "20"
+
+[node name="move-rate" parent="canvas_layer/character-stats/left-side/grid-stats" instance=ExtResource( 21 )]
+margin_left = 416.0
+margin_top = 42.0
+margin_right = 508.0
+margin_bottom = 84.0
+
+[node name="icon" parent="canvas_layer/character-stats/left-side/grid-stats/move-rate" index="0"]
+texture = ExtResource( 28 )
+region_rect = Rect2( 11, 7, 48, 48 )
+
+[node name="value" parent="canvas_layer/character-stats/left-side/grid-stats/move-rate" index="1"]
+margin_left = -3.956
+margin_top = 2.0
+margin_right = 5.996
+margin_bottom = 0.0
+text = "20"
+
+[node name="accuracy" parent="canvas_layer/character-stats/left-side/grid-stats" instance=ExtResource( 21 )]
+margin_top = 84.0
+margin_right = 92.0
+margin_bottom = 126.0
+
+[node name="icon" parent="canvas_layer/character-stats/left-side/grid-stats/accuracy" index="0"]
+texture = ExtResource( 19 )
+region_rect = Rect2( 8, 9, 48, 48 )
+
+[node name="value" parent="canvas_layer/character-stats/left-side/grid-stats/accuracy" index="1"]
+margin_left = -3.956
+margin_top = 2.0
+margin_right = 5.996
+margin_bottom = 0.0
+text = "+15"
+
+[node name="dodge" parent="canvas_layer/character-stats/left-side/grid-stats" instance=ExtResource( 21 )]
+margin_left = 104.0
+margin_top = 84.0
+margin_right = 196.0
+margin_bottom = 126.0
+
+[node name="icon" parent="canvas_layer/character-stats/left-side/grid-stats/dodge" index="0"]
+texture = ExtResource( 18 )
+region_rect = Rect2( 10, 9, 48, 48 )
+
+[node name="value" parent="canvas_layer/character-stats/left-side/grid-stats/dodge" index="1"]
+margin_left = -3.956
+margin_top = 2.0
+margin_right = 5.996
+margin_bottom = 0.0
+text = "10"
+
+[node name="stun-mitigation" parent="canvas_layer/character-stats/left-side/grid-stats" instance=ExtResource( 21 )]
+margin_left = 208.0
+margin_top = 84.0
+margin_right = 300.0
+margin_bottom = 126.0
+
+[node name="icon" parent="canvas_layer/character-stats/left-side/grid-stats/stun-mitigation" index="0"]
+texture = ExtResource( 23 )
+region_rect = Rect2( 10, 7, 48, 48 )
+
+[node name="value" parent="canvas_layer/character-stats/left-side/grid-stats/stun-mitigation" index="1"]
+margin_left = -3.956
+margin_top = 2.0
+margin_right = 5.996
+margin_bottom = 0.0
+text = "20"
+
+[node name="poison-resistance" parent="canvas_layer/character-stats/left-side/grid-stats" instance=ExtResource( 21 )]
+margin_left = 312.0
+margin_top = 84.0
+margin_right = 404.0
+margin_bottom = 126.0
+
+[node name="icon" parent="canvas_layer/character-stats/left-side/grid-stats/poison-resistance" index="0"]
+texture = ExtResource( 24 )
+region_rect = Rect2( 11, 7, 48, 48 )
+
+[node name="value" parent="canvas_layer/character-stats/left-side/grid-stats/poison-resistance" index="1"]
+margin_left = -3.956
+margin_top = 2.0
+margin_right = 5.996
+margin_bottom = 0.0
+text = "20"
+
+[node name="poison-rate" parent="canvas_layer/character-stats/left-side/grid-stats" instance=ExtResource( 21 )]
+margin_left = 416.0
+margin_top = 84.0
+margin_right = 508.0
+margin_bottom = 126.0
+
+[node name="icon" parent="canvas_layer/character-stats/left-side/grid-stats/poison-rate" index="0"]
+texture = ExtResource( 22 )
+region_rect = Rect2( 11, 7, 48, 48 )
+
+[node name="value" parent="canvas_layer/character-stats/left-side/grid-stats/poison-rate" index="1"]
+margin_left = -3.956
+margin_top = 2.0
+margin_right = 5.996
+margin_bottom = 0.0
+text = "20"
+
+[node name="orgasm-counter" type="HBoxContainer" parent="canvas_layer/character-stats/left-side"]
+margin_left = 400.0
+margin_top = 1016.0
+margin_right = 912.0
+margin_bottom = 1080.0
+rect_clip_content = true
+
+[node name="prefab_orgasm_toggle" type="TextureRect" parent="canvas_layer/character-stats/left-side/orgasm-counter"]
+margin_right = 64.0
+margin_bottom = 64.0
+texture = ExtResource( 34 )
+
+[node name="prefab_orgasm_toggle_2" type="TextureRect" parent="canvas_layer/character-stats/left-side/orgasm-counter"]
+margin_left = 68.0
+margin_right = 132.0
+margin_bottom = 64.0
+texture = ExtResource( 34 )
+
+[node name="prefab_orgasm_toggle_3" type="TextureRect" parent="canvas_layer/character-stats/left-side/orgasm-counter"]
+margin_left = 136.0
+margin_right = 200.0
+margin_bottom = 64.0
+texture = ExtResource( 34 )
+
+[node name="prefab_orgasm_toggle_4" type="TextureRect" parent="canvas_layer/character-stats/left-side/orgasm-counter"]
+margin_left = 204.0
+margin_right = 268.0
+margin_bottom = 64.0
+texture = ExtResource( 34 )
+
+[node name="prefab_orgasm_toggle_5" type="TextureRect" parent="canvas_layer/character-stats/left-side/orgasm-counter"]
+margin_left = 272.0
+margin_right = 336.0
+margin_bottom = 64.0
+texture = ExtResource( 34 )
+
+[node name="prefab_orgasm_toggle_6" type="TextureRect" parent="canvas_layer/character-stats/left-side/orgasm-counter"]
+margin_left = 340.0
+margin_right = 404.0
+margin_bottom = 64.0
+texture = ExtResource( 34 )
+
+[node name="prefab_orgasm_toggle_7" type="TextureRect" parent="canvas_layer/character-stats/left-side/orgasm-counter"]
+margin_left = 408.0
+margin_right = 472.0
+margin_bottom = 64.0
+texture = ExtResource( 34 )
+
+[node name="prefab_orgasm_toggle_8" type="TextureRect" parent="canvas_layer/character-stats/left-side/orgasm-counter"]
+margin_left = 476.0
+margin_right = 540.0
+margin_bottom = 64.0
+texture = ExtResource( 34 )
+
+[node name="portrait" type="TextureRect" parent="canvas_layer/character-stats/left-side"]
+margin_left = 48.0
+margin_top = 740.0
+margin_right = 304.0
+margin_bottom = 996.0
+rect_min_size = Vector2( 256, 256 )
+texture = ExtResource( 33 )
+expand = true
+stretch_mode = 1
+
+[node name="frame" type="TextureRect" parent="canvas_layer/character-stats/left-side"]
+anchor_right = 1.0
+anchor_bottom = 1.0
+texture = ExtResource( 14 )
+
+[node name="name" type="Label" parent="canvas_layer/character-stats/left-side"]
+margin_left = 60.0
+margin_top = 998.0
+margin_right = 300.0
+margin_bottom = 1040.0
+rect_min_size = Vector2( 240, 42 )
+custom_fonts/font = ExtResource( 32 )
+text = "Ethel"
+align = 1
+valign = 1
+autowrap = true
+max_lines_visible = 1
+script = ExtResource( 31 )
+min_size = 12
+max_size = 42
+
+[node name="right-side" type="Control" parent="canvas_layer/character-stats"]
+anchor_left = 0.5
+anchor_right = 1.0
+anchor_bottom = 1.0
+
+[node name="stamina" type="TextureRect" parent="canvas_layer/character-stats/right-side"]
+margin_left = 913.0
+margin_top = 761.0
+margin_right = 960.0
+margin_bottom = 1080.0
+rect_min_size = Vector2( 47, 319 )
+texture = ExtResource( 38 )
+
+[node name="fill" type="TextureProgress" parent="canvas_layer/character-stats/right-side/stamina"]
+anchor_left = 0.277
+anchor_top = 0.003
+anchor_right = 1.0
+anchor_bottom = 1.0
+margin_left = -0.0190001
+margin_top = 0.043
+rect_min_size = Vector2( 34, 318 )
+value = 60.0
+texture_progress = ExtResource( 37 )
+fill_mode = 3
+
+[node name="value" type="Label" parent="canvas_layer/character-stats/right-side/stamina"]
+anchor_left = -2.277
+anchor_top = -0.113
+anchor_right = 0.447
+anchor_bottom = -0.013
+margin_left = 0.0190125
+margin_top = 0.0470009
+margin_right = -0.00900078
+margin_bottom = 0.147
+rect_min_size = Vector2( 128, 32 )
+custom_colors/font_color = Color( 0.313726, 0.858824, 0.368627, 1 )
+custom_fonts/font = ExtResource( 13 )
+text = "20 / 30"
+align = 2
+valign = 1
+autowrap = true
+max_lines_visible = 1
+script = ExtResource( 31 )
+__meta__ = {
+"_edit_use_anchors_": true
+}
+min_size = 16
+max_size = 24
+
+[node name="temptation" type="TextureRect" parent="canvas_layer/character-stats/right-side"]
+margin_left = 657.0
+margin_top = 1039.0
+margin_right = 917.0
+margin_bottom = 1063.0
+rect_min_size = Vector2( 260, 24 )
+texture = ExtResource( 40 )
+
+[node name="fill" type="TextureProgress" parent="canvas_layer/character-stats/right-side/temptation"]
+anchor_left = 0.004
+anchor_right = 1.0
+anchor_bottom = 0.75
+margin_left = -0.0400001
+rect_min_size = Vector2( 259, 18 )
+value = 53.0
+texture_progress = ExtResource( 41 )
+fill_mode = 1
+
+[node name="value" type="Label" parent="canvas_layer/character-stats/right-side/temptation"]
+anchor_left = -0.346
+anchor_right = -0.046
+anchor_bottom = 0.875
+margin_left = -0.0399933
+margin_top = 1.0
+margin_right = -0.039999
+custom_colors/font_color = Color( 0.698039, 0, 0.219608, 1 )
+text = "50 / 100"
+align = 2
+valign = 1
+autowrap = true
+max_lines_visible = 1
+script = ExtResource( 31 )
+min_size = 12
+max_size = 16
+
+[node name="lust" type="TextureRect" parent="canvas_layer/character-stats/right-side"]
+margin_left = 658.0
+margin_top = 1061.0
+margin_right = 916.0
+margin_bottom = 1079.0
+rect_min_size = Vector2( 258, 18 )
+texture = ExtResource( 42 )
+
+[node name="low_fill" type="TextureProgress" parent="canvas_layer/character-stats/right-side/lust"]
+modulate = Color( 0.34902, 0.34902, 0.34902, 1 )
+anchor_left = 0.019
+anchor_top = 0.167
+anchor_right = 0.988
+anchor_bottom = 1.0
+margin_left = 0.0979996
+margin_top = -0.00600028
+margin_right = 0.095993
+margin_bottom = -0.999989
+value = 100.0
+texture_progress = ExtResource( 43 )
+fill_mode = 1
+
+[node name="high_fill" type="TextureProgress" parent="canvas_layer/character-stats/right-side/lust"]
+anchor_left = 0.019
+anchor_top = 0.167
+anchor_right = 0.988
+anchor_bottom = 1.0
+margin_left = 0.0979996
+margin_top = -0.00600028
+margin_right = 0.095993
+margin_bottom = -0.999989
+value = 50.0
+texture_progress = ExtResource( 43 )
+fill_mode = 1
+
+[node name="value" type="Label" parent="canvas_layer/character-stats/right-side/lust"]
+anchor_left = -0.349
+anchor_right = -0.047
+anchor_bottom = 1.167
+margin_left = 0.0419998
+margin_top = 1.0
+margin_right = 0.126
+margin_bottom = -0.00600052
+rect_min_size = Vector2( 78, 20 )
+custom_colors/font_color = Color( 0.996078, 0.105882, 0.701961, 1 )
+text = "150 / 200"
+align = 2
+valign = 1
+autowrap = true
+max_lines_visible = 1
+script = ExtResource( 31 )
+min_size = 12
+max_size = 16
+
+[node name="grid-stats" type="GridContainer" parent="canvas_layer/character-stats/right-side"]
+margin_left = 137.0
+margin_top = 864.0
+margin_right = 645.0
+margin_bottom = 998.0
+grow_horizontal = 0
+grow_vertical = 0
+theme = ExtResource( 15 )
+custom_constants/vseparation = 0
+custom_constants/hseparation = 12
+columns = 5
+
+[node name="debuff-rate" parent="canvas_layer/character-stats/right-side/grid-stats" instance=ExtResource( 21 )]
+margin_right = 92.0
+
+[node name="icon" parent="canvas_layer/character-stats/right-side/grid-stats/debuff-rate" index="0"]
+texture = ExtResource( 25 )
+region_rect = Rect2( 11, 7, 48, 48 )
+
+[node name="value" parent="canvas_layer/character-stats/right-side/grid-stats/debuff-rate" index="1"]
+margin_left = -3.956
+margin_top = 2.0
+margin_right = 5.996
+margin_bottom = 0.0
+text = "20"
+
+[node name="debuff-resistance" parent="canvas_layer/character-stats/right-side/grid-stats" instance=ExtResource( 21 )]
+margin_left = 104.0
+margin_right = 196.0
+
+[node name="icon" parent="canvas_layer/character-stats/right-side/grid-stats/debuff-resistance" index="0"]
+texture = ExtResource( 26 )
+region_rect = Rect2( 11, 7, 48, 48 )
+
+[node name="value" parent="canvas_layer/character-stats/right-side/grid-stats/debuff-resistance" index="1"]
+margin_left = -3.956
+margin_top = 2.0
+margin_right = 5.996
+margin_bottom = 0.0
+text = "20"
+
+[node name="toughness" parent="canvas_layer/character-stats/right-side/grid-stats" instance=ExtResource( 21 )]
+margin_left = 208.0
+margin_right = 300.0
+
+[node name="icon" parent="canvas_layer/character-stats/right-side/grid-stats/toughness" index="0"]
+texture = ExtResource( 30 )
+region_rect = Rect2( 10, 7, 48, 48 )
+
+[node name="value" parent="canvas_layer/character-stats/right-side/grid-stats/toughness" index="1"]
+margin_left = -3.956
+margin_top = 2.0
+margin_right = 5.996
+margin_bottom = 0.0
+text = "20"
+
+[node name="crit-rate" parent="canvas_layer/character-stats/right-side/grid-stats" instance=ExtResource( 21 )]
+margin_left = 312.0
+margin_right = 404.0
+
+[node name="icon" parent="canvas_layer/character-stats/right-side/grid-stats/crit-rate" index="0"]
+texture = ExtResource( 20 )
+region_rect = Rect2( 8, 9, 48, 48 )
+
+[node name="value" parent="canvas_layer/character-stats/right-side/grid-stats/crit-rate" index="1"]
+margin_left = -3.956
+margin_top = 2.0
+margin_right = 5.996
+margin_bottom = 0.0
+text = "+8"
+
+[node name="damage" parent="canvas_layer/character-stats/right-side/grid-stats" instance=ExtResource( 21 )]
+margin_left = 416.0
+margin_right = 508.0
+
+[node name="value" parent="canvas_layer/character-stats/right-side/grid-stats/damage" index="1"]
+margin_left = -3.956
+margin_top = 2.0
+margin_right = 5.996
+margin_bottom = 0.0
+
+[node name="move-rate" parent="canvas_layer/character-stats/right-side/grid-stats" instance=ExtResource( 21 )]
+margin_top = 42.0
+margin_right = 92.0
+margin_bottom = 84.0
+
+[node name="icon" parent="canvas_layer/character-stats/right-side/grid-stats/move-rate" index="0"]
+texture = ExtResource( 28 )
+region_rect = Rect2( 11, 7, 48, 48 )
+
+[node name="value" parent="canvas_layer/character-stats/right-side/grid-stats/move-rate" index="1"]
+margin_left = -3.956
+margin_top = 2.0
+margin_right = 5.996
+margin_bottom = 0.0
+text = "20"
+
+[node name="move-resistance" parent="canvas_layer/character-stats/right-side/grid-stats" instance=ExtResource( 21 )]
+margin_left = 104.0
+margin_top = 42.0
+margin_right = 196.0
+margin_bottom = 84.0
+
+[node name="icon" parent="canvas_layer/character-stats/right-side/grid-stats/move-resistance" index="0"]
+texture = ExtResource( 27 )
+region_rect = Rect2( 11, 7, 48, 48 )
+
+[node name="value" parent="canvas_layer/character-stats/right-side/grid-stats/move-resistance" index="1"]
+margin_left = -3.956
+margin_top = 2.0
+margin_right = 5.996
+margin_bottom = 0.0
+text = "20"
+
+[node name="composure" parent="canvas_layer/character-stats/right-side/grid-stats" instance=ExtResource( 21 )]
+margin_left = 208.0
+margin_top = 42.0
+margin_right = 300.0
+margin_bottom = 84.0
+
+[node name="icon" parent="canvas_layer/character-stats/right-side/grid-stats/composure" index="0"]
+texture = ExtResource( 29 )
+region_rect = Rect2( 10, 7, 48, 48 )
+
+[node name="value" parent="canvas_layer/character-stats/right-side/grid-stats/composure" index="1"]
+margin_left = -3.956
+margin_top = 2.0
+margin_right = 5.996
+margin_bottom = 0.0
+text = "20"
+
+[node name="speed" parent="canvas_layer/character-stats/right-side/grid-stats" instance=ExtResource( 21 )]
+margin_left = 312.0
+margin_top = 42.0
+margin_right = 404.0
+margin_bottom = 84.0
+
+[node name="icon" parent="canvas_layer/character-stats/right-side/grid-stats/speed" index="0"]
+texture = ExtResource( 16 )
+region_rect = Rect2( 9, 8, 48, 48 )
+
+[node name="value" parent="canvas_layer/character-stats/right-side/grid-stats/speed" index="1"]
+margin_left = -3.956
+margin_top = 2.0
+margin_right = 5.996
+margin_bottom = 0.0
+text = "120"
+
+[node name="power" parent="canvas_layer/character-stats/right-side/grid-stats" instance=ExtResource( 21 )]
+margin_left = 416.0
+margin_top = 42.0
+margin_right = 508.0
+margin_bottom = 84.0
+
+[node name="icon" parent="canvas_layer/character-stats/right-side/grid-stats/power" index="0"]
+texture = ExtResource( 17 )
+
+[node name="value" parent="canvas_layer/character-stats/right-side/grid-stats/power" index="1"]
+margin_left = -3.956
+margin_top = 2.0
+margin_right = 5.996
+margin_bottom = 0.0
+text = "100"
+
+[node name="poison-rate" parent="canvas_layer/character-stats/right-side/grid-stats" instance=ExtResource( 21 )]
+margin_top = 84.0
+margin_right = 92.0
+margin_bottom = 126.0
+
+[node name="icon" parent="canvas_layer/character-stats/right-side/grid-stats/poison-rate" index="0"]
+texture = ExtResource( 22 )
+region_rect = Rect2( 11, 7, 48, 48 )
+
+[node name="value" parent="canvas_layer/character-stats/right-side/grid-stats/poison-rate" index="1"]
+margin_left = -3.956
+margin_top = 2.0
+margin_right = 5.996
+margin_bottom = 0.0
+text = "20"
+
+[node name="poison-resistance" parent="canvas_layer/character-stats/right-side/grid-stats" instance=ExtResource( 21 )]
+margin_left = 104.0
+margin_top = 84.0
+margin_right = 196.0
+margin_bottom = 126.0
+
+[node name="icon" parent="canvas_layer/character-stats/right-side/grid-stats/poison-resistance" index="0"]
+texture = ExtResource( 24 )
+region_rect = Rect2( 11, 7, 48, 48 )
+
+[node name="value" parent="canvas_layer/character-stats/right-side/grid-stats/poison-resistance" index="1"]
+margin_left = -3.956
+margin_top = 2.0
+margin_right = 5.996
+margin_bottom = 0.0
+text = "20"
+
+[node name="stun-mitigation" parent="canvas_layer/character-stats/right-side/grid-stats" instance=ExtResource( 21 )]
+margin_left = 208.0
+margin_top = 84.0
+margin_right = 300.0
+margin_bottom = 126.0
+
+[node name="icon" parent="canvas_layer/character-stats/right-side/grid-stats/stun-mitigation" index="0"]
+texture = ExtResource( 23 )
+region_rect = Rect2( 10, 7, 48, 48 )
+
+[node name="value" parent="canvas_layer/character-stats/right-side/grid-stats/stun-mitigation" index="1"]
+margin_left = -3.956
+margin_top = 2.0
+margin_right = 5.996
+margin_bottom = 0.0
+text = "20"
+
+[node name="dodge" parent="canvas_layer/character-stats/right-side/grid-stats" instance=ExtResource( 21 )]
+margin_left = 312.0
+margin_top = 84.0
+margin_right = 404.0
+margin_bottom = 126.0
+
+[node name="icon" parent="canvas_layer/character-stats/right-side/grid-stats/dodge" index="0"]
+texture = ExtResource( 18 )
+region_rect = Rect2( 10, 9, 48, 48 )
+
+[node name="value" parent="canvas_layer/character-stats/right-side/grid-stats/dodge" index="1"]
+margin_left = -3.956
+margin_top = 2.0
+margin_right = 5.996
+margin_bottom = 0.0
+text = "10"
+
+[node name="accuracy" parent="canvas_layer/character-stats/right-side/grid-stats" instance=ExtResource( 21 )]
+margin_left = 416.0
+margin_top = 84.0
+margin_right = 508.0
+margin_bottom = 126.0
+
+[node name="icon" parent="canvas_layer/character-stats/right-side/grid-stats/accuracy" index="0"]
+texture = ExtResource( 19 )
+region_rect = Rect2( 8, 9, 48, 48 )
+
+[node name="value" parent="canvas_layer/character-stats/right-side/grid-stats/accuracy" index="1"]
+margin_left = -3.956
+margin_top = 2.0
+margin_right = 5.996
+margin_bottom = 0.0
+text = "+15"
+
+[node name="orgasm-counter" type="HBoxContainer" parent="canvas_layer/character-stats/right-side"]
+margin_left = 20.0
+margin_top = 1016.0
+margin_right = 560.0
+margin_bottom = 1080.0
+rect_clip_content = true
+alignment = 2
+
+[node name="prefab_orgasm_toggle" type="TextureRect" parent="canvas_layer/character-stats/right-side/orgasm-counter"]
+margin_right = 64.0
+margin_bottom = 64.0
+texture = ExtResource( 34 )
+
+[node name="prefab_orgasm_toggle_2" type="TextureRect" parent="canvas_layer/character-stats/right-side/orgasm-counter"]
+margin_left = 68.0
+margin_right = 132.0
+margin_bottom = 64.0
+texture = ExtResource( 34 )
+
+[node name="prefab_orgasm_toggle_3" type="TextureRect" parent="canvas_layer/character-stats/right-side/orgasm-counter"]
+margin_left = 136.0
+margin_right = 200.0
+margin_bottom = 64.0
+texture = ExtResource( 34 )
+
+[node name="prefab_orgasm_toggle_4" type="TextureRect" parent="canvas_layer/character-stats/right-side/orgasm-counter"]
+margin_left = 204.0
+margin_right = 268.0
+margin_bottom = 64.0
+texture = ExtResource( 34 )
+
+[node name="prefab_orgasm_toggle_5" type="TextureRect" parent="canvas_layer/character-stats/right-side/orgasm-counter"]
+margin_left = 272.0
+margin_right = 336.0
+margin_bottom = 64.0
+texture = ExtResource( 34 )
+
+[node name="prefab_orgasm_toggle_6" type="TextureRect" parent="canvas_layer/character-stats/right-side/orgasm-counter"]
+margin_left = 340.0
+margin_right = 404.0
+margin_bottom = 64.0
+texture = ExtResource( 34 )
+
+[node name="prefab_orgasm_toggle_7" type="TextureRect" parent="canvas_layer/character-stats/right-side/orgasm-counter"]
+margin_left = 408.0
+margin_right = 472.0
+margin_bottom = 64.0
+texture = ExtResource( 34 )
+
+[node name="prefab_orgasm_toggle_8" type="TextureRect" parent="canvas_layer/character-stats/right-side/orgasm-counter"]
+margin_left = 476.0
+margin_right = 540.0
+margin_bottom = 64.0
+texture = ExtResource( 34 )
+
+[node name="portrait" type="TextureRect" parent="canvas_layer/character-stats/right-side"]
+margin_left = 656.0
+margin_top = 740.0
+margin_right = 912.0
+margin_bottom = 996.0
+texture = ExtResource( 33 )
+expand = true
+stretch_mode = 1
+flip_h = true
+
+[node name="frame" type="TextureRect" parent="canvas_layer/character-stats/right-side"]
+anchor_left = -1.0
+anchor_right = 1.0
+anchor_bottom = 1.0
+texture = ExtResource( 39 )
+
+[node name="name" type="Label" parent="canvas_layer/character-stats/right-side"]
+margin_left = 660.0
+margin_top = 998.0
+margin_right = 900.0
+margin_bottom = 1040.0
+rect_min_size = Vector2( 240, 42 )
+custom_fonts/font = ExtResource( 32 )
+text = "Ethel"
+align = 1
+valign = 1
+autowrap = true
+max_lines_visible = 1
+script = ExtResource( 31 )
+min_size = 12
+max_size = 42
+
+[node name="skills" type="Control" parent="canvas_layer/character-stats"]
+anchor_right = 1.0
+anchor_bottom = 1.0
+
+[node name="prefab_skill_button" parent="canvas_layer/character-stats/skills" instance=ExtResource( 36 )]
+
+[node name="prefab_skill_button_2" parent="canvas_layer/character-stats/skills" instance=ExtResource( 36 )]
+margin_left = 814.0
+margin_right = 942.0
+
+[node name="prefab_skill_button_3" parent="canvas_layer/character-stats/skills" instance=ExtResource( 36 )]
+margin_left = 974.0
+margin_right = 1102.0
+
+[node name="prefab_skill_button_4" parent="canvas_layer/character-stats/skills" instance=ExtResource( 36 )]
+margin_left = 1126.0
+margin_right = 1254.0
+
+[node name="frame" type="TextureRect" parent="canvas_layer/character-stats/skills"]
+anchor_right = 1.0
+anchor_bottom = 1.0
+texture = ExtResource( 35 )
+
+[editable path="canvas_layer/character-stats/left-side/grid-stats/damage"]
+[editable path="canvas_layer/character-stats/left-side/grid-stats/crit-rate"]
+[editable path="canvas_layer/character-stats/left-side/grid-stats/toughness"]
+[editable path="canvas_layer/character-stats/left-side/grid-stats/debuff-resistance"]
+[editable path="canvas_layer/character-stats/left-side/grid-stats/debuff-rate"]
+[editable path="canvas_layer/character-stats/left-side/grid-stats/power"]
+[editable path="canvas_layer/character-stats/left-side/grid-stats/speed"]
+[editable path="canvas_layer/character-stats/left-side/grid-stats/composure"]
+[editable path="canvas_layer/character-stats/left-side/grid-stats/move-resistance"]
+[editable path="canvas_layer/character-stats/left-side/grid-stats/move-rate"]
+[editable path="canvas_layer/character-stats/left-side/grid-stats/accuracy"]
+[editable path="canvas_layer/character-stats/left-side/grid-stats/dodge"]
+[editable path="canvas_layer/character-stats/left-side/grid-stats/stun-mitigation"]
+[editable path="canvas_layer/character-stats/left-side/grid-stats/poison-resistance"]
+[editable path="canvas_layer/character-stats/left-side/grid-stats/poison-rate"]
+[editable path="canvas_layer/character-stats/right-side/grid-stats/debuff-rate"]
+[editable path="canvas_layer/character-stats/right-side/grid-stats/debuff-resistance"]
+[editable path="canvas_layer/character-stats/right-side/grid-stats/toughness"]
+[editable path="canvas_layer/character-stats/right-side/grid-stats/crit-rate"]
+[editable path="canvas_layer/character-stats/right-side/grid-stats/damage"]
+[editable path="canvas_layer/character-stats/right-side/grid-stats/move-rate"]
+[editable path="canvas_layer/character-stats/right-side/grid-stats/move-resistance"]
+[editable path="canvas_layer/character-stats/right-side/grid-stats/composure"]
+[editable path="canvas_layer/character-stats/right-side/grid-stats/speed"]
+[editable path="canvas_layer/character-stats/right-side/grid-stats/power"]
+[editable path="canvas_layer/character-stats/right-side/grid-stats/poison-rate"]
+[editable path="canvas_layer/character-stats/right-side/grid-stats/poison-resistance"]
+[editable path="canvas_layer/character-stats/right-side/grid-stats/stun-mitigation"]
+[editable path="canvas_layer/character-stats/right-side/grid-stats/dodge"]
+[editable path="canvas_layer/character-stats/right-side/grid-stats/accuracy"]

@@ -1,6 +1,8 @@
 use std::ops::{Deref, DerefMut};
+
 use comfy_bounded_ints::prelude::{Bound_u16, Bound_u8};
 use serde::{Deserialize, Serialize};
+
 use super::rigid_stat;
 
 pub trait RigidStatTrait where Self: DerefMut<Target = Self::Inner>,
@@ -23,12 +25,12 @@ pub enum RigidStat {
 	OrgasmCount,
 }
 
-rigid_stat!(struct Lust, Bound_u8< 0, 200 >, u8, RigidStatTrait, RigidStat, RigidStat::Lust);
-rigid_stat!(struct Temptation, Bound_u8 < 0, 100 >, u8, RigidStatTrait, RigidStat, RigidStat::Temptation);
-rigid_stat!(struct Exhaustion, Bound_u8 < 0, 100 >, u8, RigidStatTrait, RigidStat, RigidStat::Exhaustion);
-rigid_stat!(struct OrgasmLimit, Bound_u8 < 1, 8 >, u8, RigidStatTrait, RigidStat, RigidStat::OrgasmLimit);
-rigid_stat!(struct OrgasmCount, Bound_u8 < 0, 8 >, u8, RigidStatTrait, RigidStat, RigidStat::OrgasmCount);
-rigid_stat!(struct MaxStamina, Bound_u16 < 1, 500 >, u16, RigidStatTrait, RigidStat, RigidStat::MaxStamina);
-rigid_stat!(struct CurrentStamina, Bound_u16 < 0, 500 >, u16, RigidStatTrait, RigidStat, RigidStat::CurrentStamina);
-rigid_stat!(struct ToughnessReduction, Bound_u8 < 0, 100 >, u8, RigidStatTrait, RigidStat, RigidStat::ToughnessReduction);
-rigid_stat!(struct Size, Bound_u8 < 1, {u8::MAX} >, u8, RigidStatTrait, RigidStat, RigidStat::Size);
+rigid_stat!(struct Lust, Bound_u8< 0, 200 >, u8, RigidStat::Lust);
+rigid_stat!(struct Temptation, Bound_u8 < 0, 100 >, u8, RigidStat::Temptation);
+rigid_stat!(struct Exhaustion, Bound_u8 < 0, 100 >, u8, RigidStat::Exhaustion);
+rigid_stat!(struct OrgasmLimit, Bound_u8 < 1, 8 >, u8, RigidStat::OrgasmLimit);
+rigid_stat!(struct OrgasmCount, Bound_u8 < 0, 8 >, u8, RigidStat::OrgasmCount);
+rigid_stat!(struct MaxStamina, Bound_u16 < 1, 500 >, u16, RigidStat::MaxStamina);
+rigid_stat!(struct CurrentStamina, Bound_u16 < 0, 500 >, u16, RigidStat::CurrentStamina);
+rigid_stat!(struct ToughnessReduction, Bound_u8 < 0, 100 >, u8, RigidStat::ToughnessReduction);
+rigid_stat!(struct Size, Bound_u8 < 1, {u8::MAX} >, u8, RigidStat::Size);

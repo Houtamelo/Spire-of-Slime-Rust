@@ -1,0 +1,146 @@
+﻿title: Ch1_Prologue_TutorialFight_Defeat
+tracking: always
+starting_bg: "CG_ch01_Chapel"
+starting_music: none
+starting_ambience: none
+clean_audio_when_done: music, ambience
+---
+<<award_level_ethel>>
+<<award_level_nema>>
+
+<<play_sfx "noise_rub_hair">>
+
+*You rub your temple*
+
+Ethel: Unh... I gotta stop waking up like this... #right:ethel_disgust
+
+Ethel: (What the heck was that thing?) #right:ethel_thinking
+
+Ethel: ... #right:ethel_confused
+
+Ethel: NEMA! #right:ethel_fear
+
+You frantically look around. #right:ethel_fear
+
+Ethel: (Oh, good... She's safe.) #right:ethel_content
+
+Ethel: (Wait, where are we exactly?) #right:ethel_confused
+
+Ethel: (The architecture... the windows... lots of vines.) #right:ethel_neutral
+
+Ethel: (I'm fairly certain we're not dead based on my headache and how run down this place looks.) #right:ethel_tired
+
+Stranger: Ah, you're finally awake. #right:ethel_neutral #left:mistress-tender_neutral
+
+*You recoil and faceplant out of bed*  #right:ethel_fear #left:mistress-tender_neutral
+
+Stranger: Apologies if I startled you, child~ #right:ethel_fear #left:mistress-tender_smirk
+
+Ethel: (Uh... what in the flying fuck is... she?) #right:ethel_fear #left:mistress-tender_smirk
+
+Ethel: (She reminds me of Toxic Sprivy from the comics I read as a kid.) #right:ethel_thinking #left:mistress-tender_neutral
+
+Ethel: (... My Dr. Moonrow theory is back on the table.) #right:ethel_thinking #left:mistress-tender_neutral
+
+Stranger: I know you must be confused. So let me soothe your mind, child~ #right:ethel_neutral #left:mistress-tender_neutral
+
+Mistress Tender: I am Mistress Tender, keeper of this shrine. #right:ethel_neutral #left:mistress-tender_neutral
+
+Mistress Tender: I came just in the nick of time as you two were attacked by those wolfhydras. #right:ethel_neutral #left:mistress-tender_neutral
+
+Ethel: ... the what? #right:ethel_thinking #left:mistress-tender_neutral
+
+Ethel: (Wolf... hydra? ... I was just joking about the whole doctor thing...) #right:ethel_thinking #left:mistress-tender_neutral
+
+*You scan the room* #right:ethel_thinking #left:mistress-tender_neutral
+
+Ethel: (She claims to have saved us... which appears to be the case. But that doesn't mean she can be trusted!) #right:ethel_suspicious #left:mistress-tender_neutral
+
+Ethel: So... "wolfhydras" you said? #right:ethel_neutral #left:mistress-tender_neutral
+
+Mistress Tender: Yes. Pesky creatures. They occasionally try to ruin my garden. #right:ethel_neutral #left:mistress-tender_annoyed
+
+Mistress Tender: You're not from around here, are you, child? #right:ethel_neutral #left:mistress-tender_smirk
+
+Ethel: (I best not expose any potential weaknesses...) #right:ethel_suspicious #left:mistress-tender_smirk
+
+Ethel: Where is "here", exactly? #right:ethel_suspicious #left:mistress-tender_smirk
+
+Mistress Tender: This is my shrine, as stated. #right:ethel_suspicious #left:mistress-tender_neutral
+
+Ethel: (Getting strong cult vibes from this.) #right:ethel_suspicious #left:mistress-tender_neutral
+
+Ethel: Where is the rest of your congregation, then? #right:ethel_neutral #left:mistress-tender_neutral
+
+Mistress Tender: It's just me here. Ever since the... incident. #right:ethel_neutral #left:mistress-tender_neutral
+
+Ethel: (Incident? Few more red flags and I can make a quilt.) #right:ethel_thinking #left:mistress-tender_neutral
+
+Mistress Tender: Yes. It’s a far too long story to get into here. #right:ethel_thinking #left:mistress-tender_neutral
+
+Mistress Tender: Since you're not familiar with this region, how would you feel about venturing on a small... errand? #right:ethel_neutral #left:mistress-tender_smirk
+
+Ethel: (I knew it!) #right:ethel_suspicious #left:mistress-tender_smirk
+
+Mistress Tender: It will be a good opportunity for you both to get acquainted with these lands. #right:ethel_suspicious #left:mistress-tender_neutral
+
+Mistress Tender: Go to a grove northwest of here and collect this week's harvest. #right:ethel_suspicious #left:mistress-tender_neutral
+
+<<play_sfx "noise_paper_handling">>
+
+She hands you a map you reluctantly accept. #right:ethel_suspicious #left:mistress-tender_neutral
+
+Mistress Tender: You’ll know it when you see it. #right:ethel_neutral #left:mistress-tender_neutral
+
+Ethel: And why would I agree to this? #right:ethel_neutral #left:mistress-tender_neutral
+
+Mistress Tender: Well, just a hunch but: I would assume that you are both interested in ingesting nourishment? #right:ethel_neutral #left:mistress-tender_smirk
+
+Ethel: You mean food? #right:ethel_curious #left:mistress-tender_smirk
+
+Mistress Tender: That’s one way of putting it. #right:ethel_curious #left:mistress-tender_smirk
+
+Ethel: Didn’t you say you have a garden? #right:ethel_suspicious #left:mistress-tender_smirk
+
+Mistress Tender: Yes. **My** garden. I’m not quite able to be a charity during these tough times. #right:ethel_suspicious #left:mistress-tender_smirk
+
+Mistress Tender: Besides: Most of my plants are not edible. #right:ethel_neutral #left:mistress-tender_smirk
+
+Ethel: (What?) #right:ethel_suspicious #left:mistress-tender_neutral
+
+Ethel: Why... would you grow inedible plants if times are so rough? #right:ethel_curious #left:mistress-tender_neutral
+
+Mistress Tender: Medicinal herbs, alchemical components, toxins, deterrents- #right:ethel_curious #left:mistress-tender_neutral
+
+Ethel: Deterrents? Toxins? #right:ethel_suspicious #left:mistress-tender_neutral
+
+Ethel: (My hunch seems more and more accurate.) #right:ethel_thinking #left:mistress-tender_neutral
+
+Mistress Tender: Yes. The beasts greatly dislike them. #right:ethel_thinking #left:mistress-tender_neutral
+
+Mistress Tender: And I’d rather have less crop, than wildlife attempting to make me into compost~ #right:ethel_thinking #left:mistress-tender_neutral
+
+Ethel: (...) #right:ethel_thinking #left:mistress-tender_neutral
+
+Ethel: (Fair enough. But I’m keeping my eyes on you.) #right:ethel_suspicious #left:mistress-tender_neutral
+
+Ethel: Fine. But we’re not leaving until my s- companion recovers. #right:ethel_tired #left:mistress-tender_neutral
+
+Mistress Tender: No rush on me. Your stomachs will be the ones suffering~ #right:ethel_tired #left:mistress-tender_smirk
+
+<<play_sfx "Single_Stone_Footsteps_1">>
+
+She turns and leaves unnaturally. #right:ethel_neutral
+
+Ethel: (I could try to take her out... but considering the circumstance... I hate to say it: But we may need her to figure out where the heck we are.) #right:ethel_thinking
+
+Ethel: (... Wait... did I just argue with a sentient potted plant?!) #right:ethel_confused
+
+///play sleeping sfx here?
+
+<<bg_fade_hide 1.0>>
+
+<<wait_for 2.0>>
+
+<<jump Ch1_Plot_Dragonkin_DiscussingBeforeExpedition>>
+===

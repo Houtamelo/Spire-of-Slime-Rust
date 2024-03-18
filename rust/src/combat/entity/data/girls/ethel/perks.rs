@@ -1,6 +1,7 @@
 use comfy_bounded_ints::prelude::Bound_u8;
 use serde::{Deserialize, Serialize};
 use uuid::Uuid;
+
 use crate::util::SaturatedU64;
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -35,5 +36,12 @@ pub enum EthelPerk {
 	Tank_Vanguard { cooldown_ms: SaturatedU64 },
 }
 
-#[derive(Debug, Clone)] pub struct AffectedByParalyzingToxins   { pub caster_guid: Uuid, }
-#[derive(Debug, Clone)] pub struct AffectedByConcentratedToxins { pub caster_guid: Uuid, }
+#[derive(Debug, Clone, Serialize, Deserialize)] 
+pub struct AffectedByParalyzingToxins   { 
+	pub caster_guid: Uuid,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)] 
+pub struct AffectedByConcentratedToxins { 
+	pub caster_guid: Uuid,
+}

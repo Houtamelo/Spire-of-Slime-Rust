@@ -1,5 +1,6 @@
 use rand_xoshiro::Xoshiro256PlusPlus;
 use serde::{Deserialize, Serialize};
+
 use crate::combat::entity::data::girls::GirlData;
 use crate::combat::entity::data::npc::NPCName;
 use crate::combat::skill_types::Skill;
@@ -16,7 +17,7 @@ pub trait CharacterDataTrait {
 	fn dmg  (&self, level: u8) -> CheckedRange;
 	fn spd  (&self, level: u8) -> Speed;
 	fn acc  (&self, level: u8) -> Accuracy;
-	fn crit (&self, level: u8) -> CritChance;
+	fn crit (&self, level: u8) -> CritRate;
 	fn dodge(&self, level: u8) -> Dodge;
 	fn toughness  (&self, level: u8) -> Toughness;
 	fn stun_def   (&self, level: u8) -> StunDef;

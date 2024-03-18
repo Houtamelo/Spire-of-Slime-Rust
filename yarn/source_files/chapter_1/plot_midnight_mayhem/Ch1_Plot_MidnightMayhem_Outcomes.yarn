@@ -1,0 +1,82 @@
+title: Ch1_Plot_MidnightMayhem_Victory
+tracking: always
+starting_bg: "CG_ch01_Chapel-night"
+starting_music: none
+starting_ambience: none
+clean_audio_when_done: music, ambience
+---
+Mistress Tender: INCOMING! #left:mistress-tender_annoyed
+
+<<bg_set "CG_midnight-mayhem_aftermatch">>
+
+<<play_sfx "Magic_Explosion_Short19">>
+
+The jug smashes into the ground, a mushroom cloud emerging from the wreckage.
+
+The creatures make a distressed noise you aren't sure you'd be willing to try and describe.
+
+They scurry off, leaving the carcasses of their companions behind.
+
+You breathe a sigh of relief... Maybe too soon. The scent of... burnt air permeate your nostrils.
+
+<<bg_set "CG_ch01_Chapel-night">>
+
+Ethel: (What is that even? It smells burnt. But, not bad. Like, if it's supposed to be burnt.) #right:ethel_serious
+
+Mistress Tender: Apologies for the delay. #right:mistress-tender_neutral
+
+<<if $stole_crabbane>>
+    Mistress Tender: I could have sworn I put some emergency crabbane in here... #right:mistress-tender_annoyed
+    You sweat nervously. Thankfully, it just mixes with the rest of the perspiration. #right:mistress-tender_annoyed
+<<endif>>
+
+Mistress Tender: I'm usually prepared for these things. But, it's rare they attack this late. Or this far from their nest... #right:mistress-tender_neutral
+
+Nema: They attack often? #right:mistress-tender_neutral #left:nema_worried
+
+Mistress Tender: Well, no. But at least one or two times a month during their active seasons. My garden usually keeps them away until morning at least. #right:mistress-tender_neutral #left:nema_worried
+
+Mistress Tender: Regardless: Get some rest. The scent will linger long enough for dawn to break. #right:mistress-tender_neutral #left:nema_worried
+
+Nema: Are the fumes safe? #right:mistress-tender_neutral #left:nema_thinking
+
+Mistress Tender: Yes. It only really affects crabdras. A bit like high pitched noise only affects wolfhydras. #right:mistress-tender_neutral #left:nema_thinking
+
+Nema: Makes sense. #right:mistress-tender_neutral #left:nema_neutral
+
+<<play_sfx "footsteps-bare-feet-faded">>
+
+Your sister relaxes and heads to bed. #right:mistress-tender_neutral
+
+Tender eyes you suspiciously. #right:mistress-tender_neutral
+
+Mistress Tender: Something on your mind? #right:mistress-tender_neutral
+
+Ethel: Nothing that can't wait until morning I suppose... #right:mistress-tender_neutral #left:ethel_serious
+
+Ethel: Attempted murder kinda messes with my REM sleep. #right:mistress-tender_neutral #left:ethel_neutral
+
+Mistress Tender: Understandable. I have something to discuss in the morning. #right:mistress-tender_neutral #left:ethel_neutral
+
+Ethel: (You're not the only one...)  #right:mistress-tender_neutral #left:ethel_suspicious
+
+You drag yourself back to bed, sore. Not a new sensation sadly.
+
+You slump down.
+
+Ethel: (Great... I won't be getting much rest after all...) #left:ethel_tired
+
+<<jump Ch1_Plot_MidnightMayhem_End>>
+===
+
+title: Ch1_Plot_MidnightMayhem_Defeat
+tracking: always
+starting_bg: hidden
+starting_music: none
+starting_ambience: none
+clean_audio_when_done: music, ambience
+---
+You collapse, muscles aching from various reasons as you struggle to get up. But all you can do is faint from exhaustion... Wondering if Nema is alright...
+
+<<jump Ch1_Plot_MidnightMayhem_End>>
+===

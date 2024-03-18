@@ -1,11 +1,14 @@
 use std::num::NonZeroU16;
+
 use comfy_bounded_ints::prelude::Bound_u8;
 use houta_utils::prelude::DynamicArray;
 use serde::{Deserialize, Serialize};
+
 use proc_macros::positions;
+
 use crate::combat::effects::onTarget::TargetApplier;
 use crate::combat::entity::data::skill_name::SkillName;
-use crate::combat::entity::stat::{Accuracy, CheckedRange, CritChance, Power};
+use crate::combat::entity::stat::{Accuracy, CheckedRange, CritRate, Power};
 use crate::combat::skill_types::*;
 use crate::combat::skill_types::lewd::LewdSkill;
 use crate::combat::skill_types::offensive::*;
@@ -24,7 +27,7 @@ pub static CRUSH: Skill = Skill::Offensive(OffensiveSkill {
 	can_be_riposted: true,
 	acc_mode: ACCMode ::CanMiss { acc: Accuracy::new(85) },
 	dmg_mode: DMGMode ::Power   { power: Power::new(100), toughness_reduction: Bound_u8::new(0) },
-	crit_mode: CRITMode::CanCrit { chance: CritChance::new(7) },
+	crit_mode: CRITMode::CanCrit { chance: CritRate::new(7) },
 	custom_modifiers: DynamicArray::Static(&[]),
 	effects_self: DynamicArray::Static(&[]),
 	effects_target: DynamicArray::Static(&[]),

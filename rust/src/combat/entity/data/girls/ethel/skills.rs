@@ -1,8 +1,11 @@
 use std::num::{NonZeroI8, NonZeroU16};
+
 use comfy_bounded_ints::prelude::Bound_u8;
 use houta_utils::prelude::DynamicArray;
 use serde::{Deserialize, Serialize};
+
 use proc_macros::positions;
+
 use crate::combat::effects::MoveDirection;
 use crate::combat::effects::onSelf::SelfApplier;
 use crate::combat::effects::onTarget::TargetApplier;
@@ -12,7 +15,7 @@ use crate::combat::entity::data::skill_name::SkillName;
 use crate::combat::skill_types::*;
 use crate::combat::skill_types::defensive::*;
 use crate::combat::skill_types::offensive::*;
-use crate::combat::stat::{Accuracy, CritChance, DynamicStat, Power};
+use crate::combat::stat::{Accuracy, CritRate, DynamicStat, Power};
 use crate::util::SaturatedU64;
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Serialize, Deserialize)]
@@ -66,7 +69,7 @@ pub const CLASH_CONST: Skill = Skill::Offensive(OffensiveSkill {
 	can_be_riposted: true,
 	acc_mode : ACCMode ::CanMiss { acc: Accuracy::new(95) },
 	dmg_mode : DMGMode ::Power   { power: Power::new(100), toughness_reduction: Bound_u8::new(5) },
-	crit_mode: CRITMode::CanCrit { chance: CritChance::new(9) },
+	crit_mode: CRITMode::CanCrit { chance: CritRate::new(9) },
 	custom_modifiers: DynamicArray::Static(&[]),
 	effects_self  : DynamicArray::Static(&[]),
 	effects_target: DynamicArray::Static(&[]),
@@ -98,7 +101,7 @@ pub const JOLT_CONST: Skill = Skill::Offensive(OffensiveSkill {
 	can_be_riposted: true,
 	acc_mode : ACCMode ::CanMiss { acc: Accuracy::new(95) },
 	dmg_mode : DMGMode ::Power   { power: Power::new(50), toughness_reduction: Bound_u8::new(0) },
-	crit_mode: CRITMode::CanCrit { chance: CritChance::new(5) },
+	crit_mode: CRITMode::CanCrit { chance: CritRate::new(5) },
 	custom_modifiers: DynamicArray::Static(&[]),
 	effects_self  : DynamicArray::Static(JOLT_EFFECTS_SELF),
 	effects_target: DynamicArray::Static(JOLT_EFFECTS_TARGET),
@@ -116,7 +119,7 @@ pub const SEVER_CONST: Skill = Skill::Offensive(OffensiveSkill {
 	can_be_riposted: true,
 	acc_mode : ACCMode ::CanMiss { acc: Accuracy::new(90) },
 	dmg_mode : DMGMode ::Power   { power: Power::new(60), toughness_reduction: Bound_u8::new(0) },
-	crit_mode: CRITMode::CanCrit { chance: CritChance::new(0) },
+	crit_mode: CRITMode::CanCrit { chance: CritRate::new(0) },
 	custom_modifiers: DynamicArray::Static(&[]),
 	effects_self  : DynamicArray::Static(&[]),
 	effects_target: DynamicArray::Static(&[]),
@@ -141,7 +144,7 @@ pub const PIERCE_CONST: Skill = Skill::Offensive(OffensiveSkill {
 	can_be_riposted: true,
 	acc_mode : ACCMode ::CanMiss { acc: Accuracy::new(100) },
 	dmg_mode : DMGMode ::Power   { power: Power::new(80), toughness_reduction: Bound_u8::new(15) },
-	crit_mode: CRITMode::CanCrit { chance: CritChance::new(13) },
+	crit_mode: CRITMode::CanCrit { chance: CritRate::new(13) },
 	custom_modifiers: DynamicArray::Static(PIERCE_CUSTOM_MODIFIERS),
 	effects_self  : DynamicArray::Static(&[]),
 	effects_target: DynamicArray::Static(&[]),
@@ -155,7 +158,7 @@ const CHALLENGE_EFFECTS_SELF: &[SelfApplier; 1] = &[
 	SelfApplier::Riposte {
 		duration_ms: SaturatedU64::new(4000),
 		acc_mode: ACCMode::CanMiss { acc: Accuracy::new(75) },
-		crit_mode: CRITMode::CanCrit { chance: CritChance::new(-5) },
+		crit_mode: CRITMode::CanCrit { chance: CritRate::new(-5) },
 		skill_power: NonZeroU16::new(65).unwrap()
 	}
 ];

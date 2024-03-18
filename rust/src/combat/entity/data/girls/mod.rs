@@ -1,10 +1,11 @@
-pub mod nema;
-pub mod ethel;
-
 use serde::{Deserialize, Serialize};
+
 use crate::combat::entity::data::girls::ethel::stats::EthelData;
 use crate::combat::entity::data::girls::nema::stats::NemaData;
 use crate::combat::entity::stat::{Composure, OrgasmLimit};
+
+pub mod nema;
+pub mod ethel;
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub enum GirlData {
@@ -19,7 +20,7 @@ pub enum GirlName {
 }
 
 pub trait GirlTrait {
-	fn name        (&self) -> GirlName;
+	fn name(&self) -> GirlName;
 	fn composure   (&self) -> Composure;
 	fn orgasm_limit(&self) -> OrgasmLimit;
 }

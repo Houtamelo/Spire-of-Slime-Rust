@@ -1,0 +1,163 @@
+title: Ch1_Plot_MidnightMayhem_End
+tracking: always
+starting_bg: "CG_ch01_Chapel"
+starting_music: none
+starting_ambience: none
+clean_audio_when_done: music, ambience
+---
+<<if visited(Ch1_Plot_MidnightMayhem_Victory)>>
+    After having made absolutely sure there were no more threats in the area, you feel comfortable enough to continue your night of rest. You wake up in the morning to the sound of Mistress Tender walking in.
+    Nema: Ugh… is it morning already? #left:nema_tired
+    Mistress Tender: I assume you slept well? Hopefully the battle last night wasn't too strenuous. It’s early, but I have another favor for you. #left:nema_tired #right:mistress-tender_content
+    Ethel: (We’re still alive, so it was a good night.) #right:mistress-tender_content #left:ethel_tired
+    Ethel: We did. #right:mistress-tender_neutral #left:ethel_neutral
+<<else>>
+    After falling, the chittering and darkness consumed you. You wake up. Something you shouldn't have done. You don't seem to learn. The sound of audible footsteps rouse you from your sleep. It's morning? You're alive?
+    Mistress Tender: Rise and shine. Glad to see you pulled through. #right:mistress-tender_neutral
+    Ethel: Wha? ... Last I remember... #right:mistress-tender_neutral #left:ethel_confused
+    (... Is it just me, or is there more carcasses than it should be?) #left:ethel_serious
+    Mistress Tender: I made it back in the nick of time. They scattered once I managed to throw the repellent. #right:mistress-tender_smirk #left:ethel_serious
+    Nema: The snapping... I can still hear it... #right:mistress-tender_smirk #left:nema_guilt
+<<endif>>
+
+Nema: Oh! Before I forget, you mentioned an incident yesterday? I was thinking about what you said while I was falling asleep… #left:nema_curious #right:mistress-tender_neutral
+
+Mistress Tender: Oh, it’s a long story. But in short, horrid creatures attacked and I was the only survivor. It was a terrible time and I’d rather not talk about it. #left:nema_curious #right:mistress-tender_neutral
+
+Ethel: (Not that long of a story…) #left:ethel_poker-face #right:mistress-tender_neutral
+
+Mistress Tender: And speaking of attacks, how are your injuries? #left:ethel_neutral #right:mistress-tender_neutral
+
+<<if visited(Ch1_Plot_MidnightMayhem_Victory)>>
+    Ethel: Mostly better. #left:ethel_determined #right:mistress-tender_neutral
+<<else>>
+    Ethel: We're fine... I think? #left:ethel_tired #right:mistress-tender_neutral
+<<endif>>
+
+Ethel: (There’s no way I’m letting her know that my legs still hurt…) #left:ethel_suspicious
+
+Nema: My head still kinda hurts… but I feel much better! Thank you! #right:nema_content
+
+Mistress Tender: Excellent. Now about that favor… #right:mistress-tender_smirk
+
+Ethel: Hmm? #left:ethel_suspicious #right:mistress-tender_smirk
+
+Mistress Tender: Two wolfhydras easily took both of you out. You need extra experience dealing with the local wildlife. #left:ethel_neutral #right:mistress-tender_neutral
+
+Ethel: I doubt they could beat both of us in a fair fight. We got caught by surprise the first time. And we could gather food just fine, so we can handle ourselves. #left:ethel_serious #right:mistress-tender_neutral
+
+<<if visited(Ch1_Plot_MidnightMayhem_Victory)>>
+    Mistress Tender: Regardless, there’s a crabhydra bloom going on, and you did a great job fighting them on especially short notice. They’re not awful creatures, but I’d prefer if you did away with them. #left:ethel_serious #right:mistress-tender_neutral
+<<else>>
+    Mistress Tender: As you may have noticed: There's no "fair fight" around here. And usually: The one that's defeated tend to lack the capability to complain about it... The crabhydra bloom has made them even more vicious than before. They're usually not awful creatures. But, I'd prefer if you could dispose of them. #left:ethel_serious #right:mistress-tender_annoyed
+<<endif>>
+
+Ethel: (Wolfhydras… crabhydras… everything’s a goddamn hydra. She’s just fucking with us at this point, i swear…) #left:ethel_suspicious
+
+Ethel: I can see why you'd want them gone. It's better to eliminate threats when they first appear instead of waiting for them to come to you. #left:ethel_serious #right:mistress-tender_neutral
+
+Mistress Tender: More importantly, they're also bad for the environment. If there are too many, they could overwhelm the important parts of the ecosystem. #left:ethel_serious #right:mistress-tender_neutral
+
+Ethel: (The environment? Not a great time to be concerned about that.) #left:ethel_thinking #right:mistress-tender_neutral
+
+Mistress Tender: They’re not tough creatures, but they’re similar to more dangerous threats in the area. If you cull these crabhydras, the skills you master in the process should easily apply to other creatures. #left:ethel_thinking #right:mistress-tender_neutral
+
+Ethel: We’d rather get going. There are a lot of other things I’d prefer to do than hunt crabs. #left:ethel_serious #right:mistress-tender_neutral
+
+Mistress Tender: It’s even more dangerous outside this forest. If you clear out these nuisances… you’ll always have a safe place to stay. #left:ethel_serious #right:mistress-tender_neutral
+
+Ethel: (Ugh… I’d love to know where we are, what’s going on with these creatures, and the weird plants we gathered, and everything, but I don’t want her to know how little we know. Might have to just play along.) #left:ethel_thinking #right:mistress-tender_neutral
+
+Ethel: Maybe you’re right. We could always rest here if we need some-place to stay, and we might as well help out. #left:ethel_neutral #right:mistress-tender_neutral
+
+Mistress Tender: Good. There’s a cave some distance away from here, and it’s chock full of crabhydras. This is a good chance to get up close and personal with them. #left:ethel_neutral #right:mistress-tender_neutral
+
+Nema has a look in her eyes; the same look she usually has when she gets a chance to learn about something new.
+
+Ethel: Not too personal, I hope. #left:ethel_neutral #right:mistress-tender_neutral
+
+<<if visited(Ch1_Plot_MidnightMayhem_Victory)>>
+    Mistress Tender: On the contrary, you look like you would enjoy getting personal with them. It can be... quite enjoyable when they're frisky~ #left:ethel_neutral #right:mistress-tender_smirk
+    Ethel: (I’m not that bloodthirsty... Usually.) #left:ethel_thinking
+<<else>>
+    Mistress Tender: You say that but... The noises I heard last night didn't sound like those of someone in distress. #left:ethel_neutral #right:mistress-tender_smirk
+    Ethel: (... Nema likes her... Nema likes her!) #left:ethel_angry-sword
+    Ethel: No comment... #left:ethel_poker-face #right:mistress-tender_smirk
+<<endif>>
+
+Ethel: Alright. Just tell us where the cave is and we’ll head off. #left:ethel_serious #right:mistress-tender_neutral
+
+Mistress Tender: Just to the Northwest. I prepared a list of landmarks you can use for guidance: it’s all written on here. #left:ethel_serious #right:mistress-tender_neutral
+
+Ethel: (I’d prefer a real map, but this will do.) #left:ethel_neutral #right:mistress-tender_neutral
+
+Nema: Wait... are we supposed to just go there and... whack hundreds of them with sticks? #left:nema_thinking #right:mistress-tender_neutral
+
+Mistress Tender smiles slyly. #left:nema_thinking #right:mistress-tender_smirk
+
+Mistress Tender: Of course not. I'll provide you with the ingredients to create the same gas bomb as I used yesterday. #left:nema_thinking #right:mistress-tender_neutral
+
+Ethel: (Oh... well, yes. That makes more sense... And here I planned to just stab everything with a carapace until it stopped moving.) #right:ethel_thinking
+
+Mistress Tender: Nema, I'll show you how to create it. #left:nema_neutral #right:mistress-tender_neutral
+
+Nema lights up with excitement. Which type, you cannot tell. #left:nema_curious
+
+Ethel: Why can't you just give us the bomb? #left:ethel_suspicious #right:mistress-tender_neutral
+
+Mistress Tender: I could. But the larger container is more fragile, and heavy. And it loses potency once mixed. Not quickly, but since you are going deep into the nest: You probably want it as fresh as possible. #left:ethel_suspicious #right:mistress-tender_neutral
+
+Mistress Tender: It's much more safe to mix it once you arrive there. #left:ethel_neutral #right:mistress-tender_neutral
+
+Mistress Tender: But be warned: I haven't tried to create this mixture in another biome. #left:ethel_neutral #right:mistress-tender_neutral
+
+Mistress Tender: Since, you know: That would mean going into their nest... #left:ethel_neutral #right:mistress-tender_smirk
+
+Ethel: (And here we are, being granted the highest honor~) #left:ethel_neutral #right:mistress-tender_neutral
+
+Nema: Makes sense... you couldn't create napalm in an area with a high sulphuric count. #left:nema_thinking #right:mistress-tender_neutral
+
+Ethel: (I'm sorry, WHAT?) #right:ethel_fear
+
+Mistress Tender: I do not know what that is... but either case: There's a slight chance it might be weaker than intended. I have tweaked the recipe a bit. #left:nema_thinking #right:mistress-tender_neutral
+
+Mistress Tender: But: You can mix it in any solid dent in the ground, container or similar. Just be aware of potential contaminants. #left:nema_thinking #right:mistress-tender_neutral
+
+Mistress Tender: And Ethel: I'll give you a few pointers on their weak points while Nema practices. #left:ethel_neutral #right:mistress-tender_neutral
+
+You nod.
+
+Ethel: (The eyes seem obvious enough.) #left:ethel_thinking
+
+// Training montage?
+<<wait_bg_fade_hide 1.0>>
+
+<<award_ethel_primary_upgrade_point 1>>
+<<award_ethel_secondary_upgrade_point 1>>
+
+<<wait_bg_fade_show 1.0>>
+
+Mistress Tender hands you the ingredients.
+
+<<if $investigated_crabbane>>
+    <<if $stole_crabbane>>
+        Ethel: (Wait... that one is blue. The one I have is purple... Is mine one old, or is she giving us something different? Granted, she did say she changed the recipe...) #left:ethel_suspicious
+    <<else>>
+        Ethel: (Wait... wasn't it purple? ... Granted, it was dark and I was tired. It was probably blue. Stop being paranoid.) #left:ethel_thinking
+    <<endif>>
+<<endif>>
+
+Mistress Tender: Take care, and farewell; you're doing all of us a favor by culling these things. #left:ethel_neutral #right:mistress-tender_content
+
+Nema: Can I get extra in case I break these? #left:nema_neutral #right:mistress-tender_content
+
+Mistress Tender: Sadly, no. But if you do: You can return here for more. I do not have any more to spare. They take time to cultivate and harvest. #left:nema_neutral #right:mistress-tender_neutral
+
+Houtamelo: Hello! I need to break the 4th wall for a moment...
+Houtamelo: Here ends the story part of this build.
+Houtamelo: You can still travel around map, fight enemies, try new perks.
+Houtamelo: Next build will be focused on adding more content to the hexagon dungeon "system" (AKA Local Map), the first to come are random events that you'll encounter while traveling.
+Houtamelo: Anyway, hope you had fun, if you have some spare time: consider telling us your thoughts about the game, you can do so by: \\n email: houtamelo@pm.me \\n Talk to us on our discord channel: https://discord.gg/Cacam7yuqR
+
+<<transition_world_map>>
+===

@@ -1,18 +1,18 @@
-pub mod stats;
-pub mod skills;
-pub mod perks;
-
 use houta_utils::prelude::DynamicArray;
+
 use crate::combat::entity::data::girls::ethel::stats::EthelData;
 use crate::combat::entity::stat::*;
 
+pub mod stats;
+pub mod skills;
+pub mod perks;
 
 pub static DEFAULT_ETHEL: EthelData = EthelData {
 	size : Size::new(1),
 	dmg  : CheckedRange::new(8, 12).unwrap(),
 	spd  : Speed::new(100),
 	acc  : Accuracy::new(0),
-	crit : CritChance::new(0),
+	crit : CritRate::new(0),
 	dodge: Dodge::new(10),
 	max_stamina: MaxStamina::new(30),
 	toughness  : Toughness::new(0),

@@ -1,11 +1,9 @@
-pub mod offensive;
-pub mod defensive;
-pub mod lewd;
-
 use comfy_bounded_ints::prelude::{Bound_u8, SqueezeTo_usize};
 use gdnative::godot_error;
 use serde::{Deserialize, Serialize};
+
 use entity::position::Position;
+
 use crate::combat::effects::onSelf::SelfApplier;
 use crate::combat::effects::onTarget::TargetApplier;
 use crate::combat::entity;
@@ -13,9 +11,13 @@ use crate::combat::entity::data::skill_name::SkillName;
 use crate::combat::skill_types::defensive::DefensiveSkill;
 use crate::combat::skill_types::lewd::LewdSkill;
 use crate::combat::skill_types::offensive::OffensiveSkill;
-use crate::combat::stat::{Accuracy, CritChance, Power};
+use crate::combat::stat::{Accuracy, CritRate, Power};
 use crate::MAX_CHARACTERS_PER_TEAM;
 use crate::util::SaturatedU64;
+
+pub mod offensive;
+pub mod defensive;
+pub mod lewd;
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub enum Skill {
@@ -51,7 +53,7 @@ pub enum DMGMode {
 
 #[derive(Debug, Clone, PartialEq, Eq, Copy, Serialize, Deserialize)]
 pub enum CRITMode {
-	CanCrit { chance: CritChance },
+	CanCrit { chance: CritRate },
 	NeverCrit,
 }
 

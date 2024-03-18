@@ -1,9 +1,11 @@
 use std::collections::HashMap;
+
 use serde::{Deserialize, Serialize};
 use uuid::Uuid;
+
 use crate::combat::entity::character::{CharacterState, CombatCharacter, OnZeroStamina};
 use crate::combat::entity::data::character::CharacterData;
-use crate::combat::entity::data::girls::{GirlData};
+use crate::combat::entity::data::girls::GirlData;
 use crate::combat::entity::data::skill_name::SkillName;
 use crate::combat::entity::position::Position;
 use crate::combat::perk::Perk;
@@ -87,7 +89,7 @@ pub struct AliveGirl_Grappled {
 	pub poison_rate: PoisonRate,
 	pub spd   : Speed,
 	pub acc   : Accuracy,
-	pub crit  : CritChance,
+	pub crit  : CritRate,
 	pub dodge : Dodge,
 	pub damage: CheckedRange,
 	pub power : Power,

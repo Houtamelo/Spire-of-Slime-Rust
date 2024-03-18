@@ -10,7 +10,6 @@
 #![allow(clippy::match_like_matches_macro)]
 #![allow(clippy::never_loop)]
 #![allow(clippy::clone_on_copy)]
-#![allow(illegal_floating_point_literal_pattern)]
 #![warn(clippy::missing_const_for_fn)]
 #![feature(step_trait)]
 #![feature(let_chains)]
@@ -20,9 +19,12 @@
 #![feature(ascii_char)]
 #![feature(variant_count)]
 
-mod audio;
-pub use audio::bus;
+use gdnative::prelude::*;
 
+pub use audio::bus;
+pub use world_map::WorldLocation;
+
+mod audio;
 mod combat;
 mod util;
 mod main_menu;
@@ -33,10 +35,6 @@ mod local_map;
 mod game_manager;
 mod start_screen;
 pub mod gdnative_macros;
-
-pub use world_map::WorldLocation;
-
-use gdnative::prelude::*;
 
 pub const MAX_CHARACTERS_PER_TEAM: u8 = 4;
 pub static CONFIG_PATH: &str = "user://config.cfg";
@@ -85,6 +83,7 @@ fn init(handle: InitHandle) {
 	handle.add_class::<houta_utils_gdnative::prelude::PlayOnClickAndPitchRandomizer>();
 	handle.add_class::<houta_utils_gdnative::prelude::PlayOnHoverAndPitchRandomizer>();
 	handle.add_class::<houta_utils_gdnative::prelude::DisallowClickFocusOnParent>();
+	handle.add_class::<houta_utils_gdnative::prelude::AutoTextResize>();
 }
 
 godot_init!(init);

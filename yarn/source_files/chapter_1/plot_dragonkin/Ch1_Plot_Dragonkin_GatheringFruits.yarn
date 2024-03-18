@@ -1,0 +1,161 @@
+﻿title: Ch1_Plot_Dragonkin_GatheringFruits
+tracking: always
+starting_bg: hidden
+starting_music: none
+starting_ambience: "crikets", "forest_noises"
+clean_audio_when_done: music, ambience
+---
+<<wait_play_sfx "Single_Grass_Footsteps_2">>
+
+Nema: Can't we take a closer look at that one? It will just be a minute! #left:nema_neutral
+
+Ethel: I know you. That will turn into ten minutes. #left:nema_neutral #right:ethel_neutral
+
+Ethel: Besides, didn't you just complain you were getting tired? #left:nema_neutral #right:ethel_neutral
+
+Nema pouts. #left:nema_neutral #right:ethel_neutral
+
+She suddenly perks up. #left:nema_curious #right:ethel_neutral
+
+Nema: Ooh! Ohh! It's thing thing! #left:nema_curious #right:ethel_neutral
+
+She bounces in place and points forward. #left:nema_curious #right:ethel_neutral
+
+<<wait_bg_fade_set_anim 1.0 "ACG_ch01_Dragon-fruit-0">> //takes 3 seconds
+
+You glance over and notice a... is that a fucking fairytale clearing? #left:nema_curious #right:ethel_poker-face
+
+You didn't know it was possible to hate this place any further. #right:ethel_poker-face
+
+Seriously, all this place needs is a unmarked van with "Free Candy" written on the side. #right:ethel_poker-face
+
+You exhale deeply. #right:ethel_poker-face
+
+Ethel: Okay, lets get this over with. #right:ethel_poker-face
+
+<<play_sfx "Single_Grass_Footsteps_2">>
+
+<<wait_bg_fade_set 1.0 "CG_ch01_Dragon-fruit-1">>
+
+Nema: Neat! It seems like the mist doesn't reach this place. #left:nema_neutral #right:ethel_neutral
+
+Nema: I wonder if it's because its on a hill? #left:nema_neutral #right:ethel_neutral
+
+Ethel: Not sure if that makes me relieved, or more suspicious... #left:nema_neutral #right:ethel_suspicious
+
+<<wait_bg_fade_hide 1.0>>
+
+You scan the surrounding area. #right:ethel_suspicious
+
+Ethel: (Geez... the mist blankets the entire region it seems like...) #right:ethel_worried
+
+Ethel: (Hm... I wonder if it's localized to this forest, or if it's widespread?) #right:ethel_thinking
+
+/// play ominous sound here?
+
+<<interface_fade_hide 0.5>>
+
+<<bg_fade_show 3.0>>
+
+<<wait_bg_set_anim "ACG_DragonFruit-2">>
+
+<<interface_fade_show 0.5>>
+
+Ethel: (Wait... is that a huge fucking pink cloud castle?) #right:ethel_fear
+
+Ethel: (... Am I sure I'm not tripping balls? We DID inhale some of that pink stuff.) #right:ethel_confused
+
+Ethel: Are you.. seeing that? #right:ethel_confused #left:nema_curious
+
+Nema: Hm? OH! Wow! It's so fluffy! #left:nema_content #right:ethel_confused
+
+Ethel: (Well, simultaneous hallucination is rather unlikely.) #left:nema_content #right:ethel_thinking
+
+Ethel: So... should we be worried about it? #left:nema_curious #right:ethel_thinking
+
+Nema: Maybe? It's way far in the distance... #left:nema_thinking #right:ethel_neutral
+
+Nema: Maybe it's the cause of the mist? Would mean it's very diluted over here. #left:nema_thinking #right:ethel_neutral
+
+Ethel: (Not sure if that makes it better or worse..) #left:nema_neutral #right:ethel_thinking
+
+Ethel: Well... one ominous mystery at a time... #left:nema_neutral #right:ethel_tired
+
+Nema puts her staff down and sighs contently. #left:nema_neutral #right:ethel_neutral
+
+Nema: There sure is a lot of pink stuff. #left:nema_thinking #right:ethel_neutral
+
+Ethel: We need to figure out what it really does... it doesn't seem "natural" natural. #left:nema_neutral #right:ethel_thinking
+
+Nema: We could ask Tender! #left:nema_curious #right:ethel_neutral
+
+Ethel: (Hm... I don't want to risk exposing us as even more unaware...) #left:nema_curious #right:ethel_thinking
+
+Ethel: (But on the other hand... it would allow me to know what her intentions might be.) #left:nema_neutral #right:ethel_thinking
+
+Ethel: Maybe. Not for now. We don't know enough about her yet. #left:nema_neutral #right:ethel_neutral
+
+<<bg_set "CG_ch01_Dragon-fruit-1">>
+
+You wipe your brow and gaze across the grove. #right:ethel_neutral
+
+Ehtel: (Oh geez... there's a lot of fruit... Why didn't she give us a wagon or something?) #right:ethel_curious
+
+Ethel: (... Or is this a case of "You never asked?") #right:ethel_thinking
+
+You furrow your brow. #right:ethel_thinking
+
+Ethel: (If she walks here... does that mist turn you into a plant person?) #right:ethel_thinking
+
+Nema: Dragonkin! #left:nema_curious #right:ethel_thinking
+
+Ethel: (What?) #left:nema_curious #right:ethel_curious
+
+Ethel: What?! #left:nema_curious #right:ethel_worried
+
+You turn, and your eyes widen as your sister is happily poking away at one of the plants. #left:nema_curious #right:ethel_worried
+
+Ethel: WHAT did we say about touching things?! #right:ethel_angry #left:nema_curious
+
+<<bg_set "CG_ch01_Dragon-fruit-hand">>
+
+Nema: But... we were sent here to collect these? #left:nema_confused #right:ethel_angry
+
+Ethel: That doesn't mean we can trust they are safe... #left:nema_confused #right:ethel_neutral
+
+Nema: And how many plants have tried to kill us so far? #left:ethel_neutral #right:ethel_neutral
+
+Nema: I haven't found a single harmful one on the way here! #left:nema_content #right:ethel_neutral
+
+Ethel: That doesn't mean we should drop our guard. #left:nema_content #right:ethel_neutral
+
+<<bg_set "CG_ch01_Dragon-fruit-1">>
+
+Ethel: We still have no idea what this place is. Or... why everything is pink... #left:nema_neutral #right:ethel_neutral
+
+Nema: Oh, come now. Nothing pink has ever been dangerous. #left:nema_determined #right:ethel_neutral
+
+Ethel: Hey, something gotta be the first. #left:nema_determined #right:ethel_poker-face
+
+Ethel: What was it you said by the way? #left:nema_neutral #right:ethel_curious
+
+Nema: Dragonkin. #left:nema_neutral #right:ethel_curious
+
+Ethel: Aaand that is? #left:nema_neutral #right:ethel_curious
+
+Nema: What I call this fruit... fruit! #left:nema_content #right:ethel_neutral
+
+You look at this... weird orange-ish plant, leaf mess. #left:nema_content #right:ethel_neutral
+
+Nema: It's a hybrid of a pumpkin and a dragon-fruit! #left:nema_content #right:ethel_neutral
+
+She scribbles in her journal. #left:nema_content #right:ethel_neutral
+
+Nema: So many new plants to name! #left:nema_content #right:ethel_neutral
+
+You narrow your eyes. #left:nema_content #right:ethel_poker-face
+
+Ethel: (If it starts talking and introduces itself as Steve, I'll squash it.) #left:nema_content #right:ethel_poker-face
+
+<<transition_world_map>>
+===

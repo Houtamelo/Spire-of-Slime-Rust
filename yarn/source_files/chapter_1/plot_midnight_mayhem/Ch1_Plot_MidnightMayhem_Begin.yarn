@@ -1,0 +1,134 @@
+title: Ch1_Plot_MidnightMayhem_Begin
+tracking: always
+starting_bg: hidden
+starting_music: "rumble_f_001", 0.5
+starting_ambience: none
+clean_audio_when_done: music, ambience
+---
+<<wait_for 2.0>>
+
+You jump over the crevice, following the white lizard.
+
+It's surprisingly fast.
+
+But you're not giving up that easily.
+
+It slinks into a sinkhole.
+
+It might be too tight for you to fit through.
+
+Before you can decide on what to do, there's an earthquake.
+
+You lose your balance as everything is shaking.
+
+Shaking...
+
+<<bg_fade_set 1.0 "CG_midnight-mayhem_tender-wakes-ethel">>
+
+Your eyes shot open.
+
+<<play_sfx "zapsplat_household_bed_covers_duvet_movement_fast">>
+
+You are being shook.
+
+Mistress Tender: Wake up!
+
+<<play_sfx "zapsplat_household_bed_mattress_covers_on_impact_object_or_body_land">>
+
+She lets go of you as you fall back in bed.
+
+//line bellow commented since we don't have the assets yet
+//<<ambience_stop_all_then_set creatures_approaching_noises 0.75>> // this is a hard one, imagine creatures bumping into each other, walls and furniture as they are approaching
+
+Ethel: (Wha? Where a I? What's going on?) #right:ethel_tired
+
+You groggily sit up. Something smells... funky. #right:ethel_tired
+
+Ethel: (There better be a fire...) #right:ethel_tired // switch to annoyed when portrait is done
+
+Ethel: What was I even dreaming about? Something about going down? #right:ethel_confused // switch to dazed when portrait is done
+
+<<play_sfx "Bluezone_BC0248_098_whoosh_hit">>
+
+You rub your eyes as a large crash snaps you to attention. #right:ethel_fear
+
+Mistress Tender: Hurry! Quickly! #left:mistress-tender_annoyed
+
+<<bg_set "CG_ch01_Chapel-night">>
+
+You reach around for your sword, which you just can't find. #right:ethel_serious #left:mistress-tender_annoyed
+
+Ethel: (Dammit! Why do I always have to be right when it's something bad?) #right:ethel_worried
+
+You take a moment to catch your surroundings. #right:ethel_serious
+
+<<if $enemy_met_crabdra is true>>
+    Tender appears to be fightning some crabdras. #right:ethel_serious
+    Ethel: (What are those things doing here?) #right:ethel_suspicious // switch to a different "confused"
+<<else>>
+    Tender appears to be fighting some... amalgamation. #right:ethel_serious
+    Ethel: (Is... that a giant crab?) #right:ethel_confused
+<<endif>>
+
+She seems to mostly be ducking and weaving.
+
+Ethel: (Quite agile for a priestess... Though, I guess it makes sense if your neighbours are... those things.) #right:ethel_serious
+
+Ethel: (She's not looking too hot though, I better help.) #right:ethel_confused
+
+You look over to your sister. Sleeping. #right:ethel_serious
+
+Ethel: She'll sleep through anything... #right:ethel_poker-face // replace with annoyed
+
+//line bellow commented since we don't have the assets yet
+//<<ambience_stop_all_then_set creatures_approaching_noises 1>> // same as the one on line 37 but with higher volume
+
+<<bg_set "CG_midnight-mayhem_crabdra-stares-nema">>
+
+More of the creatures pour into the room. You count four of them through the ruckus. #right:ethel_angry
+
+One of them slinks pass Tender and heads towards your sister. #right:ethel_angry
+
+Ethel: OH NO YOU DON'T! #right:ethel_angry
+
+<<play_sfx "ethel_throws_table_crabdra">>
+
+<<bg_set "CG_midnight-mayhem_ethel-throw-table-crabdra">>
+
+You grab and hurl the bedside table at the creature. It's enough to grab it's attention. #right:ethel_angry
+
+Ethel: (Where did they even come from? I thought her garden kept them away?) #right:ethel_angry
+
+Nema: Bwuh? #right:ethel_angry #left:nema_tired
+
+Ethel: GET UP! WE'RE BEING ATTACKED! #right:ethel_angry #left:nema_tired
+
+<<bg_set "CG_ch01_Chapel-night">>
+
+<<play_sfx "warfare_sword_pulled_from_sheath_british_naval_cutlass_19thc">>
+
+You finally find your sword. By stepping on it. #right:ethel_angry-sword
+
+Ethel: (So much for catching a break...) #right:ethel_angry-sword
+
+Mistress Tender: Get them off me! I can make a concoction to scare them off! #right:ethel_angry-sword #left:mistress-tender_annoyed
+
+Ethel: (Feels like you should have those on supply...) #right:ethel_angry-sword
+
+Ethel: (I hate shellfish...) #right:ethel_angry-sword
+
+<<play_sfx "hit-crabdra">>
+
+You body check the crustacean next to Tender, giving her an opening. #right:ethel_angry-sword
+
+Mistress Tender: Just keep them busy! I have emergency ingredients nearby! #right:ethel_angry-sword #left:mistress-tender_annoyed
+
+<<if $stole_crabbane>>
+    Mistress Tender: What the- Where's the crabbane? #left:mistress-tender_annoyed
+    You glance back to catch a glimpse of Tender at the cabinet. #left:mistress-tender_annoyed
+    Ethel: (Oh... fuck.) #left:mistress-tender_annoyed #right:ethel_worried
+    Mistress Tender: No matter! I have some more in the back! #left:mistress-tender_annoyed #right:ethel_worried
+<<endif>>
+
+<<transition_combat "combat_midnight-mayhem">>
+===

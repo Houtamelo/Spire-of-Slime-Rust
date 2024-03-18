@@ -1,10 +1,11 @@
-use serde::{Serialize, Deserialize};
 use houta_utils::prelude::DynamicArray;
 use rand_xoshiro::Xoshiro256PlusPlus;
-use crate::combat::entity::data::character::{CharacterDataTrait};
+use serde::{Deserialize, Serialize};
+
+use crate::combat::entity::data::character::CharacterDataTrait;
 use crate::combat::entity::data::girls::{GirlName, GirlTrait};
-use crate::combat::skill_types::Skill;
 use crate::combat::entity::stat::*;
+use crate::combat::skill_types::Skill;
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct EthelData {
@@ -15,7 +16,7 @@ pub struct EthelData {
     pub(super) dmg: CheckedRange,
     pub(super) spd: Speed,
     pub(super) acc: Accuracy,
-    pub(super) crit : CritChance,
+    pub(super) crit : CritRate,
     pub(super) dodge: Dodge,
     pub(super) max_stamina: MaxStamina,
     pub(super) toughness  : Toughness,
@@ -39,7 +40,7 @@ impl CharacterDataTrait for EthelData {
 	fn dmg  (&self, _level: u8) -> CheckedRange { return self.dmg.clone(); }
 	fn spd  (&self, _level: u8) -> Speed      { return self.spd  ; }
 	fn acc  (&self, _level: u8) -> Accuracy   { return self.acc  ; }
-	fn crit (&self, _level: u8) -> CritChance { return self.crit ; }
+	fn crit (&self, _level: u8) -> CritRate { return self.crit ; }
 	fn dodge(&self, _level: u8) -> Dodge      { return self.dodge; }
 	fn toughness  (&self, _level: u8) -> Toughness  { return self.toughness  ; }
 	fn stun_def   (&self, _level: u8) -> StunDef    { return self.stun_def   ; }

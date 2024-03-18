@@ -1,6 +1,7 @@
 use comfy_bounded_ints::prelude::{SqueezeTo, SqueezeTo_i64};
 use houta_utils::any_matches;
 use houta_utils::prelude::DynamicArray;
+
 use crate::combat::effects::onSelf::SelfApplier;
 use crate::combat::effects::onTarget::TargetApplier;
 use crate::combat::effects::persistent::PersistentEffect;
@@ -153,10 +154,10 @@ impl OffensiveSkill {
 		};
 	}
 	
-	pub fn final_crit_chance_independent(skill_crit: CritChance, caster: &CombatCharacter) -> PercentageU8 {
+	pub fn final_crit_chance_independent(skill_crit: CritRate, caster: &CombatCharacter) -> PercentageU8 {
 		let final_crit_chance = {
 			let mut temp = skill_crit.to_sat_i64();
-			temp += caster.dyn_stat::<CritChance>().get();
+			temp += caster.dyn_stat::<CritRate>().get();
 			temp.to_percent_u8()
 		};
 		
