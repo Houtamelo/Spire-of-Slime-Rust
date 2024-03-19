@@ -1,0 +1,10 @@
+[gd_resource type="DynamicFont" load_steps=2 format=2]
+
+[ext_resource path="res://Fonts/font_audimat-mono_data.tres" type="DynamicFontData" id=1]
+
+[resource]
+size = 20
+outline_color = Color( 0, 0, 0, 1 )
+use_filter = true
+extra_spacing_top = 2
+font_data = ExtResource( 1 )
