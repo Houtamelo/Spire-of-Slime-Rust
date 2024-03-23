@@ -11,7 +11,7 @@ config_version=4
 [application]
 
 config/name="Spire of Slime"
-run/main_scene="res://Core/Local Map/local_map_test.tscn"
+run/main_scene="res://Core/Combat/scene_combat.tscn"
 config/use_hidden_project_data_directory=false
 
 [audio]

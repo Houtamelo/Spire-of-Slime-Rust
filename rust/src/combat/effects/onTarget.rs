@@ -4,10 +4,10 @@ use std::num::{NonZeroI8, NonZeroU16, NonZeroU8};
 use comfy_bounded_ints::prelude::{SqueezeTo, SqueezeTo_i8, SqueezeTo_u8};
 use comfy_bounded_ints::types::Bound_u8;
 use gdnative::log::godot_warn;
-use houta_utils::any_matches;
 use rand::Rng;
 use rand_xoshiro::Xoshiro256PlusPlus;
 use serde::{Deserialize, Serialize};
+use util::any_matches;
 use uuid::Uuid;
 
 use combat::effects::MoveDirection;
@@ -26,7 +26,7 @@ use combat::skill_types::{ACCMode, CRITMode};
 
 use crate::combat;
 use crate::combat::effects::IntervalMS;
-use crate::util::{Base100ChanceGenerator, SaturatedU64, ToSaturatedI64, ToSaturatedU64, ToU8Percentage};
+use crate::misc::{Base100ChanceGenerator, SaturatedU64, ToSaturatedI64, ToSaturatedU64, ToU8Percentage};
 
 pub(super) const CRIT_DURATION_MULTIPLIER: u64 = 150;
 pub(super) const CRIT_EFFECT_MULTIPLIER: u64 = 150;
@@ -117,7 +117,7 @@ impl TargetApplier {
 			TargetApplier::Arouse { duration_ms, lust_per_interval: lust_per_sec } => {
 				if target.girl_stats.is_none() {
 					godot_warn!("{}(): Trying to apply Arouse on non-girl character: {target:?}",
-						houta_utils::full_fn_name(&Self::apply_target));
+						util::full_fn_name(&Self::apply_target));
 					return Some(target);
 				};
 				
@@ -261,7 +261,7 @@ impl TargetApplier {
 				let Some(girl) = &mut target.girl_stats
 					else {
 						godot_warn!("{}(): Trying to change exhaustion of non-girl character: {target:?}",
-							houta_utils::full_fn_name(&Self::apply_target));
+							util::full_fn_name(&Self::apply_target));
 						return Some(target);
 					};
 				
@@ -328,7 +328,7 @@ impl TargetApplier {
 						target = target_survived;
 					} else {
 						godot_warn!("{}(): Healer_Adoration: target died from toughness buff, caster: {caster:?}",
-							houta_utils::full_fn_name(&Self::apply_target));
+							util::full_fn_name(&Self::apply_target));
 						return None;
 					}
 
@@ -346,7 +346,7 @@ impl TargetApplier {
 							target = target_survived;
 						} else {
 							godot_warn!("{}(): Healer_Adoration: target died from composure buff, caster: {caster:?}", 
-								houta_utils::full_fn_name(&Self::apply_target));
+								util::full_fn_name(&Self::apply_target));
 							return None;
 						}
 					}
@@ -365,7 +365,7 @@ impl TargetApplier {
 				let Some(girl) = &mut target.girl_stats
 					else { 
 						godot_warn!("{}(): Trying to apply lust on-non girl target: {target:?}",
-							houta_utils::full_fn_name(&Self::apply_target));
+							util::full_fn_name(&Self::apply_target));
 						return Some(target);
 					};
 				
@@ -665,7 +665,7 @@ impl TargetApplier {
 				let Some(girl) = &mut target.girl_stats
 					else {
 						godot_warn!("{}():Trying to apply tempt to character {target:?}, but it's not a girl.",
-							houta_utils::full_fn_name(&Self::apply_target));
+							util::full_fn_name(&Self::apply_target));
 						return Some(target);
 					};
 
@@ -702,7 +702,7 @@ impl TargetApplier {
 				let CharacterData::NPC(_) = caster.data // making sure caster is a npc (required for grappling) 
 					else {
 						godot_warn!("{}(): Trying to apply tempt to character {target:?}, but caster {caster:?} isn't an NPC.",
-							houta_utils::full_fn_name(&Self::apply_target));
+							util::full_fn_name(&Self::apply_target));
 						return Some(target);
 					};
 
@@ -729,7 +729,7 @@ impl TargetApplier {
 			TargetApplier::Arouse { duration_ms, lust_per_interval } => {
 				if caster.girl_stats.is_none() {
 					godot_warn!("{}(): Trying to apply Arouse on non-girl character: {caster:?}",
-						houta_utils::full_fn_name(&Self::apply_target));
+						util::full_fn_name(&Self::apply_target));
 					return;
 				};
 
@@ -802,7 +802,7 @@ impl TargetApplier {
 				let Some(girl) = &mut caster.girl_stats
 					else {
 						godot_warn!("{}(): Trying to change exhaustion of non-girl character: {caster:?}",
-							houta_utils::full_fn_name(&Self::apply_self));
+							util::full_fn_name(&Self::apply_self));
 						return;
 					};
 
@@ -890,7 +890,7 @@ impl TargetApplier {
 				let Some(girl) = &mut caster.girl_stats
 					else {
 						godot_warn!("{}(): Trying to apply lust on-non girl self: {caster:?}",
-							houta_utils::full_fn_name(&Self::apply_self));
+							util::full_fn_name(&Self::apply_self));
 						return;
 					};
 
@@ -1109,7 +1109,7 @@ impl TargetApplier {
 			| TargetApplier::MakeTargetGuardSelf { .. }
 			| TargetApplier::Tempt { .. } => {
 				godot_warn!("{}(): {self:?} is not applicable to self! Caster: {caster:?}",
-					houta_utils::full_fn_name(&Self::apply_self))
+					util::full_fn_name(&Self::apply_self))
 			},
 		}
 	}

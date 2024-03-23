@@ -2,8 +2,8 @@ use std::collections::{HashMap, HashSet};
 use std::num::NonZeroU16;
 
 use gdnative::prelude::*;
-use houta_utils::full_fn_name;
 use rand_xoshiro::Xoshiro256PlusPlus;
+use util::full_fn_name;
 use uuid::Uuid;
 
 use crate::combat::effects::onTarget::{DebuffApplierKind, TargetApplier};
@@ -14,7 +14,7 @@ use crate::combat::entity::data::girls::nema::perks::NemaPerk;
 use crate::combat::perk::{get_perk_mut, has_perk, Perk};
 use crate::combat::skill_types::defensive::DefensiveSkill;
 use crate::combat::stat::DynamicStat;
-use crate::util::{Base100ChanceGenerator, ToSaturatedU64, TrackedTicks};
+use crate::misc::{Base100ChanceGenerator, ToSaturatedU64, TrackedTicks};
 
 pub fn start_targeting_self(caster: &mut CombatCharacter, others: &mut HashMap<Uuid, Entity>,
                             skill: DefensiveSkill, rng: &mut Xoshiro256PlusPlus, recover_ms: Option<i64>) {

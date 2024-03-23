@@ -1,13 +1,16 @@
-mod settings;
-
 use std::collections::HashMap;
-use settings::*;
-use gdnative::prelude::*;
+
 use gdnative::api::*;
-use houta_utils_gdnative::prelude::*;
+use gdnative::prelude::*;
 use gdnative_export_node_as_path::extends;
-use crate::util::panel_are_you_sure::PanelAreYouSure;
-use crate::util::panel_are_you_sure;
+use util_gdnative::prelude::*;
+
+use settings::*;
+
+use crate::misc::panel_are_you_sure;
+use crate::misc::panel_are_you_sure::PanelAreYouSure;
+
+mod settings;
 
 pub const SIGNAL_LANGUAGE_CHANGED: &str = "language_changed";
 pub(super) const SIGNAL_PANEL_CLOSED: &str = "panel_closed";

@@ -1,3 +1,5 @@
+#![allow(unused)]
+
 pub use character_stats::UI_CharacterStats;
 pub use speed_buttons::{Speed, SpeedButtons, SpeedSetting};
 pub use targeting_tooltip::TargetingTooltip;

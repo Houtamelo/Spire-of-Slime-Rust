@@ -5,7 +5,7 @@ use comfy_bounded_ints::prelude::{Bound_i64, Bound_u64};
 use comfy_bounded_ints::types::Bound_u8;
 use gdnative::api::{GlobalConstants, InputEvent, InputEventKey, InputEventMouseButton};
 use gdnative::object::{Ref, TRef};
-use houta_utils::prelude::*;
+use util::prelude::*;
 use rand::Rng;
 use rand_xoshiro::Xoshiro256PlusPlus;
 use serde::{Deserialize, Serialize};

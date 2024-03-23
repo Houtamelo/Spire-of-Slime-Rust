@@ -3,10 +3,10 @@ use std::num::{NonZeroI8, NonZeroU16, NonZeroU8};
 
 use comfy_bounded_ints::prelude::{Bound_u8, SqueezeTo, SqueezeTo_i8, SqueezeTo_u8};
 use gdnative::log::godot_warn;
-use houta_utils::any_matches;
 use rand::Rng;
 use rand_xoshiro::Xoshiro256PlusPlus;
 use serde::{Deserialize, Serialize};
+use util::any_matches;
 use uuid::Uuid;
 
 use combat::effects::MoveDirection;
@@ -24,7 +24,7 @@ use combat::stat::{CheckedRange, DynamicStat};
 
 use crate::combat;
 use crate::combat::entity::stat::Power;
-use crate::util::{SaturatedU64, ToSaturatedI64, ToSaturatedU64};
+use crate::misc::{SaturatedU64, ToSaturatedI64, ToSaturatedU64};
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 pub enum SelfApplier {
@@ -90,7 +90,7 @@ impl SelfApplier {
 				let Some(girl) = &mut caster.girl_stats
 					else {
 						godot_warn!("{}(): Trying to change exhaustion of non-girl character: {caster:?}",
-							houta_utils::full_fn_name(&Self::apply));
+							util::full_fn_name(&Self::apply));
 						return;
 					};
 
@@ -177,7 +177,7 @@ impl SelfApplier {
 				let Some(girl) = &mut caster.girl_stats
 					else {
 						godot_warn!("{}(): Trying to apply lust on-non girl self: {caster:?}",
-							houta_utils::full_fn_name(&Self::apply));
+							util::full_fn_name(&Self::apply));
 						return;
 					};
 

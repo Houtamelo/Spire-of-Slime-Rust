@@ -10,7 +10,7 @@ use crate::combat::entity::data::skill_name::SkillName;
 use crate::combat::entity::position::Position;
 use crate::combat::perk::Perk;
 use crate::combat::stat::*;
-use crate::util::{ToSaturatedU64, TrackedTicks};
+use crate::misc::{ToSaturatedU64, TrackedTicks};
 
 pub const MAX_LUST: u8 = 200;
 

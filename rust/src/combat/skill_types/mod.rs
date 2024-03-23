@@ -13,7 +13,7 @@ use crate::combat::skill_types::lewd::LewdSkill;
 use crate::combat::skill_types::offensive::OffensiveSkill;
 use crate::combat::stat::{Accuracy, CritRate, Power};
 use crate::MAX_CHARACTERS_PER_TEAM;
-use crate::util::SaturatedU64;
+use crate::misc::SaturatedU64;
 
 pub mod offensive;
 pub mod defensive;

@@ -2,10 +2,10 @@ use std::collections::HashMap;
 use std::num::{NonZeroI8, NonZeroU16, NonZeroU8};
 
 use comfy_bounded_ints::prelude::*;
-use houta_utils::{any_matches, no_matches};
-use houta_utils::prelude::{IsNoneOr, Touch};
 use rand_xoshiro::Xoshiro256PlusPlus;
 use serde::{Deserialize, Serialize};
+use util::{any_matches, no_matches};
+use util::prelude::{IsNoneOr, Touch};
 use uuid::Uuid;
 
 use crate::combat::effects::{
@@ -33,7 +33,7 @@ use crate::combat::entity::position::Position;
 use crate::combat::entity::skill_intention::SkillIntention;
 use crate::combat::perk::{get_perk, Perk};
 use crate::combat::stat::*;
-use crate::util::*;
+use crate::misc::*;
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct CombatCharacter {

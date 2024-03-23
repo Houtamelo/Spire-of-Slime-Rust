@@ -50,7 +50,7 @@ impl CheckedRange {
 				self.inner = (bound_lower, bound_upper);
 				Ok(())
 			} else {
-				Err(format!("{}: bound_upper ({}) is less than bound_lower ({})", houta_utils::full_fn_name(&Self::set), bound_upper, bound_lower))
+				Err(format!("{}: bound_upper ({}) is less than bound_lower ({})", util::full_fn_name(&Self::set), bound_upper, bound_lower))
 			};
 	}
 

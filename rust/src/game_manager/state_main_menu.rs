@@ -1,6 +1,6 @@
 use gdnative::prelude::*;
-use houta_utils::{fn_name, full_fn_name};
-use houta_utils_gdnative::prelude::{UnwrapInstance, UnwrapManual};
+use util::{fn_name, full_fn_name};
+use util_gdnative::prelude::{UnwrapInstance, UnwrapManual};
 
 use crate::main_menu::{
 	SIGNAL_DELETE_SAVE,

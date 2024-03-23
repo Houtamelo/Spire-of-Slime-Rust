@@ -1,7 +1,7 @@
 use std::collections::HashSet;
 use gdnative::prelude::*;
-use houta_utils::{fn_name, full_fn_name};
-use houta_utils_gdnative::prelude::ErrInspector;
+use util::{fn_name, full_fn_name};
+use util_gdnative::prelude::ErrInspector;
 use crate::game_manager::{GameManager, GameState};
 use crate::WorldLocation;
 use crate::save::file::SaveFile;

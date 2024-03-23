@@ -1,4 +1,4 @@
-use houta_utils::prelude::DynamicArray;
+use util::prelude::DynamicArray;
 
 use crate::combat::entity::data::girls::nema::stats::NemaData;
 use crate::combat::entity::stat::*;

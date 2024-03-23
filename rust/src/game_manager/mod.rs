@@ -4,7 +4,7 @@ mod state_world_map;
 use gdnative::api::*;
 use gdnative::prelude::*;
 use gdnative_export_node_as_path::extends;
-use houta_utils_gdnative::prelude::*;
+use util_gdnative::prelude::*;
 use main_menu::MainMenuController;
 use state_main_menu::MainMenuState;
 use state_world_map::WorldMapState;

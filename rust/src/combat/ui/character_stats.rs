@@ -1,7 +1,7 @@
 use anyhow::{anyhow, bail, Result};
 use gdnative::api::*;
 use gdnative::prelude::*;
-use houta_utils_gdnative::prelude::*;
+use util_gdnative::prelude::*;
 
 use crate::combat::entity::character::CombatCharacter;
 use crate::combat::entity::stat::*;

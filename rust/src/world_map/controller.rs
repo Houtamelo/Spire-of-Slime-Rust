@@ -1,11 +1,12 @@
 use std::collections::{HashMap, HashSet};
-use gdnative::api::{Area2D, Light2D};
 
+use gdnative::api::{Area2D, Light2D};
 use gdnative::prelude::*;
 use gdnative_export_node_as_path::extends;
-use houta_utils_gdnative::prelude::*;
-use houta_utils::{fn_name, full_fn_name};
-use crate::util;
+use util::{fn_name, full_fn_name};
+use util_gdnative::prelude::*;
+
+use crate::misc;
 
 use super::location::WorldLocation;
 use super::WorldPath;
@@ -195,14 +196,14 @@ impl WorldMapController {
 	
 	#[method]
 	fn _input_event_marker(&self, #[base] owner: &Node, _viewport: Ref<Node>, input_event: Ref<InputEvent>, _shape_idx: i64, location: WorldLocation) {
-		if util::is_confirm_input(input_event) {
+		if misc::is_confirm_input(input_event) {
 			owner.emit_signal(SIGNAL_MARKER_CLICKED, &[location.to_variant()]);
 		}
 	}
 	
 	#[method]
 	fn _input_event_line(&self, #[base] owner: &Node, _viewport: Ref<Node>, input_event: Ref<InputEvent>, _shape_idx: i64, path: WorldPath) {
-		if util::is_confirm_input(input_event) {
+		if misc::is_confirm_input(input_event) {
 			owner.emit_signal(SIGNAL_LINE_CLICKED, &[path.to_variant()]);
 		}
 	}

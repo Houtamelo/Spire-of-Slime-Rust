@@ -9,7 +9,7 @@ use crate::local_map::coordinates::axial::Axial;
 use crate::local_map::tile;
 use crate::local_map::tile::{EnemyGroup, EventID, Tile, TileContents, TileMistStatus};
 use crate::local_map::tile::TileScoutStatus::ContentsRevealed;
-use crate::util::PercentageU8;
+use crate::misc::PercentageU8;
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct LocalMapState {
@@ -108,7 +108,7 @@ impl LocalMapState {
 				godot_warn!("{}(): Received run input while in combat or event!\n\
 					state: {state:?}\n
 					pos: {player_pos:?}",
-					houta_utils::full_fn_name(&Self::input_run));
+					util::full_fn_name(&Self::input_run));
 				Vec::new()
 			}
 			PartyState::Idle => {

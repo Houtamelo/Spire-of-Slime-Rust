@@ -1,8 +1,9 @@
 use serde::{Deserialize, Serialize};
+
 use crate::combat::skill_types::defensive::DefensiveSkill;
 use crate::combat::skill_types::lewd::LewdSkill;
 use crate::combat::skill_types::offensive::OffensiveSkill;
-use crate::util::TrackedTicks;
+use crate::misc::TrackedTicks;
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct SkillIntention {

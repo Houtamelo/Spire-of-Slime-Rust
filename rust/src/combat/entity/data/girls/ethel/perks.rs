@@ -2,7 +2,7 @@ use comfy_bounded_ints::prelude::Bound_u8;
 use serde::{Deserialize, Serialize};
 use uuid::Uuid;
 
-use crate::util::SaturatedU64;
+use crate::misc::SaturatedU64;
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub enum EthelPerk {

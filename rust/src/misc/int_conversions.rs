@@ -1,6 +1,6 @@
 use comfy_bounded_ints::prelude::*;
 
-use crate::util::{PercentageU8, SaturatedI64, SaturatedU64};
+use crate::misc::{PercentageU8, SaturatedI64, SaturatedU64};
 
 pub trait ToSaturatedI64 {
 	fn to_sat_i64(self) -> SaturatedI64; 

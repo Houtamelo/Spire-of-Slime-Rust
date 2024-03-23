@@ -14,8 +14,8 @@ rand_xoshiro = { version = "0.6", features = ["serde1"] }
 proc_macros = { path = "proc_macros" }
 serde = { version = "1.0", features = ["derive"] }
 ron = "0.8"
-houta_utils = { package = "houtamelo_utils", version = "1.0" }
-houta_utils_gdnative = { package = "houtamelo_utils_gdnative", version = "1.4" }
+util = { package = "houtamelo_utils", version = "1.2" }
+util_gdnative = { package = "houtamelo_utils_gdnative", version = "1.5" }
 gdnative_export_node_as_path = "0.1"
 getrandom = "0.2"
 float-cmp = "0.9"

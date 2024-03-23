@@ -8,7 +8,7 @@ use crate::combat::effects::persistent::PersistentEffect;
 use crate::combat::entity::character::*;
 use crate::combat::entity::skill_intention::SkillIntention;
 use crate::combat::entity::stat::Speed;
-use crate::util::{SaturatedU64, ToSaturatedI64, ToSaturatedU64, TrackedTicks};
+use crate::misc::{SaturatedU64, ToSaturatedI64, ToSaturatedU64, TrackedTicks};
 
 #[derive(Debug, Clone)]
 pub struct TimelineEvent {
@@ -293,7 +293,7 @@ impl TimelineEvent {
 		let event_end_ms = status.duration();
 		if event_end_ms.get() <= 0 { 
 			godot_warn!("{}(): Trying to register an event from status with negative duration: {:?}, duration: {:?}", 
-				houta_utils::full_fn_name(&Self::register_status), status, event_end_ms);
+				util::full_fn_name(&Self::register_status), status, event_end_ms);
 			return;
 		}
 

@@ -1,10 +1,10 @@
-use houta_utils::prelude::DynamicArray;
+use util::prelude::DynamicArray;
 
 use crate::combat::effects::onSelf::SelfApplier;
 use crate::combat::effects::onTarget::TargetApplier;
 use crate::combat::entity::character::CombatCharacter;
 use crate::combat::skill_types::*;
-use crate::util::{PercentageU8, SaturatedU64, ToSaturatedI64, ToU8Percentage};
+use crate::misc::{PercentageU8, SaturatedU64, ToSaturatedI64, ToU8Percentage};
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct DefensiveSkill {

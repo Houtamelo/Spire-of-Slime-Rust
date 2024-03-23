@@ -1,7 +1,7 @@
 use anyhow::Result;
 use gdnative::prelude::*;
-use houta_utils::fn_name;
-use houta_utils_gdnative::prelude::{ErrInspector, GodotManualSomeInspector};
+use util::fn_name;
+use util_gdnative::prelude::{ErrInspector, GodotManualSomeInspector};
 
 use crate::combat::ui::get_tref_or_bail;
 

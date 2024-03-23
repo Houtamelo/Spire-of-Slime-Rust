@@ -5,7 +5,7 @@ use gdnative::godot_error;
 use gdnative::log::godot_warn;
 use gdnative::object::Ref;
 use gdnative::prelude::Unique;
-use houta_utils_gdnative::prelude::*;
+use util_gdnative::prelude::*;
 use crate::save::file::SaveFile;
 
 static SAVE_DIRECTORY: &str = "user://save/";

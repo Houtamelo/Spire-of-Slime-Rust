@@ -18,6 +18,7 @@
 #![feature(hash_extract_if)]
 #![feature(ascii_char)]
 #![feature(variant_count)]
+#![feature(result_flattening)]
 
 use gdnative::prelude::*;
 
@@ -26,7 +27,7 @@ pub use world_map::WorldLocation;
 
 mod audio;
 mod combat;
-mod util;
+mod misc;
 mod main_menu;
 mod settings_menu;
 mod save;
@@ -76,17 +77,17 @@ fn init(handle: InitHandle) {
 	handle.add_class::<combat::ui::UI_CharacterStats>();
 	handle.add_class::<combat::ui::TargetingTooltip>();
 	handle.add_class::<game_manager::GameManager>();
-	handle.add_class::<util::panel_are_you_sure::PanelAreYouSure>();
+	handle.add_class::<misc::panel_are_you_sure::PanelAreYouSure>();
 	handle.add_class::<main_menu::MainMenuController>();
 	handle.add_class::<main_menu::LoadButton>();
 	handle.add_class::<world_map::WorldMapController>();
 	handle.add_class::<local_map::generation::generator_ui::MapGeneratorUI>();
 	handle.add_class::<local_map::generation::generator_ui::BiomeDataResource>();
-	handle.add_class::<houta_utils_gdnative::prelude::PitchRandomizer>();
-	handle.add_class::<houta_utils_gdnative::prelude::PlayOnClickAndPitchRandomizer>();
-	handle.add_class::<houta_utils_gdnative::prelude::PlayOnHoverAndPitchRandomizer>();
-	handle.add_class::<houta_utils_gdnative::prelude::DisallowClickFocusOnParent>();
-	handle.add_class::<houta_utils_gdnative::prelude::AutoTextResize>();
+	handle.add_class::<util_gdnative::prelude::PitchRandomizer>();
+	handle.add_class::<util_gdnative::prelude::PlayOnClickAndPitchRandomizer>();
+	handle.add_class::<util_gdnative::prelude::PlayOnHoverAndPitchRandomizer>();
+	handle.add_class::<util_gdnative::prelude::DisallowClickFocusOnParent>();
+	handle.add_class::<util_gdnative::prelude::AutoTextResize>();
 }
 
 godot_init!(init);

@@ -1,8 +1,8 @@
 use std::num::{NonZeroU16, NonZeroU8};
 
 use comfy_bounded_ints::prelude::Bound_u8;
-use houta_utils::prelude::DynamicArray;
 use serde::{Deserialize, Serialize};
+use util::prelude::DynamicArray;
 
 use proc_macros::positions;
 
@@ -12,7 +12,7 @@ use crate::combat::entity::stat::{CheckedRange, CritRate};
 use crate::combat::skill_types::*;
 use crate::combat::skill_types::defensive::*;
 use crate::combat::skill_types::lewd::LewdSkill;
-use crate::util::SaturatedU64;
+use crate::misc::SaturatedU64;
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Serialize, Deserialize)]
 pub enum BellPlantSkill {

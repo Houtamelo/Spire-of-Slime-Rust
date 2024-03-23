@@ -14,7 +14,7 @@ use crate::combat::entity::character::*;
 use crate::combat::entity::girl::*;
 use crate::combat::entity::stat::{CurrentStamina, Speed};
 use crate::combat::timeline::TimelineEvent;
-use crate::util::{SaturatedU64, ToSaturatedI64};
+use crate::misc::{SaturatedU64, ToSaturatedI64};
 
 mod effects;
 mod skill_types;
@@ -23,6 +23,7 @@ mod skill_resolving;
 mod perk;
 pub mod entity;
 pub(crate) mod ui;
+mod action_animation;
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct CombatState {

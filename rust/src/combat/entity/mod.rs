@@ -1,18 +1,20 @@
+use std::cmp::Ordering;
+
+use serde::{Deserialize, Serialize};
+use uuid::Uuid;
+
+use position::Position;
+
+use crate::combat::entity::character::CombatCharacter;
+use crate::combat::entity::data::EntityData;
+use crate::combat::entity::girl::DefeatedGirl_Entity;
+
 pub mod girl;
 pub mod position;
 pub mod character;
 pub mod skill_intention;
 pub mod data;
 pub mod stat;
-
-use std::cmp::Ordering;
-use serde::{Deserialize, Serialize};
-use uuid::Uuid;
-use position::Position;
-use crate::combat::entity::character::CombatCharacter;
-use crate::combat::entity::data::EntityData;
-use crate::combat::entity::girl::DefeatedGirl_Entity;
-
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub enum Entity {
@@ -48,6 +50,10 @@ impl Entity {
 			Entity::Corpse(corpse) => corpse.guid, 
 			Entity::DefeatedGirl(defeated_girl) => defeated_girl.guid,
 		}
+	}
+	
+	pub fn sprite_height(&self) -> f64 {
+		todo!()
 	}
 }
 

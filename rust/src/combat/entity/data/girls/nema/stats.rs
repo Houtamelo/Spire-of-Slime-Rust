@@ -1,4 +1,4 @@
-use houta_utils::prelude::DynamicArray;
+use util::prelude::DynamicArray;
 use rand_xoshiro::Xoshiro256PlusPlus;
 use serde::{Deserialize, Serialize};
 
