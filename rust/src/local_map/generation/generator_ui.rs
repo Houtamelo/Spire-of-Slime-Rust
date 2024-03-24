@@ -1,21 +1,21 @@
 use std::collections::HashMap;
-use bracket_noise::prelude::{FastNoise, FractalType, NoiseType};
 
+use bracket_noise::prelude::{FastNoise, FractalType, NoiseType};
 use gdnative::api::*;
 use gdnative::prelude::*;
 use gdnative_export_node_as_path::extends;
-use util_gdnative::prelude::*;
 use rand::Rng;
 use rand_xoshiro::rand_core::{RngCore, SeedableRng};
 use rand_xoshiro::Xoshiro256PlusPlus;
+use util_gdnative::prelude::*;
 
 use noise_grid::GridShape;
 
-use crate::local_map::generation::pathing;
 use crate::local_map::coordinates::axial::Axial;
 use crate::local_map::coordinates::direction::HexagonDirection;
 use crate::local_map::generation::{BiomeData, noise_grid};
 use crate::local_map::generation::map::HexagonMap;
+use crate::local_map::generation::pathing;
 
 #[derive(Debug, Default, ToVariant, FromVariant)]
 #[derive(NativeClass)]
@@ -369,7 +369,7 @@ impl MapGeneratorUI {
 	#[method] fn _biome_3_altitude_threshold_changed(&mut self, value: f64) { self.biome_3_altitude_threshold = value as f32; }
 	#[method] fn _biome_4_altitude_threshold_changed(&mut self, value: f64) { self.biome_4_altitude_threshold = value as f32; }
 
-	fn delete_old<'a>(&mut self, owner: &Node) -> Ref<Node, Shared> {
+	fn delete_old(&mut self, owner: &Node) -> Ref<Node, Shared> {
 		let old_parent = self.hexagon_parent.unwrap_manual();
 		owner.remove_child(old_parent);
 		old_parent.queue_free();

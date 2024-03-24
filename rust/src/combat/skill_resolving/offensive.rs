@@ -406,26 +406,26 @@ fn resolve_target(mut caster: CombatCharacter, mut target: CombatCharacter,
 					
 					// alive girls are downed for 2.5s after being released from a grapple
 					temp.state = CharacterState::Downed { ticks: TrackedTicks::from_milliseconds(2500.to_sat_u64()) };
-					temp.position.order_mut().set(0);
+					temp.position.order = 0.into();
 					temp
 				};
 
-				let girl_size = girl_entity.position.size();
+				let girl_size = girl_entity.position.size;
 				iter_mut_allies_of!(girl_entity, others).for_each(|ally| 
-					*ally.position_mut().order_mut() += girl_size);
+					ally.position_mut().order += girl_size);
 
 				others.insert(girl_entity.guid, Entity::Character(girl_entity));
 			}
 			GrappledGirlEnum::Defeated(girl_defeated) => {
 				let girl_entity = {
 					let mut temp = girl_defeated.into_non_grappled();
-					temp.position.order_mut().set(0);
+					temp.position.order = 0.into();
 					temp
 				};
 				
-				let girl_size = girl_entity.position.size();
+				let girl_size = girl_entity.position.size;
 				iter_mut_allies_of!(girl_entity, others).for_each(|ally| 
-					*ally.position_mut().order_mut() += girl_size);
+					ally.position_mut().order += girl_size);
 
 				others.insert(girl_entity.guid, Entity::DefeatedGirl(girl_entity));
 			}

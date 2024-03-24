@@ -1,6 +1,6 @@
 use std::collections::{HashMap, HashSet};
 
-use comfy_bounded_ints::prelude::{Bound_u8, SqueezeTo, SqueezeTo_u64};
+use comfy_bounded_ints::prelude::{SqueezeTo, SqueezeTo_u64};
 use gdnative::prelude::*;
 use rand_xoshiro::Xoshiro256PlusPlus;
 use serde::{Deserialize, Serialize};
@@ -24,6 +24,7 @@ mod perk;
 pub mod entity;
 pub(crate) mod ui;
 mod action_animation;
+mod entity_node;
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct CombatState {
@@ -169,15 +170,16 @@ impl CombatState {
 						let mut girl_released = girl_grappled.into_non_grappled();
 						grappler.state = CharacterState::Idle;
 
-						let girl_size = girl_released.position.size();
-						let girl_position = match grappler.position {
-							Position::Left  { .. } => { Position::Right { order: Bound_u8::new(0), size: girl_size } }
-							Position::Right { .. } => { Position::Left  { order: Bound_u8::new(0), size: girl_size } }
+						let girl_size = girl_released.position.size;
+						let girl_position = Position {
+							order: 0.into(),
+							size: girl_size,
+							..grappler.position
 						};
 
 						// shift all allies of the released girl to the edge, to make space for her at the front
 						iter_mut_allies_of!(girl_released, others).for_each(|ally|
-							*ally.position_mut().order_mut() += girl_size);
+							ally.position_mut().order += *girl_size);
 
 						girl_released.position = girl_position;
 						others.insert(girl_released.guid, Entity::Character(girl_released));

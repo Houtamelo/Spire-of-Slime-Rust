@@ -64,14 +64,12 @@ pub struct PositionMatrix {
 
 impl PositionMatrix {
 	pub fn contains(&self, position: Position) -> bool {
-		let (order, size) = { 
-			let (temp_order, temp_size) = position.deconstruct();
-			(temp_order.squeeze_to_usize(), temp_size.squeeze_to_usize())
-		};
+		let order = position.order.squeeze_to_usize();
+		let size = position.size.squeeze_to_usize();
 		
 		let plus_size = order + size;
 		if plus_size > MAX_CHARACTERS_PER_TEAM as usize
-			|| size == 0 {
+		|| size == 0 {
 			godot_error!("PositionMatrix::contains: position: {position:?}, size: {size} is out of bounds");
 			return false;
 		}

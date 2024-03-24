@@ -27,3 +27,5 @@ uuid = { version = "1.7", features = ["serde"] }
 strum = "0.26"
 strum_macros = "0.26"
 anyhow = { version = "1.0", features = ["backtrace", "std"] }
+keyframe = { version = "1.1", features = ["alloc"] }
+keyframe_derive = "1.0"

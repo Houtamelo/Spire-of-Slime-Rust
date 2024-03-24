@@ -1,4 +1,5 @@
 use serde::{Deserialize, Serialize};
+use uuid::Uuid;
 
 use crate::combat::skill_types::defensive::DefensiveSkill;
 use crate::combat::skill_types::lewd::LewdSkill;
@@ -15,7 +16,7 @@ pub struct SkillIntention {
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub enum SkillTarget {
 	OnSelf(DefensiveSkill),
-	OnAlly  { skill: DefensiveSkill, ally_guid: usize },
-	OnEnemy { skill: OffensiveSkill, position : usize },
-	Lewd    { skill: LewdSkill     , position : usize },
+	OnAlly  { skill: DefensiveSkill, ally_guid: Uuid },
+	OnEnemy { skill: OffensiveSkill, position: usize },
+	Lewd    { skill: LewdSkill     , position: usize },
 }

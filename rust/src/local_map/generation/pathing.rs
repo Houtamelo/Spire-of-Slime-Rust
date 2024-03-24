@@ -2,17 +2,17 @@ use std::collections::{HashMap, HashSet};
 
 use bracket_pathfinding::prelude::{BaseMap, NavigationPath, SmallVec};
 use gdnative::godot_error;
-use util::prelude::{RemoveMany, TakeFirst};
 use rand::prelude::IteratorRandom;
 use rand_xoshiro::rand_core::SeedableRng;
 use rand_xoshiro::Xoshiro256PlusPlus;
+use util::prelude::{RemoveMany, TakeFirst};
 
 use crate::local_map::coordinates::axial::Axial;
 use crate::local_map::coordinates::direction::HexagonDirection;
 use crate::local_map::generation::map::HexagonMap;
 use crate::local_map::tile::TileContents;
 
-pub fn path_between<'a>(map: &HexagonMap, start_index: usize, end_index: usize) -> NavigationPath {
+pub fn path_between(map: &HexagonMap, start_index: usize, end_index: usize) -> NavigationPath {
 	return bracket_pathfinding::prelude::a_star_search(start_index, end_index, map);
 }
 
@@ -35,7 +35,7 @@ fn last_towards(map: &HexagonMap, current: Axial, direction_arc: [Axial; 3]) -> 
 	return current;
 }
 
-fn map_distance<'a>(from: Axial, hexagons: impl Iterator<Item = &'a Axial>) -> HashMap<Axial, u16> {
+fn map_distance(from: Axial, hexagons: impl Iterator<Item = &Axial>) -> HashMap<Axial, u16> {
 	return hexagons.map(|hex| 
 		(*hex, from.manhattan_distance(hex))
 	).collect();

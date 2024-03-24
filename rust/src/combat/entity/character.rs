@@ -467,10 +467,10 @@ impl CombatCharacter {
 					// girl is downed for 2.5s after being released from a grapple
 					girl_standing.state = CharacterState::Downed { ticks: TrackedTicks::from_milliseconds(2500.to_sat_u64()) };
 
-					girl_standing.position.order_mut().set(0);
+					girl_standing.position.order = 0.into();
 
 					for ally in iter_mut_allies_of!(girl_standing, others) {
-						*ally.position_mut().order_mut() += girl_standing.position.size();
+						ally.position_mut().order += girl_standing.position.size;
 					}
 
 					others.insert(girl_standing.guid, Entity::Character(girl_standing));
@@ -478,10 +478,10 @@ impl CombatCharacter {
 				GrappledGirlEnum::Defeated(girl_defeated) => {
 					let mut girl_standing = girl_defeated.into_non_grappled();
 					
-					girl_standing.position.order_mut().set(0);
+					girl_standing.position.order = 0.into();
 
 					for girl_ally in iter_mut_allies_of!(girl_standing, others) {
-						*girl_ally.position_mut().order_mut() += girl_standing.position.size();
+						girl_ally.position_mut().order += girl_standing.position.size;
 					}
 
 					others.insert(girl_standing.guid, Entity::DefeatedGirl(girl_standing));

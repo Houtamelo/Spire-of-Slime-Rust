@@ -113,10 +113,9 @@ impl AliveGirl_Grappled {
 			exhaustion: self.exhaustion,
 		};
 		
-		let position = {
-			let mut temp = self.position_before_grappled.clone();
-			temp.order_mut().set(0);
-			temp
+		let position = Position {
+			order: 0.into(),
+			..self.position_before_grappled
 		};
 		
 		return CombatCharacter {
@@ -178,12 +177,6 @@ pub struct DefeatedGirl_Grappled {
 
 impl DefeatedGirl_Grappled {
 	pub fn into_non_grappled(self) -> DefeatedGirl_Entity {
-		let position = {
-			let mut temp = self.position_before_grappled.clone();
-			temp.order_mut().set(0);
-			temp
-		};
-		
 		return DefeatedGirl_Entity {
 			guid: self.guid,
 			data: self.data,
@@ -192,7 +185,10 @@ impl DefeatedGirl_Grappled {
 			orgasm_limit: self.orgasm_limit,
 			orgasm_count: self.orgasm_count,
 			exhaustion: self.exhaustion,
-			position,
+			position: Position {
+				order: 0.into(),
+				..self.position_before_grappled
+			},
 		};
 	}
 }

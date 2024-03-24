@@ -1,5 +1,3 @@
-use std::cmp::Ordering;
-
 use serde::{Deserialize, Serialize};
 use uuid::Uuid;
 
@@ -24,10 +22,6 @@ pub enum Entity {
 }
 
 impl Entity {
-	pub fn compare_position(&self, other: &Self) -> Ordering {
-		return self.position().cmp(other.position());
-	}
-	
 	pub fn position(&self) -> &Position {
 		return match self {
 			Entity::Character(character) => &character.position,
@@ -73,26 +67,26 @@ pub enum Race {
 
 macro_rules! iter_allies_of {
 	($character: expr, $entities: expr) => {
-		$entities.values().filter(|entity| $crate::combat::Position::is_same_side(entity.position(), $character.position()))
+		$entities.values().filter(|entity| entity.position().side == $character.position().side)
 	};
 }
 
 macro_rules! iter_mut_allies_of {
 	($character: expr, $entities: expr) => {
-		$entities.values_mut().filter(|entity| $crate::combat::Position::is_same_side(entity.position(), $character.position()))
+		$entities.values_mut().filter(|entity| entity.position().side == $character.position().side)
 	};
 }
 
 macro_rules! iter_enemies_of {
 	($character: expr, $entities: expr) => {
-		$entities.values().filter(|entity| $crate::combat::Position::is_opposite_side(entity.position(), $character.position()))
+		$entities.values().filter(|entity| entity.position().side != $character.position().side)
 	};
 }
 
 #[allow(unused_macros)]
 macro_rules! iter_mut_enemies_of {
 	($character: expr, $entities: expr) => {
-		$entities.values_mut().filter(|entity| $crate::combat::Position::is_opposite_side(entity.position(), $character.position()))
+		$entities.values_mut().filter(|entity| entity.position().side != $character.position().side)
 	};
 }
 

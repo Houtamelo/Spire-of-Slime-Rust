@@ -1,7 +1,7 @@
 use std::collections::HashMap;
 use std::num::{NonZeroI8, NonZeroU16, NonZeroU8};
 
-use comfy_bounded_ints::prelude::{Bound_u8, SqueezeTo, SqueezeTo_i8, SqueezeTo_u8};
+use comfy_bounded_ints::prelude::{SqueezeTo, SqueezeTo_i8, SqueezeTo_u8};
 use gdnative::log::godot_warn;
 use rand::Rng;
 use rand_xoshiro::Xoshiro256PlusPlus;
@@ -226,10 +226,10 @@ impl SelfApplier {
 				};
 
 				let allies_space_occupied = iter_allies_of!(caster, others)
-					.fold(0, |sum, ally| sum + ally.position().size().get());
+					.fold(0, |sum, ally| sum + ally.position().size.get());
 
 				let (order_old, order_current) = {
-					let temp: &mut Bound_u8<0, {u8::MAX}> = caster.position.order_mut();
+					let temp = &mut caster.position.order;
 					let old_temp = *temp;
 					*temp += direction.get();
 					if temp.get() > allies_space_occupied {
@@ -242,7 +242,7 @@ impl SelfApplier {
 				let inverse_delta = -1 * order_delta;
 
 				for caster_ally in iter_mut_allies_of!(caster, others) {
-					*caster_ally.position_mut().order_mut() += inverse_delta;
+					caster_ally.position_mut().order += inverse_delta;
 				}
 			},
 			SelfApplier::PersistentHeal{ duration_ms, heal_per_interval } => {

@@ -19,6 +19,10 @@
 #![feature(ascii_char)]
 #![feature(variant_count)]
 #![feature(result_flattening)]
+#![feature(anonymous_lifetime_in_impl_trait)]
+#![feature(coroutines)]
+#![feature(iter_from_coroutine)]
+#![feature(iterator_try_collect)]
 
 use gdnative::prelude::*;
 

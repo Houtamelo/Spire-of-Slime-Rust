@@ -18,7 +18,6 @@ use combat::entity::data::character::CharacterData;
 use combat::entity::data::girls::ethel::perks::*;
 use combat::entity::data::girls::nema::perks::*;
 use combat::entity::Entity;
-use combat::entity::position::Position;
 use combat::entity::stat::*;
 use combat::perk::{get_perk, get_perk_mut};
 use combat::perk::Perk;
@@ -165,7 +164,7 @@ impl TargetApplier {
 			TargetApplier::Debuff { duration_ms, apply_chance, 
 				applier_kind: DebuffApplierKind::Standard { mut stat, stat_decrease } } => {
 				if let Some(chance) = apply_chance
-					&& Position::is_opposite_side(&caster.position, &target.position) //apply chance is only used when the caster and target are enemies 
+					&& caster.position.side != target.position.side //apply chance is only used when the caster and target are enemies 
 				{ 
 					let final_chance = {
 						let mut temp = chance.get().to_sat_i64();
@@ -232,7 +231,7 @@ impl TargetApplier {
 			TargetApplier::Debuff { duration_ms, apply_chance, 
 				applier_kind: DebuffApplierKind::StaggeringForce } => {
 				if let Some(chance) = apply_chance
-					&& Position::is_opposite_side(&caster.position, &target.position) //apply chance is only used when the caster and target are enemies 
+					&& caster.position.side != target.position.side //apply chance is only used when the caster and target are enemies 
 				{ 
 					let final_chance = {
 						let mut temp = chance.get().to_sat_i64();
@@ -410,7 +409,7 @@ impl TargetApplier {
 			},
 			TargetApplier::Move{ direction, apply_chance } => {
 				if let Some(chance) = apply_chance
-					&& Position::is_opposite_side(&caster.position, &target.position) //apply chance is only used when the caster and target are enemies 
+					&& caster.position.side != target.position.side //apply chance is only used when the caster and target are enemies 
 				{
 					if let Some(Perk::Ethel(EthelPerk::Tank_Vanguard { cooldown_ms })) = get_perk_mut!(target, Perk::Ethel(EthelPerk::Tank_Vanguard { .. }))
 						&& cooldown_ms.get() == 0 {
@@ -439,10 +438,10 @@ impl TargetApplier {
 				};
 
 				let allies_space_occupied = iter_allies_of!(target, others)
-					.fold(0, |sum, ally| sum + ally.position().size().get());
+					.fold(0, |sum, ally| sum + ally.position().size.get());
 
 				let (order_old, order_current) = {
-					let temp: &mut Bound_u8<0, {u8::MAX}> = target.position.order_mut();
+					let temp = &mut target.position.order;
 					let old_temp = *temp;
 					*temp += direction.get();
 					if temp.get() > allies_space_occupied {
@@ -455,7 +454,7 @@ impl TargetApplier {
 				let inverse_delta = -1 * order_delta;
 
 				iter_mut_allies_of!(target, others).for_each(|ally|
-					*ally.position_mut().order_mut() += inverse_delta);
+					ally.position_mut().order += inverse_delta);
 
 				return Some(target);
 			},
@@ -530,7 +529,7 @@ impl TargetApplier {
 			TargetApplier::Poison{ duration_ms, poison_per_interval, 
 				apply_chance, additives } => {
 				if let Some(chance) = apply_chance 
-					&& Position::is_opposite_side(&caster.position, &target.position) // Apply chance is only used when the caster and target are enemies
+					&& caster.position.side != target.position.side // Apply chance is only used when the caster and target are enemies
 				{
 					let final_chance = {
 						let mut temp = chance.get().to_sat_i64();
@@ -937,10 +936,10 @@ impl TargetApplier {
 				};
 
 				let allies_space_occupied = iter_allies_of!(caster, others)
-					.fold(0, |sum, ally| sum + ally.position().size().get());
+					.fold(0, |sum, ally| sum + ally.position().size.get());
 
 				let (order_old, order_current) = {
-					let temp: &mut Bound_u8<0, {u8::MAX}> = caster.position.order_mut();
+					let temp = &mut caster.position.order;
 					let old_temp = *temp;
 					*temp += direction.get();
 					if temp.get() > allies_space_occupied {
@@ -953,7 +952,7 @@ impl TargetApplier {
 				let inverse_delta = -1 * order_delta;
 
 				iter_mut_allies_of!(caster, others).for_each(|ally|
-					*ally.position_mut().order_mut() += inverse_delta);
+					ally.position_mut().order += inverse_delta);
 			},
 			TargetApplier::PersistentHeal { duration_ms, heal_per_interval } => {
 				let final_heal_per_interval_option = {
