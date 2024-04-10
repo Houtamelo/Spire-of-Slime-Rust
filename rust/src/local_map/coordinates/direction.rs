@@ -1,7 +1,9 @@
+#[allow(unused_imports)]
+use crate::*;
+
 use gdnative::derive::{FromVariant, ToVariant};
-use gdnative::export::{Export, ExportInfo};
+use gdnative::export::Export;
 use gdnative::export::hint::{EnumHint, IntHint};
-use serde::{Deserialize, Serialize};
 use crate::local_map::coordinates::axial::Axial;
 
 pub static ALL: [HexagonDirection; 6] = [

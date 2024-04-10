@@ -1,13 +1,10 @@
-use std::collections::HashMap;
+#[allow(unused_imports)]
+use crate::*;
 
-use comfy_bounded_ints::prelude::Bound_u8;
 use rand_xoshiro::Xoshiro256PlusPlus;
-use serde::{Deserialize, Serialize};
 
-use crate::combat::entity::data::character::CharacterDataTrait;
+use crate::combat::shared::*;
 use crate::combat::entity::data::girls::GirlTrait;
-use crate::combat::entity::data::npc::NPCName;
-use crate::combat::entity::stat::{Accuracy, CheckedRange, Composure, CritRate, DebuffRate, DebuffRes, Dodge, Lust, MaxStamina, MoveRate, MoveRes, OrgasmCount, OrgasmLimit, PoisonRate, PoisonRes, Speed, StunDef, Temptation, Toughness};
 use crate::save::upgrades::{PrimaryUpgrade, PrimaryUpgradeCount, SecondaryUpgrade, SecondaryUpgradeCount};
 
 #[derive(Debug, Serialize, Deserialize, Clone)]

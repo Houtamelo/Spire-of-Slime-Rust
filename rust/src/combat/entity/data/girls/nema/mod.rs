@@ -1,7 +1,8 @@
-use util::prelude::DynamicArray;
+#[allow(unused_imports)]
+use crate::*;
 
 use crate::combat::entity::data::girls::nema::stats::NemaData;
-use crate::combat::entity::stat::*;
+use crate::combat::shared::*;
 
 pub mod stats;
 pub mod skills;

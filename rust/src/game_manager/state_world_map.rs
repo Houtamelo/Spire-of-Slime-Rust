@@ -1,11 +1,8 @@
-use std::collections::HashSet;
-use gdnative::prelude::*;
-use util::{fn_name, full_fn_name};
-use util_gdnative::prelude::ErrInspector;
+#[allow(unused_imports)]
+use crate::*;
 use crate::game_manager::{GameManager, GameState};
-use crate::WorldLocation;
 use crate::save::file::SaveFile;
-use crate::world_map::{SIGNAL_MARKER_CLICKED, SIGNAL_LINE_CLICKED, SIGNAL_OPEN_SETTINGS_MENU, SIGNAL_OPEN_CHARACTER_MENU, WorldPath, WorldMapController};
+use crate::world_map::{SIGNAL_LINE_CLICKED, SIGNAL_MARKER_CLICKED, SIGNAL_OPEN_CHARACTER_MENU, SIGNAL_OPEN_SETTINGS_MENU, WorldMapController, WorldPath};
 
 fn get_unlocked_paths(save_file: &SaveFile) -> HashSet<WorldPath> {
 	return save_file

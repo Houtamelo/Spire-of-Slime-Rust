@@ -1,16 +1,14 @@
+#[allow(unused_imports)]
+use crate::*;
+
 mod state_main_menu;
 mod state_world_map;
 
-use gdnative::api::*;
-use gdnative::prelude::*;
-use gdnative_export_node_as_path::extends;
-use util_gdnative::prelude::*;
 use main_menu::MainMenuController;
 use state_main_menu::MainMenuState;
 use state_world_map::WorldMapState;
 use world_map::WorldMapController;
 
-use crate::{main_menu, world_map};
 use crate::save::SaveFilesController;
 use crate::gdnative_macros::seek_tree_and_create_tween;
 use crate::settings_menu::SettingsMenuController;

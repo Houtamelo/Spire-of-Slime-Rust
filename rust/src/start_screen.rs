@@ -1,7 +1,5 @@
-use gdnative::api::{GlobalConstants, InputEventMouseButton, Resource};
-use gdnative::prelude::*;
-use gdnative_export_node_as_path::extends;
-use util_gdnative::prelude::{ErrInspector, UnwrapManual, UnwrapRefCount};
+#[allow(unused_imports)]
+use crate::*;
 
 #[derive(Debug)]
 enum State {
@@ -76,7 +74,7 @@ impl StartScreenController {
 						.unwrap();
 					let tween = unsafe { tween_ref.assume_safe() };
 					tween.tween_property(owner_ref, "modulate", Color::from_rgb(0., 0., 0.), 2.);
-					tween.connect("finished", owner_ref, util::fn_name(&Self::_fade_finished), 
+					tween.connect("finished", owner_ref, fn_name(&Self::_fade_finished), 
 							VariantArray::new_shared(), 0)
 						.log_if_err();
 				}

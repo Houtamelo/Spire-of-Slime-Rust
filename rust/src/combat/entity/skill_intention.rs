@@ -1,3 +1,5 @@
+#[allow(unused_imports)]
+use crate::*;
 use serde::{Deserialize, Serialize};
 use uuid::Uuid;
 

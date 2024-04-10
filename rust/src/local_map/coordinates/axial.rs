@@ -1,6 +1,7 @@
+#[allow(unused_imports)]
+use crate::*;
+
 use std::ops::{Add, AddAssign, Sub, SubAssign, Mul, MulAssign};
-use comfy_bounded_ints::prelude::SqueezeTo_u16;
-use serde::{Serialize, Deserialize};
 use crate::local_map::coordinates::direction::HexagonDirection;
 use crate::local_map::coordinates::offset::Offset;
 use super::direction;

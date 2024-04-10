@@ -1,8 +1,7 @@
-use bracket_pathfinding::prelude::{BaseMap, SmallVec};
-use gdnative::godot_error;
-use util::prelude::IndexedHashMap;
-use serde::{Deserialize, Serialize};
+#[allow(unused_imports)]
+use crate::*;
 
+use bracket_pathfinding::prelude::{BaseMap, SmallVec};
 use crate::local_map::coordinates::axial::Axial;
 use crate::local_map::tile::Tile;
 
@@ -23,7 +22,7 @@ impl BaseMap for HexagonMap {
 	fn get_available_exits(&self, index: usize) -> SmallVec<[(usize, f32); 10]> {
 		let Some(center) = self.tiles.index_to_key(&index)
 			else {
-				godot_error!("{}(): center is None", util::full_fn_name(&Self::get_available_exits));
+				godot_error!("{}(): center is None", full_fn_name(&Self::get_available_exits));
 				return SmallVec::new();
 			};
 		
@@ -42,12 +41,12 @@ impl BaseMap for HexagonMap {
 	fn get_pathing_distance(&self, origin_index: usize, destination_index: usize) -> f32 {
 		let Some(origin) = self.tiles.index_to_key(&origin_index)
 			else {
-				godot_error!("{}(): origin is None", util::full_fn_name(&Self::get_pathing_distance));
+				godot_error!("{}(): origin is None", full_fn_name(&Self::get_pathing_distance));
 				return 1000.;
 			};
 		let Some(destination) = self.tiles.index_to_key(&destination_index)
 			else {
-				godot_error!("{}(): destination is None", util::full_fn_name(&Self::get_pathing_distance));
+				godot_error!("{}(): destination is None", full_fn_name(&Self::get_pathing_distance));
 				return 1000.;
 			};
 		

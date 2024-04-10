@@ -2,6 +2,9 @@ use gdnative::prelude::*;
 use gdnative_export_node_as_path::extends;
 use util_gdnative::prelude::*;
 
+#[allow(unused_imports)]
+use crate::*;
+
 pub static SIGNAL_YES: &str = "_on_yes";
 
 #[derive(Debug)]
@@ -26,11 +29,11 @@ impl PanelAreYouSure {
 		let owner_ref = unsafe { owner.assume_shared() };
 
 		self.button_no.unwrap_manual()
-			.connect("pressed", owner_ref, util::fn_name(&Self::_button_pressed_no), 
+			.connect("pressed", owner_ref, fn_name(&Self::_button_pressed_no), 
 				VariantArray::new_shared(), Object::CONNECT_DEFERRED)
 			.log_if_err();
 		self.button_yes.unwrap_manual()
-			.connect("pressed", owner_ref, util::fn_name(&Self::_button_pressed_yes), 
+			.connect("pressed", owner_ref, fn_name(&Self::_button_pressed_yes), 
 				VariantArray::new_shared(), Object::CONNECT_DEFERRED)
 			.log_if_err();
 	}

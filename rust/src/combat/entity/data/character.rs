@@ -1,7 +1,10 @@
+use enum_dispatch::enum_dispatch;
 use rand_xoshiro::Xoshiro256PlusPlus;
 use serde::{Deserialize, Serialize};
 
-use crate::combat::entity::data::girls::GirlData;
+#[allow(unused_imports)]
+use crate::*;
+use crate::combat::entity::data::girls::{GirlData, GirlName};
 use crate::combat::entity::data::npc::NPCName;
 use crate::combat::skill_types::Skill;
 use crate::combat::stat::*;
@@ -9,6 +12,13 @@ use crate::combat::stat::*;
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub enum CharacterData {
 	Girl(GirlData),
+	NPC(NPCName),
+}
+
+#[enum_dispatch(AttackedAnim)]
+#[derive(Debug, Copy, Clone, Serialize, Deserialize)]
+pub enum CharacterName {
+	Girl(GirlName),
 	NPC(NPCName),
 }
 

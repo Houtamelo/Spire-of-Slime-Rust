@@ -1,15 +1,10 @@
-use std::collections::HashMap;
+#[allow(unused_imports)]
+use crate::*;
+
 use std::iter::once;
-
-use anyhow::{anyhow, Result};
-use comfy_bounded_ints::prelude::Bound_u8;
-use gdnative::api::*;
-use gdnative::prelude::*;
-use util_gdnative::prelude::IntoSharedArray;
-use uuid::Uuid;
-
 use crate::combat::action_animation::ActionParticipant;
 use crate::combat::entity::position::Side;
+use crate::combat::entity_node::CharacterNode;
 use crate::misc::SaturatedU8;
 
 const DEFAULT_DEFENSIVE_PADDING: DefensivePadding = DefensivePadding {
@@ -17,33 +12,48 @@ const DEFAULT_DEFENSIVE_PADDING: DefensivePadding = DefensivePadding {
 	between_allies: 2.,
 };
 
-pub struct DefensivePadding {
-	center_to_allies: f64,
-	between_allies: f64,
-}
-
 const DEFAULT_OFFENSIVE_PADDING: OffensivePadding = OffensivePadding {
 	center_to_caster: 2.,
 	center_to_enemies: 2.,
 	between_enemies: 2.,
 };
 
+#[derive(Debug, Copy, Clone)]
+pub struct DefensivePadding {
+	center_to_allies: f64,
+	between_allies: f64,
+}
+
+#[derive(Debug, Copy, Clone)]
 pub struct OffensivePadding {
 	center_to_caster: f64,
 	center_to_enemies: f64,
 	between_enemies: f64,
 }
 
+#[derive(Debug, Copy, Clone)]
 pub enum SkillPadding {
 	Defensive(DefensivePadding),
 	OffensiveSkill(OffensivePadding),
+}
+
+impl From<DefensivePadding> for SkillPadding {
+	fn from(padding: DefensivePadding) -> Self {
+		SkillPadding::Defensive(padding)
+	}
+}
+
+impl From<OffensivePadding> for SkillPadding {
+	fn from(padding: OffensivePadding) -> Self {
+		SkillPadding::OffensiveSkill(padding)
+	}
 }
 
 type Order = SaturatedU8;
 type Size = Bound_u8<1, { u8::MAX }>;
 
 // returns absolute values, characters on left side need to have their positions negated
-fn calc_defensive_positions<'a>(padding: &'a DefensivePadding,
+fn calc_defensive_positions<'a>(padding: DefensivePadding,
                                 caster: &'a ActionParticipant,
                                 allies: impl Iterator<Item = &'a ActionParticipant>)
                                 -> impl Iterator<Item = (&'a ActionParticipant, f64)> {
@@ -58,7 +68,7 @@ fn calc_defensive_positions<'a>(padding: &'a DefensivePadding,
 	};
 	
 	participants_by_position
-		.scan(SaturatedU8::new(0), |size_sum, participant| {
+		.scan(SaturatedU8::new(0), move |size_sum, participant| {
 			let abs_pos_x = 
 				(0..participant.pos.size.get())
 					.fold(0., |sum, i| {
@@ -73,7 +83,7 @@ fn calc_defensive_positions<'a>(padding: &'a DefensivePadding,
 }
 
 // returns absolute values, characters on left side need to have their positions negated
-fn calc_offensive_positions<'a>(padding: &'a OffensivePadding,
+fn calc_offensive_positions<'a>(padding: OffensivePadding,
                                 caster: &'a ActionParticipant,
                                 enemies: impl Iterator<Item = &'a ActionParticipant>)
                                 -> impl Iterator<Item = (&'a ActionParticipant, f64)> {
@@ -88,7 +98,7 @@ fn calc_offensive_positions<'a>(padding: &'a OffensivePadding,
 	};
 
 	enemies_by_position
-		.scan(SaturatedU8::new(0), |size_sum, participant| {
+		.scan(SaturatedU8::new(0), move |size_sum, participant| {
 			let abs_pos_x =
 				(0..participant.pos.size.get())
 					.fold(0., |sum, i| {
@@ -103,12 +113,14 @@ fn calc_offensive_positions<'a>(padding: &'a OffensivePadding,
 		.chain(once((caster, padding.center_to_caster)))
 }
 
-pub fn lerp_positions<'a>(padding: &'a SkillPadding,
-                          caster: &'a ActionParticipant,
-                          others: impl Iterator<Item = &'a ActionParticipant>,
-                          duration: f64,
-                          pos_y: f64)
-                          -> Result<HashMap<Uuid, Ref<SceneTreeTween>>> {
+pub fn do_positions<'a>(padding: impl Into<SkillPadding>,
+                        caster: &'a ActionParticipant,
+                        others: impl Iterator<Item = &'a ActionParticipant>,
+                        duration: f64,
+                        pos_y: f64)
+                        -> Result<HashMap<Uuid, TweenID<TweenProperty_Vector2>>> {
+	let padding = padding.into();
+	
 	let positions: Vec<_> =
 		match padding {
 			SkillPadding::Defensive(padding) =>
@@ -119,31 +131,25 @@ pub fn lerp_positions<'a>(padding: &'a SkillPadding,
 	
 	positions
 		.into_iter()
-		.map(|(participant, abs_pos_x)| {
-			unsafe { participant.script.assume_safe() }
-				.map(|script, _| {
-					let pos_x =
-						match participant.pos.side {
-							Side::Left => -abs_pos_x,
-							Side::Right => abs_pos_x,
-						};
-					
-					unsafe { script.owner().assume_safe_if_sane() }
-						.ok_or_else(|| anyhow!("lerp_positions(): script.owner() is not sane."))
-						.and_then(|owner| {
-							owner.create_tween()
-								 .ok_or_else(|| anyhow!("lerp_positions(): Failed to create tween."))
-								 .and_then(|tween_ref| {
-									 let target_pos = Vector2::new(pos_x as f32, pos_y as f32);
-									 
-									 unsafe { tween_ref.assume_safe() }
-										 .tween_property(owner, "position", target_pos.to_shared_array(), duration)
-										 .ok_or_else(|| anyhow!("lerp_positions(): Could not create `position` property tweener."))?;
-									 
-									 Ok((script.guid(), tween_ref))
-								 })
-						})
-				}).map_err(|err| anyhow!("lerp_positions(): {err}"))
-				.flatten()
+		.map(|(npc, abs_pos_x)| {
+			let (owner, guid) = unsafe {
+				npc.node
+				   .assume_safe()
+				   .map(|script, _| (script.owner(), script.guid()))
+				   .map_err(|err| anyhow!("lerp_positions(): Could not map `{}` {err}", type_name::<CharacterNode>()))?
+			};
+
+			let pos_x =
+				match npc.pos.side {
+					Side::Left => -abs_pos_x,
+					Side::Right => abs_pos_x,
+				};
+
+			let target_pos = Vector2::new(pos_x as f32, pos_y as f32);
+			let tween = 
+				owner.do_move(target_pos, duration)
+					 .register()?;
+			
+			Ok((guid, tween))
 		}).try_collect()
 }

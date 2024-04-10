@@ -1,3 +1,5 @@
+#[allow(unused_imports)]
+use crate::*;
 macro_rules! seek_tree_and_create_tween {
     ($owner: ident) => {{
 	    let scene_tree_option = $owner.get_tree();

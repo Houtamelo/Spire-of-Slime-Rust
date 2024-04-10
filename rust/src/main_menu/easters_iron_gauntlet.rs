@@ -1,3 +1,5 @@
+#[allow(unused_imports)]
+use crate::*;
 pub(super) const MAX_PRESSES: usize = 239;
 
 pub(super) fn get_easter(index: usize) -> &'static str {

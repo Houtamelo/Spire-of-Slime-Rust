@@ -1,5 +1,8 @@
 use util::prelude::DynamicArray;
 
+#[allow(unused_imports)]
+use crate::*;
+use crate::combat::action_animation::initial_position::DefensivePadding;
 use crate::combat::effects::onSelf::SelfApplier;
 use crate::combat::effects::onTarget::TargetApplier;
 use crate::combat::entity::character::CombatCharacter;
@@ -35,6 +38,9 @@ impl DefensiveSkill {
 			}
 			CRITMode::NeverCrit => None,
 		};
+	}
+	pub fn padding(&self) -> DefensivePadding {
+		todo!()
 	}
 }
 

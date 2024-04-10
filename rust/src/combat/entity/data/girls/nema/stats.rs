@@ -1,11 +1,11 @@
-use util::prelude::DynamicArray;
+#[allow(unused_imports)]
+use crate::*;
+
 use rand_xoshiro::Xoshiro256PlusPlus;
-use serde::{Deserialize, Serialize};
 
 use crate::combat::entity::data::character::CharacterDataTrait;
 use crate::combat::entity::data::girls::{GirlName, GirlTrait};
-use crate::combat::entity::stat::*;
-use crate::combat::skill_types::Skill;
+use crate::combat::shared::*;
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct NemaData {

@@ -1,22 +1,15 @@
+#[allow(unused_imports)]
+use crate::*;
+
 use std::num::{NonZeroI8, NonZeroU16};
 
-use comfy_bounded_ints::prelude::Bound_u8;
-use serde::{Deserialize, Serialize};
-use util::prelude::DynamicArray;
-
 use proc_macros::positions;
-
 use crate::combat::effects::MoveDirection;
 use crate::combat::effects::onSelf::SelfApplier;
 use crate::combat::effects::onTarget::TargetApplier;
-use crate::combat::entity::data::character::SkillUser;
 use crate::combat::entity::data::girls::ethel::stats::EthelData;
-use crate::combat::entity::data::skill_name::SkillName;
-use crate::combat::skill_types::*;
-use crate::combat::skill_types::defensive::*;
-use crate::combat::skill_types::offensive::*;
-use crate::combat::stat::{Accuracy, CritRate, DynamicStat, Power};
-use crate::misc::SaturatedU64;
+use crate::combat::shared::*;
+use crate::combat::skill_types::AllyRequirement;
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Serialize, Deserialize)]
 pub enum EthelSkill {
@@ -129,31 +122,6 @@ pub const SEVER_CONST: Skill = Skill::Offensive(OffensiveSkill {
 	use_counter: UseCounter::Unlimited,
 });
 
-const PIERCE_CUSTOM_MODIFIERS: &[CustomOffensiveModifier; 1] = &[
-	CustomOffensiveModifier::BonusVsMarked { 
-		power: 50, 
-		acc: 10, 
-		crit: 0 
-	}
-];
-pub static PIERCE: Skill = PIERCE_CONST;
-pub const PIERCE_CONST: Skill = Skill::Offensive(OffensiveSkill {
-	skill_name: SkillName::FromEthel(EthelSkill::Pierce),
-	recovery_ms: SaturatedU64::new(1500),
-	charge_ms: SaturatedU64::new(0),
-	can_be_riposted: true,
-	acc_mode : ACCMode ::CanMiss { acc: Accuracy::new(100) },
-	dmg_mode : DMGMode ::Power   { power: Power::new(80), toughness_reduction: Bound_u8::new(15) },
-	crit_mode: CRITMode::CanCrit { chance: CritRate::new(13) },
-	custom_modifiers: DynamicArray::Static(PIERCE_CUSTOM_MODIFIERS),
-	effects_self  : DynamicArray::Static(&[]),
-	effects_target: DynamicArray::Static(&[]),
-	caster_positions: positions!("✔️|🛑|🛑|🛑"),
-	target_positions: positions!("✔️|✔️|✔️|🛑"),
-	multi_target: false,
-	use_counter: UseCounter::Unlimited,
-});
-
 const CHALLENGE_EFFECTS_SELF: &[SelfApplier; 1] = &[
 	SelfApplier::Riposte {
 		duration_ms: SaturatedU64::new(4000),
@@ -181,6 +149,32 @@ pub const CHALLENGE_CONST: Skill = Skill::Offensive(OffensiveSkill {
 	effects_target: DynamicArray::Static(CHALLENGE_EFFECTS_TARGET),
 	caster_positions: positions!("✔️|🛑|🛑|🛑"),
 	target_positions: positions!("✔️|✔️|✔️|✔️"),
+	multi_target: false,
+	use_counter: UseCounter::Unlimited,
+});
+
+const PIERCE_CUSTOM_MODIFIERS: &[CustomOffensiveModifier; 1] = &[
+	CustomOffensiveModifier::BonusVsMarked {
+		power: 50,
+		acc: 10,
+		crit: 0
+	}
+];
+
+pub static PIERCE: Skill = PIERCE_CONST;
+pub const PIERCE_CONST: Skill = Skill::Offensive(OffensiveSkill {
+	skill_name: SkillName::FromEthel(EthelSkill::Pierce),
+	recovery_ms: SaturatedU64::new(1500),
+	charge_ms: SaturatedU64::new(0),
+	can_be_riposted: true,
+	acc_mode: ACCMode::CanMiss { acc: Accuracy::new(100) },
+	dmg_mode: DMGMode::Power { power: Power::new(80), toughness_reduction: Bound_u8::new(15) },
+	crit_mode: CRITMode::CanCrit { chance: CritRate::new(13) },
+	custom_modifiers: DynamicArray::Static(PIERCE_CUSTOM_MODIFIERS),
+	effects_self: DynamicArray::Static(&[]),
+	effects_target: DynamicArray::Static(&[]),
+	caster_positions: positions!("✔️|🛑|🛑|🛑"),
+	target_positions: positions!("✔️|✔️|✔️|🛑"),
 	multi_target: false,
 	use_counter: UseCounter::Unlimited,
 });

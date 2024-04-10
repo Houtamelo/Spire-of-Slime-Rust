@@ -1,7 +1,5 @@
-use gdnative::prelude::*;
-use util::{fn_name, full_fn_name};
-use util_gdnative::prelude::{UnwrapInstance, UnwrapManual};
-
+#[allow(unused_imports)]
+use crate::*;
 use crate::main_menu::{
 	SIGNAL_DELETE_SAVE,
 	SIGNAL_LOAD_GAME,

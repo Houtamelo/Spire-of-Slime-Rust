@@ -1,11 +1,13 @@
 use std::collections::{HashMap, HashSet};
 use std::num::NonZeroU16;
 
+use full_fn_name;
 use gdnative::prelude::*;
 use rand_xoshiro::Xoshiro256PlusPlus;
-use util::full_fn_name;
 use uuid::Uuid;
 
+#[allow(unused_imports)]
+use crate::*;
 use crate::combat::effects::onTarget::{DebuffApplierKind, TargetApplier};
 use crate::combat::entity::*;
 use crate::combat::entity::character::*;

@@ -1,3 +1,5 @@
+#[allow(unused_imports)]
+use crate::*;
 mod location;
 pub use location::WorldLocation;
 

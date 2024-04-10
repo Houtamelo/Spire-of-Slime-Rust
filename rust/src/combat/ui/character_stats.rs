@@ -1,3 +1,5 @@
+#[allow(unused_imports)]
+use crate::*;
 use anyhow::{anyhow, bail, Result};
 use gdnative::api::*;
 use gdnative::prelude::*;

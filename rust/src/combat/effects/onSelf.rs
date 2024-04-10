@@ -22,6 +22,8 @@ use combat::perk::Perk;
 use combat::skill_types::{ACCMode, CRITMode};
 use combat::stat::{CheckedRange, DynamicStat};
 
+#[allow(unused_imports)]
+use crate::*;
 use crate::combat;
 use crate::combat::entity::stat::Power;
 use crate::misc::{SaturatedU64, ToSaturatedI64, ToSaturatedU64};
@@ -90,7 +92,7 @@ impl SelfApplier {
 				let Some(girl) = &mut caster.girl_stats
 					else {
 						godot_warn!("{}(): Trying to change exhaustion of non-girl character: {caster:?}",
-							util::full_fn_name(&Self::apply));
+							full_fn_name(&Self::apply));
 						return;
 					};
 
@@ -177,7 +179,7 @@ impl SelfApplier {
 				let Some(girl) = &mut caster.girl_stats
 					else {
 						godot_warn!("{}(): Trying to apply lust on-non girl self: {caster:?}",
-							util::full_fn_name(&Self::apply));
+							full_fn_name(&Self::apply));
 						return;
 					};
 

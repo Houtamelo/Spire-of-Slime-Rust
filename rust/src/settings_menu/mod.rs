@@ -1,12 +1,7 @@
-use std::collections::HashMap;
-
-use gdnative::api::*;
-use gdnative::prelude::*;
-use gdnative_export_node_as_path::extends;
-use util_gdnative::prelude::*;
+#[allow(unused_imports)]
+use crate::*;
 
 use settings::*;
-
 use crate::misc::panel_are_you_sure;
 use crate::misc::panel_are_you_sure::PanelAreYouSure;
 
@@ -213,7 +208,7 @@ impl SettingsMenuController {
     }
     
     #[method]
-    pub fn _open_panel(&mut self, #[base] owner: TRef<CanvasLayer>) {
+    pub fn _open_panel(&mut self, #[base] owner: &CanvasLayer) {
         self.update_screen_settings();
         owner.show();
     }

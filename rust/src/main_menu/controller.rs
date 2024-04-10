@@ -1,12 +1,6 @@
-use std::collections::HashMap;
+#[allow(unused_imports)]
+use crate::*;
 
-use gdnative::api::*;
-use gdnative::prelude::*;
-use gdnative_export_node_as_path::extends;
-use util::fn_name;
-use util_gdnative::prelude::*;
-
-use crate::{CONFIG_PATH, misc};
 use crate::misc::panel_are_you_sure;
 use crate::misc::panel_are_you_sure::PanelAreYouSure;
 use crate::save::file::SaveFile;
@@ -162,7 +156,7 @@ impl MainMenuController {
 		}
 	}
 	
-	pub fn create_and_assign_load_buttons(&mut self, owner: TRef<Control>, saves: &HashMap<String, SaveFile>) {
+	pub fn create_and_assign_load_buttons(&mut self, owner: &Control, saves: &HashMap<String, SaveFile>) {
 		let owner_ref = unsafe { owner.assume_shared() };
 		let container= self.container_load_buttons.unwrap_manual();
 		let prefab= self.prefab_load_button.unwrap_refcount();

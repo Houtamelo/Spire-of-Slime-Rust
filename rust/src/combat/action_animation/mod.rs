@@ -1,10 +1,7 @@
-use anyhow::{anyhow, Result};
-use gdnative::api::*;
-use gdnative::prelude::*;
-use util::fn_name;
-use util::prelude::CountOrMore;
-use uuid::Uuid;
+#[allow(unused_imports)]
+use crate::*;
 
+use crate::combat::shared::*;
 use crate::combat::entity::position::Position;
 use crate::combat::entity_node::CharacterNode;
 use crate::combat::skill_types::defensive::DefensiveSkill;
@@ -16,9 +13,12 @@ pub mod speed_lines;
 pub mod splash_screen;
 pub mod initial_position;
 pub mod character_movement;
+pub mod skills;
+
+const ACTION_PARTICIPANTS_Y: f64 = 115.;
 
 pub struct ActionParticipant {
-	pub script: Instance<CharacterNode>,
+	pub node: Instance<CharacterNode>,
 	pub guid: Uuid,
 	pub pos: Position,
 }
@@ -62,22 +62,24 @@ impl ActionToAnimate {
 	}
 }
 
-const POP_DURATION: f64 = 0.1;
+const POP_DURATION: f64 = 0.2;
 
 pub struct ActionTweens {
-	camera: Ref<SceneTreeTween>,
-	fade_hide_outsiders: Ref<SceneTreeTween>,
-	fade_show_splash_screen: Ref<SceneTreeTween>,
-	infinite_move_splash_screen: Ref<SceneTreeTween>,
+	camera: TweenID<TweenProperty_Vector2>,
+	fade_hide_outsiders: TweenID<TweenProperty_f64>,
+	fade_show_participants: TweenID<TweenProperty_f64>,
+	infinite_move_splash_screen: TweenID<TweenProperty_f64>,
 }
 
 pub struct AnimationNodes {
 	combat_root: Ref<Node2D>,
+	outside_modulate: Ref<CanvasModulate>,
 	camera: Ref<Camera2D>,
 	splash_screen: Ref<Node2D>,
 	splash_screen_local_start_pos: Vector2,
 	characters_container: Ref<Node2D>,
 	in_action_container: Ref<Node2D>,
+	inside_modulate: Ref<CanvasModulate>,
 }
 
 impl AnimationNodes {
@@ -93,7 +95,7 @@ impl AnimationNodes {
 		participants
 			.into_iter()
 			.try_for_each(|p|
-				unsafe { p.script.assume_safe() }
+				unsafe { p.node.assume_safe() }
 					.map(|script, _| {
 						origin.remove_child(script.owner());
 						destination.add_child(script.owner(), false);
@@ -103,37 +105,35 @@ impl AnimationNodes {
 	pub fn animate_action(&self, action: ActionToAnimate) -> Result<ActionTweens> {
 		self.switch_participants_parent(action.participants())?;
 
-		let zoom_in_camera = {
+		let _zoom_in_camera = {
 			let participants_height =
 				action.participants()
 				      .map(|p| unsafe {
-					      p.script
+					      p.node
 					       .assume_safe()
 					       .map(|s, _|
 						       s.sprite_height())
 				      }).try_collect::<Vec<_>>()?;
 
-			let zoom =
-				camera::height_based_zoom_in(participants_height.into_iter());
-
-			camera::lerp_zoom(self.camera, zoom, POP_DURATION)?
+			let zoom_scale =
+				camera::height_based_zoom_value(participants_height.into_iter());
+			
+			let end_zoom = Vector2::ONE * zoom_scale as f32;
+			
+			self.camera
+				.do_zoom(end_zoom, POP_DURATION)
+				.register()?
 		};
 
-		let fade_hide_outsiders =
-			unsafe { self.combat_root.assume_safe_if_sane() }
-				.ok_or_else(|| anyhow!("{}(): combat_root is not sane.", fn_name(&Self::animate_action)))
-				.and_then(|node| {
-					node.create_tween()
-					    .ok_or_else(|| anyhow!("{}(): Failed to create combat root tween.", fn_name(&Self::animate_action)))
-					    .and_then(|tween| unsafe {
-						    tween.assume_safe()
-						         .tween_property(self.combat_root, "modulate:a", 0., POP_DURATION)
-						         .ok_or_else(|| anyhow!("{}(): Could not create `modulate:a` property tweener on combat root.",
-								     fn_name(&Self::animate_action)))?;
+		let _fade_hide_outsiders =
+			self.outside_modulate
+				.do_fade(0., POP_DURATION)
+				.register()?;
 
-						    Ok(tween)
-					    })
-				})?;
+		let _fade_show_participants =
+			self.inside_modulate
+			    .do_fade(1., POP_DURATION)
+				.register()?;
 		
 		return match action.kind {
 			ActionKind::OnSelf { .. } => { todo!() },
@@ -149,16 +149,13 @@ impl AnimationNodes {
 	                        skill: DefensiveSkill,
 	                        allies: CountOrMore<1, ActionParticipant>)
 	                        -> Result<ActionTweens> {
-		let fade_show_splash_screen =
-			splash_screen::fade(self.splash_screen, POP_DURATION, 1.)?;
-
 		const MOVE_SPEED: f64 = 50.0; // todo! test this value
-		let infinite_move_splash_screen =
+		let _infinite_move_splash_screen =
 			splash_screen::animate_movement(self.splash_screen, self.splash_screen_local_start_pos, MOVE_SPEED)?;
 		
-		// todo! move characters to their initial positions
+		initial_position::do_positions(skill.padding(), &caster, allies.iter(), POP_DURATION, ACTION_PARTICIPANTS_Y)?;
 		
-		return Err(anyhow!(""));
+		todo!()
 	}
 }
 

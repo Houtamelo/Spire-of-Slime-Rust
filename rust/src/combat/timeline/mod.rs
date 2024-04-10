@@ -4,6 +4,8 @@ use comfy_bounded_ints::prelude::{SqueezeTo, SqueezeTo_u64, SqueezeTo_u8};
 use gdnative::log::godot_warn;
 use uuid::Uuid;
 
+#[allow(unused_imports)]
+use crate::*;
 use crate::combat::effects::persistent::PersistentEffect;
 use crate::combat::entity::character::*;
 use crate::combat::entity::skill_intention::SkillIntention;
@@ -293,7 +295,7 @@ impl TimelineEvent {
 		let event_end_ms = status.duration();
 		if event_end_ms.get() <= 0 { 
 			godot_warn!("{}(): Trying to register an event from status with negative duration: {:?}, duration: {:?}", 
-				util::full_fn_name(&Self::register_status), status, event_end_ms);
+				full_fn_name(&Self::register_status), status, event_end_ms);
 			return;
 		}
 

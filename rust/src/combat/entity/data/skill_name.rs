@@ -1,3 +1,5 @@
+#[allow(unused_imports)]
+use crate::*;
 use serde::{Deserialize, Serialize};
 use crate::combat::entity::data::girls::ethel::skills::EthelSkill;
 use crate::combat::entity::data::girls::nema::skills::NemaSkill;

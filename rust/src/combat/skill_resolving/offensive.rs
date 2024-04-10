@@ -25,6 +25,8 @@ use combat::perk::Perk;
 use combat::skill_types::*;
 use combat::skill_types::offensive::OffensiveSkill;
 
+#[allow(unused_imports)]
+use crate::*;
 use crate::combat;
 use crate::combat::entity::stat::ToughnessReduction;
 use crate::combat::perk::{get_perk_mut, has_perk};
@@ -79,12 +81,12 @@ pub fn start(mut caster: CombatCharacter, target: CombatCharacter, others: &mut 
 			},
 			Some(entity) => {
 				godot_warn!("{}(): Trying to apply skill to character with guid {guid:?}, but the entity was not a character.\n\
-						Entity: {entity:?}", util::full_fn_name(&start));
+						Entity: {entity:?}", full_fn_name(&start));
 				others.insert(entity.guid(), entity);
 			},
 			None => {
 				godot_warn!("{}(): Trying to apply skill to character with guid {guid:?}, but it was not found.",
-						util::full_fn_name(&start));
+						full_fn_name(&start));
 				return;
 			}
 		}
@@ -207,7 +209,7 @@ fn resolve_target(mut caster: CombatCharacter, mut target: CombatCharacter,
 			} else {
 				// this should never happen but who knows
 				godot_error!("{}(): StaggeringForce debuff was applied to target, but target died and was dropped.", 
-					util::full_fn_name(&resolve_target));
+					full_fn_name(&resolve_target));
 				return Some(caster);
 			}
 		}
@@ -249,7 +251,7 @@ fn resolve_target(mut caster: CombatCharacter, mut target: CombatCharacter,
 			} else {
 				// this should never happen but who knows
 				godot_error!("{}(): FocusedSwings debuff was applied to target, but target died and was dropped.", 
-					util::full_fn_name(&resolve_target));
+					full_fn_name(&resolve_target));
 				return Some(caster);
 			}
 		}
@@ -272,7 +274,7 @@ fn resolve_target(mut caster: CombatCharacter, mut target: CombatCharacter,
 			} else {
 				// this should never happen but who knows
 				godot_error!("{}(): GoForTheEyes debuff was applied to target, but target died and was dropped.", 
-					util::full_fn_name(&resolve_target));
+					full_fn_name(&resolve_target));
 				return Some(caster);
 			}
 		}

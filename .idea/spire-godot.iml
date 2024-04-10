@@ -6,6 +6,9 @@
       <sourceFolder url="file://$MODULE_DIR$/rust/src" isTestSource="false" />
       <excludeFolder url="file://$MODULE_DIR$/.idea/copilot/chatSessions" />
       <excludeFolder url="file://$MODULE_DIR$/target" />
+      <excludeFolder url="file://$MODULE_DIR$/.history/rust" />
+      <excludeFolder url="file://$MODULE_DIR$/.trunk" />
+      <excludeFolder url="file://$MODULE_DIR$/godot/.import" />
     </content>
     <orderEntry type="inheritedJdk" />
     <orderEntry type="sourceFolder" forTests="false" />

@@ -1,8 +1,5 @@
-use anyhow::{anyhow, Result};
-use gdnative::api::*;
-use gdnative::prelude::*;
-use util::fn_name;
-use util_gdnative::prelude::GodotManualSomeInspector;
+#[allow(unused_imports)]
+use crate::*;
 
 const MAX_ALPHA: f64 = 160. / 255.;
 
@@ -22,10 +19,19 @@ impl SpeedLines {
 		}
 	}
 	
-	pub fn animate(&self, fade_duration: f64, stay_duration: f64, speed: f64) -> Result<Ref<SceneTreeTween>> {
+	pub fn animate(&self, _fade_duration: f64, _stay_duration: f64, _speed: f64) -> Result<(TweenProperty_f64, TweenProperty_f64)> {
+		todo!();
+		/*
 		self.owner
 		    .map_if_sane(|owner| {
 			    owner.set_position(self.default_pos);
+			    
+			    let fade_tween = owner.do_fade(MAX_ALPHA, fade_duration)?;
+
+			    let total_duration = fade_duration * 2. + stay_duration;
+			    let move_tween = 
+				    owner.do_move_x(speed * total_duration, total_duration)
+					     .map(|t| t.as_relative())?;
 			    
 			    let tween_ref =
 				    owner.create_tween()
@@ -51,5 +57,6 @@ impl SpeedLines {
 		    })
 		    .ok_or_else(|| anyhow!("{}: Owner is not sane.", fn_name(&Self::animate)))
 		    .flatten()
+		 */
 	}
 }

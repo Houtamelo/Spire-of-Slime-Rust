@@ -1,3 +1,5 @@
+#[allow(unused_imports)]
+use crate::*;
 pub (super) fn get_name_easter(input: &str) -> Option<&'static str> {
 	return match input {
 		"srup"               => Some("It's pronounced 'syrup'"),

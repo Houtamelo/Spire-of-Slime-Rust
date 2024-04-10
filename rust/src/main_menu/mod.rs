@@ -1,3 +1,5 @@
+#[allow(unused_imports)]
+use crate::*;
 mod easters_save_name;
 mod easters_iron_gauntlet;
 

@@ -1,8 +1,5 @@
-use std::collections::{HashMap, HashSet};
-use std::mem;
-
-use gdnative::log::godot_warn;
-use serde::{Deserialize, Serialize};
+#[allow(unused_imports)]
+use crate::*;
 
 use crate::combat::CombatState;
 use crate::local_map::coordinates::axial::Axial;
@@ -108,7 +105,7 @@ impl LocalMapState {
 				godot_warn!("{}(): Received run input while in combat or event!\n\
 					state: {state:?}\n
 					pos: {player_pos:?}",
-					util::full_fn_name(&Self::input_run));
+					full_fn_name(&Self::input_run));
 				Vec::new()
 			}
 			PartyState::Idle => {

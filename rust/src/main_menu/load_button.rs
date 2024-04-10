@@ -1,7 +1,5 @@
-use gdnative::prelude::*;
-use gdnative_export_node_as_path::extends;
-use util::fn_name;
-use util_gdnative::prelude::*;
+#[allow(unused_imports)]
+use crate::*;
 
 pub(super) const SIGNAL_LOAD: &str = "load_save";
 pub(super) const SIGNAL_DELETE: &str = "delete_save_confirmed";
@@ -54,7 +52,7 @@ impl LoadButton {
 		} else {
 			godot_warn!("{}():\n\
 			 LoadButton `{}` was pressed, but no save was assigned to it.", 
-				util::fn_name(&Self::_button_pressed_load), owner.name());
+				fn_name(&Self::_button_pressed_load), owner.name());
 		};
 	}
 
@@ -74,7 +72,7 @@ impl LoadButton {
 		} else {
 			godot_warn!("{}():\n\
 				DeleteSaveButton `{}` was pressed, but no save was assigned to it.", 
-				util::fn_name(&Self::_button_pressed_confirm_delete), owner.name());
+				fn_name(&Self::_button_pressed_confirm_delete), owner.name());
 		}
 	}
 }

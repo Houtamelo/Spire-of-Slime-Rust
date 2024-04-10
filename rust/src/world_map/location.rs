@@ -1,3 +1,5 @@
+#[allow(unused_imports)]
+use crate::*;
 use gdnative::prelude::{FromVariant, ToVariant};
 use serde::{Deserialize, Serialize};
 use crate::save::affairs::{Happened, RescuedByMistressTender};

@@ -1,14 +1,6 @@
-use std::collections::{HashMap, HashSet};
+#[allow(unused_imports)]
+use crate::*;
 
-use gdnative::api::{Area2D, Light2D};
-use gdnative::prelude::*;
-use gdnative_export_node_as_path::extends;
-use util::{fn_name, full_fn_name};
-use util_gdnative::prelude::*;
-
-use crate::misc;
-
-use super::location::WorldLocation;
 use super::WorldPath;
 
 pub const SIGNAL_OPEN_SETTINGS_MENU: &str = "open_settings_menu";

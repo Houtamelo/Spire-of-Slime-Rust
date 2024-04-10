@@ -1,4 +1,6 @@
-use std::collections::HashMap;
+#[allow(unused_imports)]
+use crate::*;
+
 use std::ops::RangeInclusive;
 
 use bracket_noise::prelude::FastNoise;

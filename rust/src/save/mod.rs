@@ -1,16 +1,16 @@
+#[allow(unused_imports)]
+use crate::*;
+use crate::save::file::SaveFile;
+
 pub mod file;
 pub mod affairs;
 mod states;
 mod upgrades;
+
 mod stats;
-
 mod controller;
+
 pub use controller::SaveFilesController;
-
-use std::collections::HashSet;
-use crate::WorldLocation;
-
-use crate::save::file::SaveFile;
 
 
 impl SaveFile {

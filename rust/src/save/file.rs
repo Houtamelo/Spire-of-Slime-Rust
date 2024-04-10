@@ -1,17 +1,12 @@
-use std::collections::HashMap;
-use comfy_bounded_ints::prelude;
-use gdnative::api::{Time};
-use gdnative::log::godot_warn;
-use util::prelude::IndexedSet;
-use prelude::Bound_u8;
+#[allow(unused_imports)]
+use crate::*;
+
 use rand_xoshiro::rand_core::{RngCore, SeedableRng};
 use rand_xoshiro::Xoshiro256PlusPlus;
-use serde::{Deserialize, Serialize};
+use crate::combat::shared::*;
 use crate::combat::entity::data::girls;
 use crate::combat::entity::data::girls::ethel::skills::EthelSkill;
-use crate::combat::entity::data::girls::GirlName;
 use crate::combat::entity::data::girls::nema::skills::NemaSkill;
-use crate::WorldLocation;
 use crate::save::affairs::AffairMap;
 use crate::save::stats::GenericStats;
 
@@ -117,7 +112,7 @@ impl SaveFile {
 	pub fn affairs(&self) -> &AffairMap { return &self.affairs; }
 }
 
-#[derive(Debug, Serialize, Deserialize, Clone, Default)] // maybe make keys &'static str?
+#[derive(Debug, Serialize, Deserialize, Clone, Default)] // maybe make keys &' static str?
 pub struct OtherVariables {
 	pub(super) bools: HashMap<String, bool>,
 	pub(super) ints: HashMap<String, i32>,

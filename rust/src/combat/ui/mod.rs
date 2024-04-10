@@ -1,8 +1,11 @@
-#![allow(unused)]
+#![allow(unused_imports)]
 
 pub use character_stats::UI_CharacterStats;
 pub use speed_buttons::{Speed, SpeedButtons, SpeedSetting};
 pub use targeting_tooltip::TargetingTooltip;
+
+#[allow(unused_imports)]
+use crate::*;
 
 mod character_stats;
 mod speed_buttons;

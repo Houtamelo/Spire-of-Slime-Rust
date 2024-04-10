@@ -123,7 +123,7 @@ tracks/0/keys = {
 "values": [ true, false ]
 }
 tracks/1/type = "value"
-tracks/1/path = NodePath("pierce/sprite/slash:emitting")
+tracks/1/path = NodePath("pierce/sprite/slash_particles:emitting")
 tracks/1/interp = 1
 tracks/1/loop_wrap = true
 tracks/1/imported = false
@@ -157,10 +157,12 @@ __meta__ = {
 }
 
 [node name="camera_2d" type="Camera2D" parent="."]
-anchor_mode = 0
+position = Vector2( 960, 540 )
 current = true
+zoom = Vector2( 0.77, 0.77 )
 
 [node name="ui" type="Control" parent="."]
+visible = false
 margin_right = 1920.0
 margin_bottom = 1080.0
 rect_min_size = Vector2( 1920, 1080 )
@@ -1440,22 +1442,26 @@ root_node = NodePath("../animation test")
 anims/pierce_anim = SubResource( 3 )
 
 [node name="animation test" type="Node2D" parent="."]
-visible = false
 
 [node name="pierce" type="Node2D" parent="animation test"]
 position = Vector2( 276, 678 )
 
 [node name="sprite" type="Sprite" parent="animation test/pierce"]
-position = Vector2( -24, 64 )
+position = Vector2( 807, -61.549 )
+scale = Vector2( 1.25, 1.25 )
 texture = ExtResource( 60 )
+offset = Vector2( 0, -180 )
 
 [node name="slash_sprite" type="Sprite" parent="animation test/pierce/sprite"]
-position = Vector2( 105, -32 )
+visible = false
+position = Vector2( 105, -212 )
 texture = ExtResource( 59 )
 
 [node name="trail" type="Particles2D" parent="animation test/pierce/sprite"]
 show_behind_parent = true
 material = ExtResource( 63 )
+position = Vector2( 0, -180 )
+emitting = false
 amount = 6
 lifetime = 0.6
 explosiveness = 0.75
@@ -1463,8 +1469,8 @@ local_coords = false
 process_material = ExtResource( 62 )
 texture = ExtResource( 60 )
 
-[node name="slash" type="Particles2D" parent="animation test/pierce/sprite"]
-position = Vector2( 105, -32 )
+[node name="slash_particles" type="Particles2D" parent="animation test/pierce/sprite"]
+position = Vector2( 105, -212 )
 emitting = false
 amount = 3
 lifetime = 0.75

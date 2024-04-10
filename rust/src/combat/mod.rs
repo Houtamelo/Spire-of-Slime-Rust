@@ -1,18 +1,13 @@
-use std::collections::{HashMap, HashSet};
+#[allow(unused_imports)]
+use crate::*;
 
-use comfy_bounded_ints::prelude::{SqueezeTo, SqueezeTo_u64};
-use gdnative::prelude::*;
 use rand_xoshiro::Xoshiro256PlusPlus;
-use serde::{Deserialize, Serialize};
-use uuid::Uuid;
-
-use entity::position::Position;
+use shared::*;
 
 use crate::combat::effects::persistent::PersistentEffect;
 use crate::combat::entity::*;
 use crate::combat::entity::character::*;
 use crate::combat::entity::girl::*;
-use crate::combat::entity::stat::{CurrentStamina, Speed};
 use crate::combat::timeline::TimelineEvent;
 use crate::misc::{SaturatedU64, ToSaturatedI64};
 
@@ -22,7 +17,7 @@ mod timeline;
 mod skill_resolving;
 mod perk;
 pub mod entity;
-pub(crate) mod ui;
+pub mod ui;
 mod action_animation;
 mod entity_node;
 
@@ -258,4 +253,23 @@ impl CombatState {
 		events.sort_by(|a, b| a.time_frame_ms.cmp(&b.time_frame_ms));
 		return events;
 	}
+}
+
+#[allow(unused)]
+pub mod shared {
+	pub(crate) use super::perk::{Perk, get_perk, get_perk_mut, has_perk};
+	pub(crate) use super::skill_types::{Skill, ACCMode, CRITMode, DMGMode, SkillTrait, PositionMatrix, UseCounter};
+	pub(crate) use super::skill_types::lewd::LewdSkill;
+	pub(crate) use super::skill_types::defensive::DefensiveSkill;
+	pub(crate) use super::skill_types::offensive::{OffensiveSkill, CustomOffensiveModifier};
+	pub(crate) use super::entity_node::CharacterNode;
+	pub(crate) use super::entity::{Entity, Corpse, Race, iter_allies_of, iter_mut_allies_of, iter_enemies_of, iter_mut_enemies_of};
+	pub(crate) use super::entity::character::CombatCharacter;
+	pub(crate) use super::entity::position::{Position, Direction, Side};
+	pub(crate) use super::entity::stat::*;
+	pub(crate) use super::entity::data::EntityData;
+	pub(crate) use super::entity::data::character::{CharacterData, CharacterName, CharacterDataTrait, SkillUser};
+	pub(crate) use super::entity::data::girls::GirlName;
+	pub(crate) use super::entity::data::npc::NPCName;
+	pub(crate) use super::entity::data::skill_name::SkillName;
 }

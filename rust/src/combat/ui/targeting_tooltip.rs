@@ -1,10 +1,12 @@
 use anyhow::Result;
 use comfy_bounded_ints::prelude::Bound_u8;
+use full_fn_name;
 use gdnative::api::*;
 use gdnative::prelude::*;
-use util::full_fn_name;
 use util_gdnative::prelude::GodotManualSomeInspector;
 
+#[allow(unused_imports)]
+use crate::*;
 use crate::combat::entity::stat::CheckedRange;
 use crate::combat::ui::get_ref_or_bail;
 

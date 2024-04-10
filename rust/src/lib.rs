@@ -24,9 +24,9 @@
 #![feature(iter_from_coroutine)]
 #![feature(iterator_try_collect)]
 
-use gdnative::prelude::*;
-
 pub use audio::bus;
+#[allow(unused_imports)]
+pub(crate) use internal_prelude::*;
 pub use world_map::WorldLocation;
 
 mod audio;
@@ -51,7 +51,7 @@ fn init_panic_hook() {
 		if let Some(location) = panic_info.location() {
 			loc_string = format!("file '{}' at line {}", location.file(), location.line());
 		} else {
-			loc_string = "unknown location".to_owned()
+			loc_string = own!("unknown location")
 		}
 
 		let error_message;
@@ -87,11 +87,96 @@ fn init(handle: InitHandle) {
 	handle.add_class::<world_map::WorldMapController>();
 	handle.add_class::<local_map::generation::generator_ui::MapGeneratorUI>();
 	handle.add_class::<local_map::generation::generator_ui::BiomeDataResource>();
-	handle.add_class::<util_gdnative::prelude::PitchRandomizer>();
-	handle.add_class::<util_gdnative::prelude::PlayOnClickAndPitchRandomizer>();
-	handle.add_class::<util_gdnative::prelude::PlayOnHoverAndPitchRandomizer>();
-	handle.add_class::<util_gdnative::prelude::DisallowClickFocusOnParent>();
-	handle.add_class::<util_gdnative::prelude::AutoTextResize>();
+	handle.add_class::<PitchRandomizer>();
+	handle.add_class::<PlayOnClickAndPitchRandomizer>();
+	handle.add_class::<PlayOnHoverAndPitchRandomizer>();
+	handle.add_class::<DisallowClickFocusOnParent>();
+	handle.add_class::<AutoTextResize>();
 }
 
 godot_init!(init);
+
+#[allow(unused_imports)]
+mod internal_prelude {
+	pub use comfy_bounded_ints::prelude::*;
+	pub use gdnative_tweener::prelude::*;
+	pub use util::prelude::*;
+	pub use util_gdnative::prelude::*;
+	pub use uuid::Uuid;
+	pub use serde::{Deserialize, Serialize};
+	pub use crate::misc::{SaturatedI64, SaturatedU8, SaturatedU64, ToSaturatedU64, ToSaturatedI64, ToU8Percentage,
+	                      Base100ChanceGenerator, TrackedTicks, PercentageU8, Percentage_0_100};
+
+	pub trait Inherits<T: GodotObject> {
+		unsafe fn base<Base: GodotObject>(&self) -> Ref<Base> where T: SubClass<Base>;
+	}
+
+	impl<TSelf, Origin, Inherited> Inherits<Inherited> for TSelf
+		where TSelf: ChangeRef<Inner = Origin>,
+		      Origin: GodotObject + SubClass<Inherited>,
+		      Inherited: GodotObject {
+		unsafe fn base<Base: GodotObject>(&self) -> Ref<Base> where Inherited: SubClass<Base> {
+			self.change_ref::<Inherited>().change_ref::<Base>()
+		}
+	}
+
+	pub(crate) trait ChangeRef {
+		type Inner: GodotObject;
+
+		unsafe fn change_ref<Base: GodotObject>(&self) -> Ref<Base> where Self::Inner: SubClass<Base>;
+	}
+
+	#[allow(unused_qualifications)]
+	impl<T, Own> ChangeRef for Ref<T, Own>
+		where T: GodotObject,
+		      Own: gdnative::object::ownership::Ownership {
+		type Inner = T;
+
+		unsafe fn change_ref<Base: GodotObject>(&self) -> Ref<Base> where T: SubClass<Base> {
+			Ref::<Base>::from_sys(std::ptr::NonNull::new_unchecked(self.as_ptr()))
+		}
+	}
+
+	#[allow(unused_qualifications)]
+	impl<T, Own> ChangeRef for TRef<'_, T, Own>
+		where T: GodotObject,
+		      Own: gdnative::object::ownership::Ownership {
+		type Inner = T;
+
+		unsafe fn change_ref<Base: GodotObject>(&self) -> Ref<Base> where Self::Inner: SubClass<Base> {
+			self.upcast().assume_shared()
+		}
+	}
+
+	impl<T: GodotObject> ChangeRef for &T {
+		type Inner = T;
+
+		unsafe fn change_ref<Base: GodotObject>(&self) -> Ref<Base> where Self::Inner: SubClass<Base> {
+			self.upcast().assume_shared()
+		}
+	}
+
+	#[allow(unused)]
+	unsafe fn test(obj: &impl Inherits<Node>) {
+		let obj_ref: Ref<Object> = obj.base();
+	}
+
+	#[allow(unused)]
+	unsafe fn test_1(obj: &PathFollow2D, obj_ref: Ref<Node2D>, obj_tref: TRef<'_, Sprite>) {
+		test(&obj);
+		test(&obj_ref);
+		test(&obj_tref);
+	}
+
+	#[allow(unused)]
+	unsafe fn test_2(obj: &impl Inherits<Resource>) {
+		let obj_ref: Ref<Object> = obj.base();
+	}
+
+	#[allow(unused)]
+	unsafe fn test_3(obj: &PackedScene, obj_ref: Ref<Texture>, obj_tref: TRef<'_, DynamicFontData>) {
+		test_2(&obj);
+		test_2(&obj_ref);
+		test_2(&obj_tref);
+	}
+}

@@ -1,3 +1,5 @@
+#[allow(unused_imports)]
+use crate::*;
 use std::collections::HashMap;
 
 use rand_xoshiro::Xoshiro256PlusPlus;

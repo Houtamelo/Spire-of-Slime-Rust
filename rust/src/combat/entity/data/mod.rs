@@ -1,3 +1,5 @@
+#[allow(unused_imports)]
+use crate::*;
 pub mod character;
 pub mod npc;
 pub mod girls;

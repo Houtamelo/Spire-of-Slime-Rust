@@ -4,6 +4,8 @@ use serde::{Deserialize, Serialize};
 
 use entity::position::Position;
 
+#[allow(unused_imports)]
+use crate::*;
 use crate::combat::effects::onSelf::SelfApplier;
 use crate::combat::effects::onTarget::TargetApplier;
 use crate::combat::entity;

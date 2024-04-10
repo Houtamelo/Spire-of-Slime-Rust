@@ -1,3 +1,5 @@
+#[allow(unused_imports)]
+use crate::*;
 use crate::local_map::coordinates::axial::Axial;
 use std::ops::{Add, AddAssign, Sub, SubAssign};
 use serde::{Deserialize, Serialize};

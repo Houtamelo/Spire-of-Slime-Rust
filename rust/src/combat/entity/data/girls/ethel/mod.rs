@@ -1,11 +1,18 @@
-use util::prelude::DynamicArray;
+#[allow(unused_imports)]
+use crate::*;
 
 use crate::combat::entity::data::girls::ethel::stats::EthelData;
-use crate::combat::entity::stat::*;
+use crate::combat::shared::*;
 
 pub mod stats;
 pub mod skills;
 pub mod perks;
+
+const DEFAULT_SKILLS: &[Skill] = &[
+	skills::CLASH_CONST,
+	skills::SAFEGUARD_CONST,
+	skills::JOLT_CONST
+];
 
 pub static DEFAULT_ETHEL: EthelData = EthelData {
 	size : Size::new(1),
@@ -23,11 +30,7 @@ pub static DEFAULT_ETHEL: EthelData = EthelData {
 	move_rate  : MoveRate::new(0),
 	poison_res : PoisonRes::new(0),
 	poison_rate: PoisonRate::new(0),
-	skills: DynamicArray::Static(&[
-		skills::CLASH_CONST, 
-		skills::SAFEGUARD_CONST, 
-		skills::JOLT_CONST
-	]),
+	skills: DynamicArray::Static(DEFAULT_SKILLS),
 	composure   : Composure::new(0),
 	orgasm_limit: OrgasmLimit::new(3),
 };
