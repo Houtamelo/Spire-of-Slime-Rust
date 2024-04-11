@@ -1,21 +1,8 @@
-use comfy_bounded_ints::prelude::{Bound_u8, SqueezeTo_usize};
-use gdnative::godot_error;
-use serde::{Deserialize, Serialize};
-
-use entity::position::Position;
-
 #[allow(unused_imports)]
 use crate::*;
+use crate::combat::shared::*;
 use crate::combat::effects::onSelf::SelfApplier;
 use crate::combat::effects::onTarget::TargetApplier;
-use crate::combat::entity;
-use crate::combat::entity::data::skill_name::SkillName;
-use crate::combat::skill_types::defensive::DefensiveSkill;
-use crate::combat::skill_types::lewd::LewdSkill;
-use crate::combat::skill_types::offensive::OffensiveSkill;
-use crate::combat::stat::{Accuracy, CritRate, Power};
-use crate::MAX_CHARACTERS_PER_TEAM;
-use crate::misc::SaturatedU64;
 
 pub mod offensive;
 pub mod defensive;

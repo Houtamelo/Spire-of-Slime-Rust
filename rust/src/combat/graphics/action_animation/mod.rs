@@ -1,9 +1,8 @@
 #[allow(unused_imports)]
 use crate::*;
 
-use crate::combat::shared::*;
 use crate::combat::entity::position::Position;
-use crate::combat::entity_node::CharacterNode;
+use crate::combat::graphics::entity_anim::character_node::CharacterNode;
 use crate::combat::skill_types::defensive::DefensiveSkill;
 use crate::combat::skill_types::lewd::LewdSkill;
 use crate::combat::skill_types::offensive::OffensiveSkill;
@@ -14,11 +13,12 @@ pub mod splash_screen;
 pub mod initial_position;
 pub mod character_movement;
 pub mod skills;
+mod test;
 
 const ACTION_PARTICIPANTS_Y: f64 = 115.;
 
 pub struct ActionParticipant {
-	pub node: Instance<CharacterNode>,
+	pub godot: CharacterNode,
 	pub guid: Uuid,
 	pub pos: Position,
 }
@@ -94,12 +94,15 @@ impl AnimationNodes {
 
 		participants
 			.into_iter()
-			.try_for_each(|p|
-				unsafe { p.node.assume_safe() }
-					.map(|script, _| {
-						origin.remove_child(script.owner());
-						destination.add_child(script.owner(), false);
-					}).map_err(|err| anyhow!("switch_participants_parent(): {err}.")))
+			.try_for_each(|part| unsafe { 
+				part.godot
+				    .node()
+					.assume_safe_if_sane()
+					.map(|owner| {
+						origin.remove_child(owner);
+						destination.add_child(owner, false);
+					}).ok_or_else(|| anyhow!("switch_participants_parent(): owner is not sane."))
+			})
 	}
 	
 	pub fn animate_action(&self, action: ActionToAnimate) -> Result<ActionTweens> {
@@ -108,12 +111,8 @@ impl AnimationNodes {
 		let _zoom_in_camera = {
 			let participants_height =
 				action.participants()
-				      .map(|p| unsafe {
-					      p.node
-					       .assume_safe()
-					       .map(|s, _|
-						       s.sprite_height())
-				      }).try_collect::<Vec<_>>()?;
+				      .map(|p| p.godot.sprite_height())
+					  .collect::<Vec<_>>();
 
 			let zoom_scale =
 				camera::height_based_zoom_value(participants_height.into_iter());

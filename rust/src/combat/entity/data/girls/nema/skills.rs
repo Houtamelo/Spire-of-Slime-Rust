@@ -5,7 +5,6 @@ use std::num::{NonZeroI8, NonZeroU16};
 
 use proc_macros::positions;
 
-use crate::combat::shared::*;
 use crate::combat::effects::MoveDirection;
 use crate::combat::effects::onSelf::SelfApplier;
 use crate::combat::effects::onTarget::TargetApplier;

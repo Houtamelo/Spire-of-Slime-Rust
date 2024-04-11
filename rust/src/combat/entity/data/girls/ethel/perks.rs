@@ -1,8 +1,6 @@
 #[allow(unused_imports)]
 use crate::*;
 
-use crate::misc::SaturatedU64;
-
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub enum EthelPerk {
 	Bruiser_DisruptiveManeuvers,

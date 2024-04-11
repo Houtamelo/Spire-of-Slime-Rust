@@ -1,40 +1,24 @@
 #[allow(unused_imports)]
 use crate::*;
-use std::collections::HashMap;
+
 use std::num::{NonZeroI8, NonZeroU16, NonZeroU8};
 
-use comfy_bounded_ints::prelude::*;
 use rand_xoshiro::Xoshiro256PlusPlus;
-use serde::{Deserialize, Serialize};
-use util::{any_matches, no_matches};
-use util::prelude::{IsNoneOr, Touch};
-use uuid::Uuid;
+
+use crate::combat::shared::*;
 
 use crate::combat::effects::{
 	onSelf::SelfApplier,
 	onTarget::{DebuffApplierKind, TargetApplier},
 	persistent::{PersistentDebuff, PersistentEffect, PoisonAdditive},
 };
-use crate::combat::entity::{Corpse, Entity};
-use crate::combat::entity::character::CharacterState::Grappling;
-use crate::combat::entity::data::{
-	character::CharacterData,
-	EntityData,
-	skill_name::SkillName
-};
+
 use crate::combat::entity::data::girls::{
 	ethel::perks::*,
 	nema::perks::*,
 };
-use crate::combat::entity::girl::AliveGirl_Grappled;
-use crate::combat::entity::girl::GirlState;
-use crate::combat::entity::girl::GrappledGirlEnum;
-use crate::combat::entity::iter_mut_allies_of;
-use crate::combat::entity::position::Direction;
-use crate::combat::entity::position::Position;
+
 use crate::combat::entity::skill_intention::SkillIntention;
-use crate::combat::perk::{get_perk, Perk};
-use crate::combat::stat::*;
 use crate::misc::*;
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -462,7 +446,7 @@ impl CombatCharacter {
 			}
 		});
 		
-		if let Grappling(grappling_state) = self.state {
+		if let CharacterState::Grappling(grappling_state) = self.state {
 			match grappling_state.victim {
 				GrappledGirlEnum::Alive(girl_alive) => {
 					let mut girl_standing = girl_alive.into_non_grappled();

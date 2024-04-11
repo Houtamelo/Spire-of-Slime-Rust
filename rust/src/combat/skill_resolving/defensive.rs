@@ -1,22 +1,13 @@
-use std::collections::{HashMap, HashSet};
-use std::num::NonZeroU16;
-
-use full_fn_name;
-use gdnative::prelude::*;
-use rand_xoshiro::Xoshiro256PlusPlus;
-use uuid::Uuid;
-
 #[allow(unused_imports)]
 use crate::*;
+use crate::combat::shared::*;
+
+use std::num::NonZeroU16;
+use rand_xoshiro::Xoshiro256PlusPlus;
+
 use crate::combat::effects::onTarget::{DebuffApplierKind, TargetApplier};
-use crate::combat::entity::*;
-use crate::combat::entity::character::*;
 use crate::combat::entity::data::girls::ethel::perks::*;
 use crate::combat::entity::data::girls::nema::perks::NemaPerk;
-use crate::combat::perk::{get_perk_mut, has_perk, Perk};
-use crate::combat::skill_types::defensive::DefensiveSkill;
-use crate::combat::stat::DynamicStat;
-use crate::misc::{Base100ChanceGenerator, ToSaturatedU64, TrackedTicks};
 
 pub fn start_targeting_self(caster: &mut CombatCharacter, others: &mut HashMap<Uuid, Entity>,
                             skill: DefensiveSkill, rng: &mut Xoshiro256PlusPlus, recover_ms: Option<i64>) {

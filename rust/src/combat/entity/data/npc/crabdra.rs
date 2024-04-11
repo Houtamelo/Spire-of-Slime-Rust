@@ -5,7 +5,6 @@ use std::num::NonZeroU16;
 
 use proc_macros::positions;
 
-use crate::combat::shared::*;
 use crate::combat::effects::onTarget::TargetApplier;
 use crate::combat::entity::data::skill_name::SkillName;
 use crate::combat::entity::stat::{Accuracy, CheckedRange, CritRate, Power};

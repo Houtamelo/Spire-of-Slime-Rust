@@ -1,12 +1,7 @@
 #[allow(unused_imports)]
 use crate::*;
-use serde::{Deserialize, Serialize};
-use uuid::Uuid;
 
-use crate::combat::skill_types::defensive::DefensiveSkill;
-use crate::combat::skill_types::lewd::LewdSkill;
-use crate::combat::skill_types::offensive::OffensiveSkill;
-use crate::misc::TrackedTicks;
+use crate::combat::shared::*;
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct SkillIntention {

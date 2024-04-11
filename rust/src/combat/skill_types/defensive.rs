@@ -1,13 +1,10 @@
-use util::prelude::DynamicArray;
-
 #[allow(unused_imports)]
 use crate::*;
-use crate::combat::action_animation::initial_position::DefensivePadding;
+use crate::combat::shared::*;
+use crate::combat::graphics::action_animation::initial_position::DefensivePadding;
 use crate::combat::effects::onSelf::SelfApplier;
 use crate::combat::effects::onTarget::TargetApplier;
-use crate::combat::entity::character::CombatCharacter;
-use crate::combat::skill_types::*;
-use crate::misc::{PercentageU8, SaturatedU64, ToSaturatedI64, ToU8Percentage};
+use crate::combat::skill_types::AllyRequirement;
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct DefensiveSkill {

@@ -1,11 +1,7 @@
 #[allow(unused_imports)]
 use crate::*;
-
-use rand_xoshiro::Xoshiro256PlusPlus;
-
-use crate::combat::entity::data::character::CharacterDataTrait;
-use crate::combat::entity::data::girls::{GirlName, GirlTrait};
 use crate::combat::shared::*;
+use rand_xoshiro::Xoshiro256PlusPlus;
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct NemaData {

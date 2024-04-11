@@ -1,18 +1,9 @@
 #[allow(unused_imports)]
 use crate::*;
-use std::collections::HashMap;
 
-use serde::{Deserialize, Serialize};
-use uuid::Uuid;
-
-use crate::combat::entity::character::{CharacterState, CombatCharacter, OnZeroStamina};
-use crate::combat::entity::data::character::CharacterData;
+use crate::combat::shared::*;
+use crate::combat::entity::character::OnZeroStamina;
 use crate::combat::entity::data::girls::GirlData;
-use crate::combat::entity::data::skill_name::SkillName;
-use crate::combat::entity::position::Position;
-use crate::combat::perk::Perk;
-use crate::combat::stat::*;
-use crate::misc::{ToSaturatedU64, TrackedTicks};
 
 pub const MAX_LUST: u8 = 200;
 

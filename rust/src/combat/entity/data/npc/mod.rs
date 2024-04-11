@@ -1,12 +1,9 @@
 #[allow(unused_imports)]
 use crate::*;
-use comfy_bounded_ints::prelude::SqueezeTo;
+
 use rand::Rng;
 use rand_xoshiro::Xoshiro256PlusPlus;
-use serde::{Deserialize, Serialize};
-
-use crate::combat::entity::data::character::CharacterDataTrait;
-use crate::combat::entity::stat::*;
+use crate::combat::shared::*;
 
 pub mod bellplant;
 pub mod crabdra;

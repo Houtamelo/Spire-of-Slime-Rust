@@ -1,13 +1,7 @@
 #[allow(unused_imports)]
 use crate::*;
-use util::prelude::DynamicArray;
+use crate::combat::shared::*;
 use rand_xoshiro::Xoshiro256PlusPlus;
-use serde::{Deserialize, Serialize};
-
-use crate::combat::entity::data::character::CharacterDataTrait;
-use crate::combat::entity::data::girls::{GirlName, GirlTrait};
-use crate::combat::entity::stat::*;
-use crate::combat::skill_types::Skill;
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct EthelData {

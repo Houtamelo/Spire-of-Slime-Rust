@@ -67,3 +67,30 @@ pub struct Percentage_0_100 {
 }
 
 bound_f64_impl!(Percentage_0_100, 0.0, 100.0);
+
+pub fn load_prefab(path: &str) -> Result<Ref<PackedScene>> {
+	ResourceLoader::godot_singleton()
+		.load(path, "PackedScene", false)
+		.map(|res| res.cast::<PackedScene>())
+		.flatten()
+		.ok_or_else(|| anyhow!("Failed to load prefab at path: {path}"))
+}
+
+pub fn spawn_prefab_as<T: GodotObject + SubClass<Node>>(path: &str) -> Result<TRef<T>> {
+	let prefab_ref = load_prefab(path)?;
+	let prefab = unsafe { prefab_ref.assume_safe() };
+
+	unsafe {
+		prefab.instance(0)
+			  .ok_or_else(|| anyhow!("Failed to instance prefab at path: {path}"))?
+			  .assume_safe()
+			  .cast()
+			  .ok_or_else(|| anyhow!("Failed to cast prefab instance to {}", type_name::<T>()))
+	}
+}
+
+pub fn spawn_prefab_as_inst<T: NativeClass<Base: SubClass<Node>>>(path: &str) -> Result<TInstance<T>> {
+	let node = spawn_prefab_as::<T::Base>(path)?;
+	node.cast_instance()
+	    .ok_or_else(|| anyhow!("Failed to cast prefab instance to {}", type_name::<T>()))
+}

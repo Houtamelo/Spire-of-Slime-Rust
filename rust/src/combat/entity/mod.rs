@@ -1,13 +1,6 @@
 #[allow(unused_imports)]
 use crate::*;
-use serde::{Deserialize, Serialize};
-use uuid::Uuid;
-
-use position::Position;
-
-use crate::combat::entity::character::CombatCharacter;
-use crate::combat::entity::data::EntityData;
-use crate::combat::entity::girl::DefeatedGirl_Entity;
+use crate::combat::shared::*;
 
 pub mod girl;
 pub mod position;

@@ -6,7 +6,6 @@ use crate::local_map::coordinates::axial::Axial;
 use crate::local_map::tile;
 use crate::local_map::tile::{EnemyGroup, EventID, Tile, TileContents, TileMistStatus};
 use crate::local_map::tile::TileScoutStatus::ContentsRevealed;
-use crate::misc::PercentageU8;
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct LocalMapState {

@@ -2,10 +2,8 @@
 use crate::*;
 
 use std::iter::once;
-use crate::combat::action_animation::ActionParticipant;
-use crate::combat::entity::position::Side;
-use crate::combat::entity_node::CharacterNode;
-use crate::misc::SaturatedU8;
+use crate::combat::graphics::action_animation::ActionParticipant;
+use crate::combat::shared::*;
 
 const DEFAULT_DEFENSIVE_PADDING: DefensivePadding = DefensivePadding {
 	center_to_allies: 2.,
@@ -131,25 +129,20 @@ pub fn do_positions<'a>(padding: impl Into<SkillPadding>,
 	
 	positions
 		.into_iter()
-		.map(|(npc, abs_pos_x)| {
-			let (owner, guid) = unsafe {
-				npc.node
-				   .assume_safe()
-				   .map(|script, _| (script.owner(), script.guid()))
-				   .map_err(|err| anyhow!("lerp_positions(): Could not map `{}` {err}", type_name::<CharacterNode>()))?
-			};
-
+		.map(|(part, abs_pos_x)| {
 			let pos_x =
-				match npc.pos.side {
+				match part.pos.side {
 					Side::Left => -abs_pos_x,
 					Side::Right => abs_pos_x,
 				};
 
 			let target_pos = Vector2::new(pos_x as f32, pos_y as f32);
 			let tween = 
-				owner.do_move(target_pos, duration)
-					 .register()?;
+				part.godot
+					.node()
+					.do_move(target_pos, duration)
+					.register()?;
 			
-			Ok((guid, tween))
+			Ok((part.guid, tween))
 		}).try_collect()
 }

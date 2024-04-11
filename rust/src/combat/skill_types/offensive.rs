@@ -1,19 +1,11 @@
 #[allow(unused_imports)]
 use crate::*;
-use comfy_bounded_ints::prelude::{SqueezeTo, SqueezeTo_i64};
-use util::any_matches;
-use util::prelude::DynamicArray;
-
+use crate::combat::shared::*;
 use crate::combat::effects::onSelf::SelfApplier;
 use crate::combat::effects::onTarget::TargetApplier;
 use crate::combat::effects::persistent::PersistentEffect;
 use crate::combat::entity::character::*;
 use crate::combat::entity::data::girls::nema::perks::NemaPerk;
-use crate::combat::entity::stat::ToughnessReduction;
-use crate::combat::perk::{has_perk, Perk};
-use crate::combat::skill_types::*;
-use crate::combat::stat::{CheckedRange, Dodge, Toughness};
-use crate::misc::{PercentageU8, SaturatedU64, ToSaturatedI64, ToU8Percentage};
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct OffensiveSkill {

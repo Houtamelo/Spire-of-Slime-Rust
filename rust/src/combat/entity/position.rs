@@ -1,10 +1,6 @@
 #[allow(unused_imports)]
 use crate::*;
-use comfy_bounded_ints::prelude::{Bound_u8, SqueezeTo_i64, SqueezeTo_usize};
-use serde::{Deserialize, Serialize};
-
-use crate::combat::skill_types::PositionMatrix;
-use crate::misc::SaturatedU8;
+use crate::combat::shared::*;
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Serialize, Deserialize)]
 pub struct Position {

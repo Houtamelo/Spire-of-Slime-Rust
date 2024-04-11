@@ -1,23 +1,14 @@
 #[allow(unused_imports)]
 use crate::*;
-use std::collections::{HashMap, HashSet};
+use crate::combat::shared::*;
+
 use std::num::{NonZeroU16, NonZeroU8};
 use std::vec::IntoIter;
 
-use gdnative::log::godot_warn;
 use rand_xoshiro::Xoshiro256PlusPlus;
-use serde::{Deserialize, Serialize};
-use uuid::Uuid;
-
 use crate::combat::effects::IntervalMS;
-use crate::combat::entity::character::*;
 use crate::combat::entity::data::girls::ethel::perks::EthelPerk;
 use crate::combat::entity::data::girls::nema::perks::NemaPerk;
-use crate::combat::entity::Entity;
-use crate::combat::entity::stat::{DynamicStat, Power};
-use crate::combat::perk::Perk;
-use crate::combat::skill_types::{ACCMode, CRITMode};
-use crate::misc::*;
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub enum PersistentEffect {

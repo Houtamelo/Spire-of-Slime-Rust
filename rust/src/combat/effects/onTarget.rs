@@ -1,33 +1,15 @@
-use std::collections::{HashMap, HashSet};
-use std::num::{NonZeroI8, NonZeroU16, NonZeroU8};
-
-use comfy_bounded_ints::prelude::{SqueezeTo, SqueezeTo_i8, SqueezeTo_u8};
-use comfy_bounded_ints::types::Bound_u8;
-use gdnative::log::godot_warn;
-use rand::Rng;
-use rand_xoshiro::Xoshiro256PlusPlus;
-use serde::{Deserialize, Serialize};
-use util::any_matches;
-use uuid::Uuid;
-
-use combat::effects::MoveDirection;
-use combat::effects::persistent::{PersistentDebuff, PersistentEffect, PoisonAdditive};
-use combat::entity::{iter_allies_of, iter_mut_allies_of};
-use combat::entity::character::*;
-use combat::entity::data::character::CharacterData;
-use combat::entity::data::girls::ethel::perks::*;
-use combat::entity::data::girls::nema::perks::*;
-use combat::entity::Entity;
-use combat::entity::stat::*;
-use combat::perk::{get_perk, get_perk_mut};
-use combat::perk::Perk;
-use combat::skill_types::{ACCMode, CRITMode};
-
 #[allow(unused_imports)]
 use crate::*;
-use crate::combat;
+use crate::combat::shared::*;
+
+use std::num::{NonZeroI8, NonZeroU16, NonZeroU8};
+use rand::Rng;
+use rand_xoshiro::Xoshiro256PlusPlus;
+use combat::effects::MoveDirection;
+use combat::effects::persistent::{PersistentDebuff, PersistentEffect, PoisonAdditive};
+use combat::entity::data::girls::ethel::perks::*;
+use combat::entity::data::girls::nema::perks::*;
 use crate::combat::effects::IntervalMS;
-use crate::misc::{Base100ChanceGenerator, SaturatedU64, ToSaturatedI64, ToSaturatedU64, ToU8Percentage};
 
 pub(super) const CRIT_DURATION_MULTIPLIER: u64 = 150;
 pub(super) const CRIT_EFFECT_MULTIPLIER: u64 = 150;

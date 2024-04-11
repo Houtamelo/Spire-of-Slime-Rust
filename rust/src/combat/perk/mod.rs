@@ -1,20 +1,12 @@
 #[allow(unused_imports)]
 use crate::*;
-use std::collections::HashMap;
 
 use rand_xoshiro::Xoshiro256PlusPlus;
-use serde::{Deserialize, Serialize};
-use util::any_matches;
-use util::prelude::Touch;
-use uuid::Uuid;
-
+use crate::combat::shared::*;
 use crate::combat::effects::persistent::PersistentEffect;
-use crate::combat::entity::character::CombatCharacter;
 use crate::combat::entity::data::girls::ethel::perks::*;
 use crate::combat::entity::data::girls::nema::perks::*;
 use crate::combat::entity::data::npc::bellplant::LurePerk;
-use crate::combat::entity::Entity;
-use crate::misc::SaturatedU64;
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub enum Perk {

@@ -4,7 +4,6 @@ use crate::*;
 use rand_xoshiro::Xoshiro256PlusPlus;
 
 use crate::combat::shared::*;
-use crate::combat::entity::data::girls::GirlTrait;
 use crate::save::upgrades::{PrimaryUpgrade, PrimaryUpgradeCount, SecondaryUpgrade, SecondaryUpgradeCount};
 
 #[derive(Debug, Serialize, Deserialize, Clone)]

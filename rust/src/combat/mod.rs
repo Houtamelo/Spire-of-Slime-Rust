@@ -1,15 +1,11 @@
 #[allow(unused_imports)]
 use crate::*;
-
-use rand_xoshiro::Xoshiro256PlusPlus;
 use shared::*;
 
+use rand_xoshiro::Xoshiro256PlusPlus;
 use crate::combat::effects::persistent::PersistentEffect;
-use crate::combat::entity::*;
-use crate::combat::entity::character::*;
-use crate::combat::entity::girl::*;
+use crate::combat::entity::girl::MAX_LUST;
 use crate::combat::timeline::TimelineEvent;
-use crate::misc::{SaturatedU64, ToSaturatedI64};
 
 mod effects;
 mod skill_types;
@@ -18,8 +14,7 @@ mod skill_resolving;
 mod perk;
 pub mod entity;
 pub mod ui;
-mod action_animation;
-mod entity_node;
+mod graphics;
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct CombatState {
@@ -262,14 +257,15 @@ pub mod shared {
 	pub(crate) use super::skill_types::lewd::LewdSkill;
 	pub(crate) use super::skill_types::defensive::DefensiveSkill;
 	pub(crate) use super::skill_types::offensive::{OffensiveSkill, CustomOffensiveModifier};
-	pub(crate) use super::entity_node::CharacterNode;
+	pub(crate) use super::graphics::entity_anim::character_node::CharacterNode;
 	pub(crate) use super::entity::{Entity, Corpse, Race, iter_allies_of, iter_mut_allies_of, iter_enemies_of, iter_mut_enemies_of};
-	pub(crate) use super::entity::character::CombatCharacter;
+	pub(crate) use super::entity::character::{CombatCharacter, CharacterState, GrapplingState, StateBeforeStunned};
+	pub(crate) use super::entity::girl::{DefeatedGirl_Entity, AliveGirl_Grappled, GrappledGirlEnum, DefeatedGirl_Grappled, GirlState};
 	pub(crate) use super::entity::position::{Position, Direction, Side};
 	pub(crate) use super::entity::stat::*;
 	pub(crate) use super::entity::data::EntityData;
 	pub(crate) use super::entity::data::character::{CharacterData, CharacterName, CharacterDataTrait, SkillUser};
-	pub(crate) use super::entity::data::girls::GirlName;
+	pub(crate) use super::entity::data::girls::{GirlName, GirlTrait};
 	pub(crate) use super::entity::data::npc::NPCName;
 	pub(crate) use super::entity::data::skill_name::SkillName;
 }

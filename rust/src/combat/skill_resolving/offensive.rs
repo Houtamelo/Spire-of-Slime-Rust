@@ -1,37 +1,23 @@
-use std::collections::{HashMap, HashSet};
-use std::num::{NonZeroU16, NonZeroU8};
+#[allow(unused_imports)]
+use crate::*;
+use combat::shared::*;
 
-use comfy_bounded_ints::prelude::{SqueezeTo_i64, SqueezeTo_u8};
+use std::num::{NonZeroU16, NonZeroU8};
 use gdnative::godot_error;
 use gdnative::log::godot_warn;
 use rand::Rng;
 use rand_xoshiro::Xoshiro256PlusPlus;
-use util::any_matches;
-use util::prelude::Touch;
-use uuid::Uuid;
 
+use util::any_matches;
 use combat::effects::onSelf::SelfApplier;
 use combat::effects::onTarget::{DebuffApplierKind, TargetApplier};
 use combat::effects::persistent::PersistentEffect;
 use combat::effects::persistent::PersistentEffect::Riposte;
-use combat::entity::*;
-use combat::entity::character::*;
-use combat::entity::data::girls::ethel::perks::*;
 use combat::entity::data::girls::ethel::skills::EthelSkill;
 use combat::entity::data::girls::nema::perks::NemaPerk;
-use combat::entity::data::skill_name::SkillName;
-use combat::entity::girl::*;
-use combat::perk::Perk;
-use combat::skill_types::*;
-use combat::skill_types::offensive::OffensiveSkill;
+use combat::entity::data::girls::ethel::perks::EthelPerk;
 
-#[allow(unused_imports)]
-use crate::*;
-use crate::combat;
-use crate::combat::entity::stat::ToughnessReduction;
-use crate::combat::perk::{get_perk_mut, has_perk};
-use crate::combat::stat::DynamicStat;
-use crate::misc::{Base100ChanceGenerator, SaturatedU64, ToSaturatedI64, ToSaturatedU64, TrackedTicks};
+use combat::perk::{get_perk_mut, has_perk};
 
 pub fn start(mut caster: CombatCharacter, target: CombatCharacter, others: &mut HashMap<Uuid, Entity>,
              mut skill: OffensiveSkill, rng: &mut Xoshiro256PlusPlus, recover_ms: Option<SaturatedU64>) {
@@ -56,7 +42,7 @@ pub fn start(mut caster: CombatCharacter, target: CombatCharacter, others: &mut 
 	process_self_effects_and_costs(&mut caster, others, &skill, rng, recover_ms);
 
 	if !skill.multi_target {
-		// caster may die due to riposte so we get him back as an option
+		// caster may die due to riposte, so we get him back as an option
 		resolve_target(caster, target, others, &skill, rng) 
 			.map(|survived| { others.insert(survived.guid, Entity::Character(survived)) });
 		return;
@@ -68,7 +54,7 @@ pub fn start(mut caster: CombatCharacter, target: CombatCharacter, others: &mut 
 		.collect::<HashSet<Uuid>>();
 
 	let Some(mut caster) = resolve_target(caster, target, others, &skill, rng) 
-		else { return; }; // caster may die due to riposte so we get him back as an option
+		else { return; }; // caster may die due to riposte, so we get him back as an option
 	
 	for guid in targets_guid { // for now, we only support skills on characters
 		match others.remove(&guid) {
