@@ -1,8 +1,10 @@
 #[allow(unused_imports)]
 use crate::*;
 use std::num::{NonZeroU16, NonZeroU8};
+use enum_variant_type::EnumVariantType;
 
 use serde::{Deserialize, Serialize};
+use strum_macros::{EnumCount, EnumString, FromRepr, VariantNames};
 
 use proc_macros::positions;
 
@@ -13,6 +15,14 @@ use crate::combat::skill_types::*;
 use crate::combat::skill_types::defensive::*;
 use crate::combat::skill_types::lewd::LewdSkill;
 
+#[repr(usize)]
+#[derive(EnumVariantType)]
+#[evt(derive(Clone, Copy, Debug, PartialEq, Eq, Hash))]
+#[derive(VariantNames)]
+#[derive(FromRepr)]
+#[derive(EnumString)]
+#[derive(EnumCount)]
+#[derive(FromVariant, ToVariant)]
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Serialize, Deserialize)]
 pub enum BellPlantSkill {
 	Engorge,

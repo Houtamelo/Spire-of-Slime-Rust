@@ -1,4 +1,5 @@
 use serde::{Deserialize, Serialize};
+use strum_macros::EnumString;
 
 #[allow(unused_imports)]
 use crate::*;
@@ -21,6 +22,7 @@ pub trait GirlTrait {
 	fn orgasm_limit(&self) -> OrgasmLimit;
 }
 
+#[derive(EnumString)]
 #[derive(Debug, Clone, PartialEq, Eq, Copy, Hash, Serialize, Deserialize)]
 pub enum GirlName {
 	Ethel,

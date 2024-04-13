@@ -3,11 +3,13 @@ use crate::*;
 
 use rand::Rng;
 use rand_xoshiro::Xoshiro256PlusPlus;
+use strum_macros::EnumString;
 use crate::combat::shared::*;
 
 pub mod bellplant;
 pub mod crabdra;
 
+#[derive(EnumString)]
 #[derive(Debug, Clone, Copy, Serialize, Deserialize, PartialEq, Eq, Hash)]
 pub enum NPCName {
 	Crabdra,

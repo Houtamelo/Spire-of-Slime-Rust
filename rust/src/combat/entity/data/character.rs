@@ -1,3 +1,4 @@
+use std::str::FromStr;
 #[allow(unused_imports)]
 use crate::*;
 use crate::combat::shared::*;
@@ -9,13 +10,6 @@ use crate::combat::entity::data::girls::GirlData;
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub enum CharacterData {
 	Girl(GirlData),
-	NPC(NPCName),
-}
-
-#[enum_dispatch(AttackedAnim)]
-#[derive(Debug, Copy, Clone, Serialize, Deserialize)]
-pub enum CharacterName {
-	Girl(GirlName),
 	NPC(NPCName),
 }
 
@@ -38,4 +32,27 @@ pub trait CharacterDataTrait {
 
 pub trait SkillUser {
 	fn skills(&self) -> &[Skill];
+}
+
+#[enum_dispatch(AttackedAnim)]
+#[derive(Debug, Copy, Clone, Serialize, Deserialize)]
+pub enum CharacterName {
+	Girl(GirlName),
+	NPC(NPCName),
+}
+
+impl FromStr for CharacterName {
+	type Err = anyhow::Error;
+	
+	fn from_str(s: &str) -> Result<Self> {
+		if let Ok(girl) = GirlName::from_str(s) {
+			return Ok(CharacterName::Girl(girl))
+		}
+		
+		if let Ok(npc) = NPCName::from_str(s) {
+			return Ok(CharacterName::NPC(npc))
+		}
+		
+		Err(anyhow!("No character named `{s}` found."))
+	}
 }

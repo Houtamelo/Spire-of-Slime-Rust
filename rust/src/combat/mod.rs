@@ -14,7 +14,7 @@ mod skill_resolving;
 mod perk;
 pub mod entity;
 pub mod ui;
-mod graphics;
+pub mod graphics;
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct CombatState {
