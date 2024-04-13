@@ -1,7 +1,7 @@
 #[allow(unused_imports)]
 use crate::*;
 use crate::combat::shared::*;
-use crate::combat::graphics::action_animation::initial_position::DefensivePadding;
+use crate::combat::graphics::action_animation::character_position::DefensivePadding;
 use crate::combat::effects::onSelf::SelfApplier;
 use crate::combat::effects::onTarget::TargetApplier;
 use crate::combat::skill_types::AllyRequirement;

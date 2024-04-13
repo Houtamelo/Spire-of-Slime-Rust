@@ -2,6 +2,7 @@
 use crate::*;
 
 use std::num::{NonZeroI8, NonZeroU16};
+use enum_variant_type::EnumVariantType;
 
 use proc_macros::positions;
 
@@ -15,7 +16,16 @@ use crate::combat::entity::stat::{Accuracy, CritRate, Power};
 use crate::combat::skill_types::{ACCMode, AllyRequirement, CRITMode, DMGMode, Skill, UseCounter};
 use crate::combat::skill_types::defensive::DefensiveSkill;
 use crate::combat::skill_types::offensive::OffensiveSkill;
+use strum_macros::{EnumCount, EnumString, FromRepr, VariantNames};
 
+#[repr(usize)]
+#[derive(EnumVariantType)]
+#[evt(derive(Clone, Copy, Debug, PartialEq, Eq, Hash))]
+#[derive(VariantNames)]
+#[derive(FromRepr)]
+#[derive(EnumCount)]
+#[derive(EnumString)]
+#[derive(FromVariant, ToVariant)]
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Serialize, Deserialize)]
 pub enum NemaSkill {
 	Calm,

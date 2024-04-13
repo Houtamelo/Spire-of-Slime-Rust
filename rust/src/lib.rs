@@ -23,6 +23,8 @@
 #![feature(coroutines)]
 #![feature(iter_from_coroutine)]
 #![feature(iterator_try_collect)]
+#![feature(exclusive_range_pattern)]
+#![feature(inline_const_pat)]
 
 pub use audio::bus;
 #[allow(unused_imports)]
@@ -92,6 +94,7 @@ fn init(handle: InitHandle) {
 	handle.add_class::<PlayOnHoverAndPitchRandomizer>();
 	handle.add_class::<DisallowClickFocusOnParent>();
 	handle.add_class::<AutoTextResize>();
+	handle.add_class::<combat::graphics::action_animation::test::AnimTester>();
 }
 
 godot_init!(init);

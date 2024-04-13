@@ -2,56 +2,70 @@ use enum_dispatch::enum_dispatch;
 
 #[allow(unused_imports)]
 use crate::*;
+use crate::combat::graphics::action_animation::character_movement::CharacterMovement;
+use crate::combat::graphics::action_animation::character_position::OffensivePadding;
 use crate::combat::graphics::action_animation::skills::anim_utils::*;
 use crate::combat::shared::*;
 
-pub mod girls;
-pub mod npcs;
-
-pub trait OffensiveSkillAnim {
-	fn animate(caster_ref: CharacterNode, enemies: Vec<(CharacterNode, AttackResult)>) -> Sequence;
-	fn reset(caster_ref: CharacterNode) -> Result<()>;
+pub trait OffensiveAnim {
+	fn offensive_anim(&self, caster: CharacterNode, enemies: Vec<(CharacterNode, AttackResult)>) -> Sequence;
+	fn reset(&self, caster: CharacterNode) -> Result<()>;
+	fn padding(&self) -> OffensivePadding;
+	fn caster_movement(&self) -> CharacterMovement;
+	fn enemies_movement(&self) -> CharacterMovement;
 }
 
 #[enum_dispatch]
 pub trait AttackedAnim {
-	fn anim_hitted(&self, target_ref: CharacterNode, _attacker_ref: CharacterNode) -> Sequence { 
-		anim_std_hitted(target_ref)
+	fn anim_hitted(&self, target: CharacterNode, _attacker: CharacterNode) -> Sequence { 
+		anim_std_hitted(target)
 	}
 	
-	fn anim_killed(&self, target_ref: CharacterNode, _attacker_ref: CharacterNode) -> Sequence { 
-		anim_std_killed(target_ref)
+	fn anim_killed(&self, target: CharacterNode, _attacker: CharacterNode) -> Sequence { 
+		anim_std_killed(target)
 	}
 	
-	fn anim_dodged(&self, target_ref: CharacterNode, _attacker_ref: CharacterNode) -> Sequence {
-		anim_std_dodged(target_ref)
+	fn anim_dodged(&self, target: CharacterNode, _attacker: CharacterNode) -> Sequence {
+		anim_std_dodged(target)
 	}
 
 	fn anim_std_full_counter(&self,
-	                         target_ref: CharacterNode,
-	                         attacker_ref: CharacterNode,
+	                         target: CharacterNode,
+	                         attacker: CharacterNode,
 	                         before_counter: BeforeCounter,
 	                         counter_result: CounterResult)
 	                         -> Sequence { 
-		anim_std_full_counter(target_ref, attacker_ref, before_counter, counter_result)
+		anim_std_full_counter(target, attacker, before_counter, counter_result)
 	}
 
 	fn anim_counter_only(&self,
-	                     target_ref: CharacterNode,
-	                     attacker_ref: CharacterNode,
+	                     target: CharacterNode,
+	                     attacker: CharacterNode,
 	                     result: CounterResult)
 	                     -> Sequence {
-		anim_std_counter_only(target_ref, attacker_ref, result)
+		anim_std_counter_only(target, attacker, result)
 	}
 	
-	fn anim_by_result(&self, target_ref: CharacterNode, attacker_ref: CharacterNode, result: AttackResult) -> Sequence {
+	fn anim_by_result(&self, target: CharacterNode, attacker: CharacterNode, result: AttackResult) -> Sequence {
 		match result {
-			AttackResult::Hitted => self.anim_hitted(target_ref, attacker_ref),
-			AttackResult::Killed => self.anim_killed(target_ref, attacker_ref),
-			AttackResult::Dodged => self.anim_dodged(target_ref, attacker_ref),
+			AttackResult::Hitted => self.anim_hitted(target, attacker),
+			AttackResult::Killed => self.anim_killed(target, attacker),
+			AttackResult::Dodged => self.anim_dodged(target, attacker),
 			AttackResult::Counter(before_counter, counter_result) => 
-				self.anim_std_full_counter(target_ref, attacker_ref, before_counter, counter_result),
+				self.anim_std_full_counter(target, attacker, before_counter, counter_result),
 		}
+	}
+}
+
+impl AttackedAnim for NPCName {}
+impl AttackedAnim for GirlName {}
+
+pub fn play_attackeds_anim(attacker: CharacterNode, targets: &[(CharacterNode, AttackResult)]) {
+	for (target, result) in targets {
+		target.name()
+		      .anim_by_result(*target, attacker, *result)
+		      .register()
+		      .log_if_err();
 	}
 }
 

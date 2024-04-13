@@ -2,6 +2,8 @@
 use crate::*;
 
 use std::num::NonZeroU16;
+use enum_variant_type::EnumVariantType;
+use strum_macros::{EnumCount, EnumString, FromRepr, VariantNames};
 
 use proc_macros::positions;
 
@@ -12,6 +14,14 @@ use crate::combat::skill_types::*;
 use crate::combat::skill_types::lewd::LewdSkill;
 use crate::combat::skill_types::offensive::*;
 
+#[repr(usize)]
+#[derive(EnumVariantType)]
+#[evt(derive(Clone, Copy, Debug, PartialEq, Eq, Hash))]
+#[derive(VariantNames)]
+#[derive(FromRepr)]
+#[derive(EnumString)]
+#[derive(EnumCount)]
+#[derive(FromVariant, ToVariant)]
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Serialize, Deserialize)]
 pub enum CrabdraSkill {
 	Crush,

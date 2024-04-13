@@ -11,6 +11,10 @@ pub struct CharacterNode {
 }
 
 impl CharacterNode {
+	pub fn new(node: Ref<Node2D>, name: CharacterName, guid: Uuid) -> Self {
+		Self { node, guid, name }
+	}
+	
 	pub fn node(&self) -> Ref<Node2D> { self.node }
 	pub fn guid(&self) -> Uuid { self.guid }
 	pub fn name(&self) -> CharacterName { self.name }

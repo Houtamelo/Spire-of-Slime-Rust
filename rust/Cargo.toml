@@ -26,6 +26,7 @@ parking_lot = "0.12"
 uuid = { version = "1.8", features = ["serde"] }
 strum = "0.26"
 strum_macros = "0.26"
+enum_variant_type = "0.3.1"
 enum_dispatch = "0.3"
 anyhow = { version = "1.0", features = ["backtrace", "std"] }
 keyframe = { version = "1.1", features = ["alloc"] }

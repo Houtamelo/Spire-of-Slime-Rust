@@ -2,6 +2,7 @@
 use crate::*;
 
 use crate::combat::entity::position::Position;
+use crate::combat::graphics::action_animation::skills::offensive::{AttackResult, OffensiveAnim};
 use crate::combat::graphics::entity_anim::character_node::CharacterNode;
 use crate::combat::skill_types::defensive::DefensiveSkill;
 use crate::combat::skill_types::lewd::LewdSkill;
@@ -10,20 +11,23 @@ use crate::combat::skill_types::offensive::OffensiveSkill;
 pub mod camera;
 pub mod speed_lines;
 pub mod splash_screen;
-pub mod initial_position;
+pub mod character_position;
 pub mod character_movement;
 pub mod skills;
-mod test;
+pub mod test;
 
 const ACTION_PARTICIPANTS_Y: f64 = 115.;
+const POP_DURATION: f64 = 0.2;
+const STAY_DURATION: f64 = 1.0;
 
+#[derive(Debug, Copy, Clone)]
 pub struct ActionParticipant {
 	pub godot: CharacterNode,
 	pub guid: Uuid,
 	pub pos: Position,
 }
 
-pub struct ActionToAnimate {
+pub struct SkillAnimation {
 	caster: ActionParticipant,
 	kind: ActionKind,
 }
@@ -35,7 +39,7 @@ pub enum ActionKind {
 	Lewd { skill: LewdSkill, enemies: CountOrMore<1, ActionParticipant> },
 }
 
-impl ActionToAnimate {
+impl SkillAnimation {
 	fn participants(&self) -> impl Iterator<Item = &ActionParticipant> {
 		std::iter::from_coroutine(|| {
 			yield &self.caster;
@@ -61,8 +65,6 @@ impl ActionToAnimate {
 		})
 	}
 }
-
-const POP_DURATION: f64 = 0.2;
 
 pub struct ActionTweens {
 	camera: TweenID<TweenProperty_Vector2>,
@@ -105,54 +107,102 @@ impl AnimationNodes {
 			})
 	}
 	
-	pub fn animate_action(&self, action: ActionToAnimate) -> Result<ActionTweens> {
-		self.switch_participants_parent(action.participants())?;
-
-		let _zoom_in_camera = {
+	pub fn animate_skill(&self, animation: SkillAnimation) -> Result<Sequence> {
+		self.switch_participants_parent(animation.participants())?;
+		
+		let mut seq = Sequence::new().bound_to(&self.combat_root);
+		
+		seq.append({
 			let participants_height =
-				action.participants()
-				      .map(|p| p.godot.sprite_height())
-					  .collect::<Vec<_>>();
+				animation.participants()
+				         .map(|p| p.godot.sprite_height())
+				         .collect::<Vec<_>>();
 
 			let zoom_scale =
 				camera::height_based_zoom_value(participants_height.into_iter());
-			
+
 			let end_zoom = Vector2::ONE * zoom_scale as f32;
-			
+
 			self.camera
-				.do_zoom(end_zoom, POP_DURATION)
-				.register()?
-		};
+			    .do_zoom(end_zoom, POP_DURATION)
+		});
 
-		let _fade_hide_outsiders =
-			self.outside_modulate
-				.do_fade(0., POP_DURATION)
-				.register()?;
-
-		let _fade_show_participants =
-			self.inside_modulate
-			    .do_fade(1., POP_DURATION)
-				.register()?;
+		seq.join(self.outside_modulate.do_fade(0., POP_DURATION));
+		seq.join(self.inside_modulate.do_fade(1., POP_DURATION));
 		
-		return match action.kind {
+		match animation.kind {
 			ActionKind::OnSelf { .. } => { todo!() },
 			ActionKind::OnAllies { skill, allies } =>
-				self.animate_allies_skill(action.caster, skill, allies),
+				self.animate_allies_skill(&mut seq, animation.caster, skill, allies),
 			ActionKind::OnEnemies { .. } => { todo!() },
 			ActionKind::Lewd { .. } => { todo!() },
-		};
+		}
+		
+		Ok(seq)
 	}
 
-	fn animate_allies_skill(&self,
-	                        caster: ActionParticipant,
-	                        skill: DefensiveSkill,
-	                        allies: CountOrMore<1, ActionParticipant>)
-	                        -> Result<ActionTweens> {
+	fn end_skill_anim(&self, sequence: &mut Sequence) {
+		sequence.join(self.camera.do_zoom(Vector2::ONE, POP_DURATION));
+		sequence.join(self.outside_modulate.do_fade(1., POP_DURATION));
+		sequence.join(self.inside_modulate.do_fade(0., POP_DURATION));
+	}
+	
+	fn move_characters_to_default_positions(&self, _seq: &mut Sequence, _participants: impl Iterator<Item = &ActionParticipant>) {
+		todo!()
+	}
+
+	fn animate_enemies_skill(&self,
+	                         seq: &mut Sequence,
+	                         caster: ActionParticipant,
+	                         skill: impl OffensiveAnim + 'static,
+	                         enemies: Vec<(ActionParticipant, AttackResult)>)
+	                         -> Result<()> {
 		const MOVE_SPEED: f64 = 50.0; // todo! test this value
 		let _infinite_move_splash_screen =
 			splash_screen::animate_movement(self.splash_screen, self.splash_screen_local_start_pos, MOVE_SPEED)?;
+
+		let padding = skill.padding();
+		let enemy_nodes = enemies.iter().map(|(part, result)| (part.godot, *result)).collect();
+
+		let positions =
+			character_position::do_anim_positions(padding, &caster, enemies.iter().map(pluck!(&.0)),
+			                                      POP_DURATION, ACTION_PARTICIPANTS_Y);
+
+		for (_, tween) in positions {
+			seq.join(tween);
+		}
+
+		seq.append_interval(POP_DURATION);
+
+		let caster_movement = skill.caster_movement();
+		seq.append(caster_movement.animate(&caster, STAY_DURATION));
+
+		let enemies_movement = skill.enemies_movement();
+		for (enemy, _) in enemies.iter() {
+			seq.join(enemies_movement.animate(enemy, STAY_DURATION));
+		}
+
+		seq.append_sequence(skill.offensive_anim(caster.godot, enemy_nodes));
 		
-		initial_position::do_positions(skill.padding(), &caster, allies.iter(), POP_DURATION, ACTION_PARTICIPANTS_Y)?;
+		//todo! This needs to only move characters that didn't die.
+		//self.move_characters_to_default_positions(seq, caster)
+		
+		self.end_skill_anim(seq);
+		
+		Ok(())
+	}
+	
+	fn animate_allies_skill(&self,
+	                        _seq: &mut Sequence,
+	                        caster: ActionParticipant,
+	                        skill: DefensiveSkill,
+	                        allies: CountOrMore<1, ActionParticipant>) {
+		const MOVE_SPEED: f64 = 50.0; // todo! test this value
+		let _infinite_move_splash_screen =
+			splash_screen::animate_movement(self.splash_screen, self.splash_screen_local_start_pos, MOVE_SPEED);
+		
+		let _positions = character_position::do_anim_positions(skill.padding(), &caster, allies.iter(),
+		                                                       POP_DURATION, ACTION_PARTICIPANTS_Y);
 		
 		todo!()
 	}
