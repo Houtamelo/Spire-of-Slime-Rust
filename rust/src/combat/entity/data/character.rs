@@ -4,7 +4,10 @@ use crate::*;
 use crate::combat::shared::*;
 
 use enum_dispatch::enum_dispatch;
+use gdnative::export::Export;
+use gdnative::export::hint::{EnumHint, IntHint};
 use rand_xoshiro::Xoshiro256PlusPlus;
+use strum::{EnumCount, VariantNames};
 use crate::combat::entity::data::girls::GirlData;
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -57,3 +60,47 @@ impl FromStr for CharacterName {
 		Err(anyhow!("No character named `{s}` found."))
 	}
 }
+
+impl FromVariant for CharacterName {
+	fn from_variant(variant: &Variant) -> std::result::Result<Self, FromVariantError> {
+		let val = variant.try_to::<usize>()?;
+
+		Ok(match val {
+			0..GirlName::COUNT => {
+				CharacterName::Girl(GirlName::from_repr(val).unwrap())
+			}
+			GirlName::COUNT..const { GirlName::COUNT + NPCName::COUNT } => {
+				CharacterName::NPC(NPCName::from_repr(val - GirlName::COUNT).unwrap())
+			}
+			_ => return Err(FromVariantError::Unspecified),
+		})
+	}
+}
+
+impl ToVariant for CharacterName {
+	fn to_variant(&self) -> Variant {
+		match self {
+			CharacterName::Girl(girl) => {
+				(*girl as usize).to_variant()
+			}
+			CharacterName::NPC(npc) => {
+				(GirlName::COUNT + *npc as usize).to_variant()
+			}
+		}
+	}
+}
+
+impl Export for CharacterName {
+	type Hint = IntHint<u16>;
+
+	fn export_info(_hint: Option<Self::Hint>) -> ExportInfo {
+		let values =
+			GirlName::VARIANTS.iter()
+			                  .chain(NPCName::VARIANTS)
+			                  .map(|v| v.to_string())
+			                  .collect::<Vec<_>>();
+
+		Self::Hint::Enum(EnumHint::new(values)).export_info()
+	}
+}
+

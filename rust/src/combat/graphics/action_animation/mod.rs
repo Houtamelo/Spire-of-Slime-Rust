@@ -1,5 +1,5 @@
 use std::iter;
-use character_position::do_default_positions;
+use character_position::{do_anim_positions, do_default_positions};
 #[allow(unused_imports)]
 use crate::*;
 
@@ -169,9 +169,21 @@ impl AnimationNodes {
 				.map(|part| (part.godot, part.pos_after))
 				.chain(outsiders.map(|out| (out.godot, out.pos_after)));
 		
-		for (_, tween) in do_default_positions(self.stage.padding(), all_characters, POP_DURATION) {
-			seq.join(tween);
-		}
+		seq.join_many(do_default_positions(self.stage.padding(), all_characters, POP_DURATION).into_iter().map(pluck!(.1)));
+	}
+	
+	fn append_switch_to_idles(
+		&self, 
+		seq: &mut Sequence,
+		participants: impl Iterator<Item = ActionParticipant>,
+	) {
+		let participants = participants.collect::<Vec<_>>();
+		
+		seq.append_call(move || {
+			participants.iter().for_each(|part| {
+				part.godot.name().to_idle_anim(part.godot);
+			});
+		});
 	}
 
 	fn animate_enemies_skill(
@@ -187,15 +199,16 @@ impl AnimationNodes {
 			splash_screen::animate_movement(self.splash_screen, self.splash_screen_local_start_pos, MOVE_SPEED)?;
 
 		let padding = skill.padding();
-		let enemy_nodes = enemies.iter().map(|(part, result)| (part.godot, *result)).collect();
+		let enemy_nodes = enemies.iter()
+			.map(|(part, result)| { 
+				(part.godot, *result) 
+			}).collect();
 
 		let positions =
-			character_position::do_anim_positions(padding, &caster, enemies.iter().map(pluck!(&.0)),
-			                                      POP_DURATION, ACTION_PARTICIPANTS_Y);
+			do_anim_positions(padding, &caster, enemies.iter().map(pluck!(&.0)),
+			                  POP_DURATION, ACTION_PARTICIPANTS_Y);
 
-		for (_, tween) in positions {
-			seq.join(tween);
-		}
+		seq.join_many(positions.into_iter().map(pluck!(.1)));
 
 		seq.append_interval(POP_DURATION);
 
@@ -209,34 +222,45 @@ impl AnimationNodes {
 
 		seq.append_sequence(skill.offensive_anim(caster.godot, enemy_nodes));
 		
-		let is_caster_dead = enemies.iter().any(|(_, result)| matches!(result, AttackResult::Counter(_, CounterResult::Killed)));
-		if is_caster_dead {
-			let participants_to_move =
-				enemies.into_iter()
+		seq.append_interval(0.01);
+		
+		let is_caster_dead = enemies.iter()
+			.any(|(_, result)| { 
+				matches!(result, AttackResult::Counter(_, CounterResult::Killed))
+			});
+		
+		let alive_participants: Vec<ActionParticipant> = 
+			if is_caster_dead {
+				enemies.iter()
 				       .filter_map(|(part, result)| {
 					       if matches!(result, AttackResult::Killed) {
 						       None
 					       } else {
-						       Some(part)
+						       Some(*part)
 					       }
-				       });
-			
-			self.join_characters_to_default_positions(seq, participants_to_move, outsiders.into_iter());
-		} else {
-			let participants_to_move =
-				iter::once(caster)
-					.chain(enemies.into_iter().filter_map(|(part, result)| {
+				       }).collect()
+			} else {
+				iter::once(caster.clone())
+					.chain(enemies.iter().filter_map(|(part, result)| {
 						if matches!(result, AttackResult::Killed) {
 							None
 						} else {
-							Some(part)
+							Some(*part)
 						}
-					}));
-			
-			self.join_characters_to_default_positions(seq, participants_to_move, outsiders.into_iter());
-		}
+					})).collect()
+			};
+
+		self.join_characters_to_default_positions(seq, alive_participants.iter().cloned(), outsiders.into_iter());
 		
 		self.join_end_skill_anim(seq);
+		
+		if !is_caster_dead {
+			seq.append_call(move || {
+				skill.reset(caster.godot);
+			});
+		}
+
+		self.append_switch_to_idles(seq, alive_participants.into_iter());
 		
 		Ok(())
 	}
@@ -250,7 +274,7 @@ impl AnimationNodes {
 		let _infinite_move_splash_screen =
 			splash_screen::animate_movement(self.splash_screen, self.splash_screen_local_start_pos, MOVE_SPEED);
 		
-		let _positions = character_position::do_anim_positions(skill.padding(), &caster, allies.iter(),
+		let _positions = do_anim_positions(skill.padding(), &caster, allies.iter(),
 		                                                       POP_DURATION, ACTION_PARTICIPANTS_Y);
 		
 		todo!()

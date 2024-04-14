@@ -42,7 +42,7 @@ impl OffensiveAnim for Pierce {
 		sequence
 	}
 
-	fn reset(&self, caster: CharacterNode) -> Result<()> {
+	fn reset(&self, caster: CharacterNode) {
 		caster.node().touch_assert_sane(|node| unsafe {
 			node_hide(node, "anims/pierce");
 			node_stop_emit_particles(node, "anims/pierce/trail");
@@ -52,8 +52,6 @@ impl OffensiveAnim for Pierce {
 				slash.set_indexed("modulate:a", 0.);
 			});
 		});
-
-		Ok(())
 	}
 
 	fn padding(&self) -> OffensivePadding {

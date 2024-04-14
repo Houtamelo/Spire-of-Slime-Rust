@@ -1,15 +1,23 @@
+use enum_variant_type::EnumVariantType;
 #[allow(unused_imports)]
 use crate::*;
 
 use rand::Rng;
 use rand_xoshiro::Xoshiro256PlusPlus;
-use strum_macros::EnumString;
+use strum_macros::{EnumCount, EnumString, FromRepr, VariantNames};
 use crate::combat::shared::*;
 
 pub mod bellplant;
 pub mod crabdra;
 
+#[repr(usize)]
+#[derive(EnumVariantType)]
+#[evt(derive(Clone, Copy, Debug, PartialEq, Eq, Hash))]
+#[derive(VariantNames)]
+#[derive(FromRepr)]
+#[derive(EnumCount)]
 #[derive(EnumString)]
+#[derive(FromVariant, ToVariant)]
 #[derive(Debug, Clone, Copy, Serialize, Deserialize, PartialEq, Eq, Hash)]
 pub enum NPCName {
 	Crabdra,

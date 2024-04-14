@@ -1,5 +1,6 @@
+use enum_variant_type::EnumVariantType;
 use serde::{Deserialize, Serialize};
-use strum_macros::EnumString;
+use strum_macros::{EnumCount, EnumString, FromRepr, VariantNames};
 
 #[allow(unused_imports)]
 use crate::*;
@@ -22,7 +23,14 @@ pub trait GirlTrait {
 	fn orgasm_limit(&self) -> OrgasmLimit;
 }
 
+#[repr(usize)]
+#[derive(EnumVariantType)]
+#[evt(derive(Clone, Copy, Debug, PartialEq, Eq, Hash))]
+#[derive(VariantNames)]
+#[derive(FromRepr)]
+#[derive(EnumCount)]
 #[derive(EnumString)]
+#[derive(FromVariant, ToVariant)]
 #[derive(Debug, Clone, PartialEq, Eq, Copy, Hash, Serialize, Deserialize)]
 pub enum GirlName {
 	Ethel,

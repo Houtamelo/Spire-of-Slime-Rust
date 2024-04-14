@@ -1,6 +1,7 @@
 use enum_dispatch::enum_dispatch;
 #[allow(unused_imports)]
 use crate::*;
+use crate::combat::graphics::action_animation::skills::anim_utils::node_show;
 use crate::combat::shared::*;
 
 pub mod character_node;
@@ -11,6 +12,13 @@ pub trait EntityAnim {
 	fn prefab_path(&self) -> &'static str;
 	fn required_height(&self) -> f64;
 	fn required_width(&self) -> f64;
+	fn position_size(&self) -> Bound_u8<1, { u8::MAX }>;
+	
+	fn to_idle_anim(&self, character: CharacterNode) {
+		character.node().touch_assert_sane(|node| {
+			node_show(node, "anims/idle");
+		});
+	}
 }
 
 impl EntityAnim for NPCName {
@@ -40,6 +48,15 @@ impl EntityAnim for NPCName {
 			NPCName::BellPlant => 360.,
 		}
 	}
+
+	fn position_size(&self) -> Bound_u8<1, { u8::MAX }> {
+		match self {
+			| NPCName::Crabdra
+			| NPCName::Trent
+			| NPCName::BellPlant => 1.into(),
+			| NPCName::Wolfhydra => 2.into(),
+		}
+	}
 }
 
 impl EntityAnim for GirlName {
@@ -61,6 +78,13 @@ impl EntityAnim for GirlName {
 		match self {
 			GirlName::Ethel => 360.,
 			GirlName::Nema => 360.,
+		}
+	}
+
+	fn position_size(&self) -> Bound_u8<1, { u8::MAX }> {
+		match self {
+			| GirlName::Ethel
+			| GirlName::Nema => 1.into(),
 		}
 	}
 }

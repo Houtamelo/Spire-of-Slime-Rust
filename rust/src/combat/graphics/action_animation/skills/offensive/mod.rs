@@ -9,7 +9,7 @@ use crate::combat::shared::*;
 
 pub trait OffensiveAnim {
 	fn offensive_anim(&self, caster: CharacterNode, enemies: Vec<(CharacterNode, AttackResult)>) -> Sequence;
-	fn reset(&self, caster: CharacterNode) -> Result<()>;
+	fn reset(&self, caster: CharacterNode);
 	fn padding(&self) -> OffensivePadding;
 	fn caster_movement(&self) -> CharacterMovement;
 	fn enemies_movement(&self) -> CharacterMovement;

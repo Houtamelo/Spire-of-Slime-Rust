@@ -1,59 +1,44 @@
-use std::str::FromStr;
-use gdnative::export::Export;
-use rand::{Rng, SeedableRng};
-use rand_xoshiro::Xoshiro256StarStar;
 #[allow(unused_imports)]
 use crate::*;
 use crate::combat::entity::data::girls::ethel::skills::Pierce;
 use crate::combat::entity::data::skill_name::EthelSkill;
-use crate::combat::shared::{CharacterName, CharacterNode, SkillName};
+use crate::combat::shared::*;
 use crate::combat::graphics::action_animation::skills::offensive::*;
+use crate::combat::graphics::action_animation::test::exported_character::NameWrapper;
+use crate::combat::graphics::entity_anim;
+use crate::combat::graphics::entity_anim::EntityAnim;
+use crate::combat::graphics::stages::CombatStage;
+
+use std::iter;
+use rand::{Rng, SeedableRng};
+use rand_xoshiro::Xoshiro256StarStar;
+use entity_anim::default_position::calc_default_positions;
+use exported_skill::SkillWrapper;
+
+mod exported_skill;
+mod exported_character;
 
 #[extends(Node)]
 pub struct AnimTester {
 	#[export_path] button_play_offensive: Option<Ref<Button>>,
 	#[export_path] button_play_defensive: Option<Ref<Button>>,
 	#[export_path] button_play_lewd: Option<Ref<Button>>,
-	#[export_path] caster: Option<Ref<Node2D>>,
-	#[export_path] targets: Vec<Ref<Node2D>>,
+	#[property] caster: NameWrapper,
+	#[property] targets: Vec<NameWrapper>,
 	#[property] skill: SkillWrapper,
+	loaded_characters: Vec<CharacterNode>,
+	current_sequence: Option<SequenceID>,
 }
 
-#[repr(transparent)]
-#[derive(Copy, Clone)]
-struct SkillWrapper(pub SkillName);
+unsafe fn load_character(parent: &Node, name: CharacterName) -> CharacterNode {
+	CharacterNode::load_spawn(parent, name, Uuid::nil()).unwrap()
+}
 
-impl Default for SkillWrapper {
-	fn default() -> Self {
-		SkillWrapper(SkillName::FromEthel(EthelSkill::Safeguard))
+fn unload_characters(parent: &Node, character: impl Iterator<Item = &CharacterNode>) {
+	for character in character {
+		parent.remove_child(character.node());
+		character.node().touch_assert_sane(|node| node.queue_free());
 	}
-}
-
-impl FromVariant for SkillWrapper {
-	fn from_variant(variant: &Variant) -> std::result::Result<Self, FromVariantError> {
-		Ok(SkillWrapper(SkillName::from_variant(variant)?))
-	}
-}
-
-impl ToVariant for SkillWrapper {
-	fn to_variant(&self) -> Variant {
-		self.0.to_variant()
-	}
-}
-
-impl Export for SkillWrapper {
-	type Hint = <SkillName as Export>::Hint;
-
-	fn export_info(_hint: Option<Self::Hint>) -> ExportInfo {
-		SkillName::export_info(_hint)
-	}
-}
-
-unsafe fn node_to_character(node: Ref<Node2D>) -> CharacterNode {
-	let node = node.unwrap_manual();
-	let character = CharacterName::from_str(&node.name().to_string()).unwrap();
-	
-	CharacterNode::new(node.assume_shared(), character, Uuid::nil())
 }
 
 #[methods]
@@ -66,20 +51,34 @@ impl AnimTester {
 	}
 	
 	#[method]
-	unsafe fn _play_offensive(&self) {
-		let caster = node_to_character(self.caster.unwrap());
+	unsafe fn _play_offensive(&mut self, #[base] owner: &Node) {
+		unload_characters(owner, self.loaded_characters.iter());
+		self.current_sequence
+			.take()
+			.map(|id| { 
+				id.kill()
+			});
+		
+		let caster = load_character(owner, self.caster.0);
 		let mut rng = Xoshiro256StarStar::from_entropy();
 		let targets = 
 			self.targets
 				.iter()
 				.map(|node| {
-					(node_to_character(*node), 
-						match rng.gen_range(0..=2) {
+					(load_character(owner, node.0),
+					 match rng.gen_range(0..=2) {
 							0 => AttackResult::Hitted,
 							1 => AttackResult::Dodged,
 							_ => AttackResult::Killed,
 						})
 				}).collect::<Vec<_>>();
+
+		let all_characters =
+			iter::once(caster)
+				.chain(targets.iter().map(pluck!(.0)))
+				.collect::<Vec<_>>();
+		
+		self.loaded_characters = all_characters.clone();
 		
 		let skill: Box<dyn OffensiveAnim> = Box::new(
 			match self.skill.0 {
@@ -87,12 +86,30 @@ impl AnimTester {
 				_ => return,
 			});
 		
-		skill.offensive_anim(caster, targets)
-			 .call_when_finished(move || {
-				 skill.reset(caster)
-					  .log_if_err();
-			 }).register()
-			 .log_if_err();
+		let targets_clone = targets.clone();
+		
+		let mut seq = Sequence::new();
+		seq.append_interval(0.1);
+		seq.append_call(move || {
+			let with_positions =
+				iter::once((caster, Position { order: 0.into(), size: caster.name().position_size(), side: Side::Left }))
+					.chain(targets.iter().enumerate().map(|(i, (target, _))| {
+						(target.clone(), Position { order: i.into(), size: target.name().position_size(), side: Side::Right })
+					})).collect::<Vec<_>>();
+			
+			calc_default_positions(CombatStage::BellPlantGrove.padding(), with_positions.into_iter())
+				.into_iter()
+				.for_each(|(character, pos)| {
+					character
+						.node()
+						.touch_assert_sane(|ch| {
+							ch.set_position(pos);
+						});
+				});
+		});
+		
+		seq.append_sequence(skill.offensive_anim(caster, targets_clone));
+		self.current_sequence = Some(seq.register().unwrap());
 	}
 	
 	#[method]

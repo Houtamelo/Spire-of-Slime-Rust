@@ -41,6 +41,7 @@ fn compute_positions_with_mult(
 	(computed_positions, current_x)
 }
 
+#[must_use]
 pub fn calc_default_positions(
 	padding: StagePadding,
 	characters: impl Iterator<Item = (CharacterNode, Position)>,
