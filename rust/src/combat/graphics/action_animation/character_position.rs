@@ -2,7 +2,10 @@
 use crate::*;
 
 use std::iter::once;
+use entity_anim::default_position::calc_default_positions;
 use crate::combat::graphics::action_animation::ActionParticipant;
+use crate::combat::graphics::entity_anim;
+use crate::combat::graphics::stages::StagePadding;
 use crate::combat::shared::*;
 
 const DEFAULT_DEFENSIVE_PADDING: DefensivePadding = DefensivePadding {
@@ -60,7 +63,7 @@ fn calc_defensive_positions<'a>(padding: DefensivePadding,
 			once(caster).chain(allies).collect::<Vec<_>>();
 		
 		temp.sort_by(|lhs, rhs| 
-			lhs.pos.order.get().cmp(&rhs.pos.order.get()));
+			lhs.pos_before.order.get().cmp(&rhs.pos_before.order.get()));
 		
 		temp.into_iter()
 	};
@@ -68,13 +71,13 @@ fn calc_defensive_positions<'a>(padding: DefensivePadding,
 	participants_by_position
 		.scan(SaturatedU8::new(0), move |size_sum, participant| {
 			let abs_pos_x = 
-				(0..participant.pos.size.get())
+				(0..participant.pos_before.size.get())
 					.fold(0., |sum, i| {
 						let position = size_sum.get() + i;
 						sum + padding.center_to_allies + (position as f64 * padding.between_allies)
 					});
 			
-			*size_sum += participant.pos.size;
+			*size_sum += participant.pos_before.size;
 			
 			Some((participant, abs_pos_x))
 		})
@@ -90,7 +93,7 @@ fn calc_offensive_positions<'a>(padding: OffensivePadding,
 			enemies.collect::<Vec<_>>();
 
 		temp.sort_by(|lhs, rhs|
-			lhs.pos.order.get().cmp(&rhs.pos.order.get()));
+			lhs.pos_before.order.get().cmp(&rhs.pos_before.order.get()));
 
 		temp.into_iter()
 	};
@@ -98,13 +101,13 @@ fn calc_offensive_positions<'a>(padding: OffensivePadding,
 	enemies_by_position
 		.scan(SaturatedU8::new(0), move |size_sum, participant| {
 			let abs_pos_x =
-				(0..participant.pos.size.get())
+				(0..participant.pos_before.size.get())
 					.fold(0., |sum, i| {
 						let position = size_sum.get() + i;
 						sum + padding.center_to_enemies + (position as f64 * padding.between_enemies)
 					});
 
-			*size_sum += participant.pos.size;
+			*size_sum += participant.pos_before.size;
 
 			Some((participant, abs_pos_x))
 		})
@@ -132,7 +135,7 @@ pub fn do_anim_positions<'a>(
 		.into_iter()
 		.map(|(part, abs_pos_x)| {
 			let pos_x =
-				match part.pos.side {
+				match part.pos_before.side {
 					Side::Left => -abs_pos_x,
 					Side::Right => abs_pos_x,
 				};
@@ -143,14 +146,21 @@ pub fn do_anim_positions<'a>(
 					.node()
 					.do_move(target_pos, duration);
 			
-			(part.guid, tween)
+			(part.godot.guid(), tween)
 		}).collect()
 }
 
-pub fn do_initial_positions<'a>(
-	_padding: impl Into<SkillPadding>,
-	_caster: &'a ActionParticipant,
-	_others: impl Iterator<Item = &'a ActionParticipant>)
-	-> HashMap<Uuid, TweenProperty_Vector2> {
-	todo!()
+pub fn do_default_positions(
+	padding: StagePadding,
+	characters: impl Iterator<Item = (CharacterNode, Position)>,
+	duration: f64,
+) -> HashMap<Uuid, TweenProperty_Vector2> {
+	let default_positions = 
+		calc_default_positions(padding, characters);
+	
+	default_positions
+		.into_iter()
+		.map(|(character, pos)| {
+			(character.guid(), character.node().do_move(pos, duration))
+		}).collect()
 }

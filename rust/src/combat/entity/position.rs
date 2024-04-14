@@ -65,3 +65,13 @@ pub enum Side {
 	Left,
 	Right
 }
+
+impl Side {
+	pub fn is_left(&self) -> bool {
+		return *self == Side::Left;
+	}
+	
+	pub fn is_right(&self) -> bool {
+		return *self == Side::Right;
+	}
+}

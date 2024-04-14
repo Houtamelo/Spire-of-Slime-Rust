@@ -1,12 +1,15 @@
+use std::iter;
+use character_position::do_default_positions;
 #[allow(unused_imports)]
 use crate::*;
 
 use crate::combat::entity::position::Position;
-use crate::combat::graphics::action_animation::skills::offensive::{AttackResult, OffensiveAnim};
+use crate::combat::graphics::action_animation::skills::offensive::{AttackResult, CounterResult, OffensiveAnim};
 use crate::combat::graphics::entity_anim::character_node::CharacterNode;
 use crate::combat::skill_types::defensive::DefensiveSkill;
 use crate::combat::skill_types::lewd::LewdSkill;
-use crate::combat::skill_types::offensive::OffensiveSkill;
+use crate::combat::graphics::entity_anim::EntityAnim;
+use crate::combat::graphics::stages::CombatStage;
 
 pub mod camera;
 pub mod speed_lines;
@@ -23,8 +26,14 @@ const STAY_DURATION: f64 = 1.0;
 #[derive(Debug, Copy, Clone)]
 pub struct ActionParticipant {
 	pub godot: CharacterNode,
-	pub guid: Uuid,
-	pub pos: Position,
+	pub pos_before: Position,
+	pub pos_after: Position,
+}
+
+#[derive(Debug, Copy, Clone)]
+pub struct Outsider {
+	pub godot: CharacterNode,
+	pub pos_after: Position,
 }
 
 pub struct SkillAnimation {
@@ -35,13 +44,13 @@ pub struct SkillAnimation {
 pub enum ActionKind {
 	OnSelf { skill: DefensiveSkill },
 	OnAllies { skill: DefensiveSkill, allies: CountOrMore<1, ActionParticipant> },
-	OnEnemies { skill: OffensiveSkill, enemies: CountOrMore<1, ActionParticipant> },
+	OnEnemies { skill: Box<dyn OffensiveAnim>, enemies: CountOrMore<1, (ActionParticipant, AttackResult)> },
 	Lewd { skill: LewdSkill, enemies: CountOrMore<1, ActionParticipant> },
 }
 
 impl SkillAnimation {
 	fn participants(&self) -> impl Iterator<Item = &ActionParticipant> {
-		std::iter::from_coroutine(|| {
+		iter::from_coroutine(|| {
 			yield &self.caster;
 			
 			match &self.kind {
@@ -52,7 +61,7 @@ impl SkillAnimation {
 					}
 				},
 				ActionKind::OnEnemies { enemies, .. } => {
-					for _enemy in enemies.iter() {
+					for (_enemy, _) in enemies.iter() {
 						yield _enemy;
 					}
 				},
@@ -82,6 +91,7 @@ pub struct AnimationNodes {
 	characters_container: Ref<Node2D>,
 	in_action_container: Ref<Node2D>,
 	inside_modulate: Ref<CanvasModulate>,
+	stage: CombatStage,
 }
 
 impl AnimationNodes {
@@ -107,7 +117,7 @@ impl AnimationNodes {
 			})
 	}
 	
-	pub fn animate_skill(&self, animation: SkillAnimation) -> Result<Sequence> {
+	pub fn animate_skill(&self, animation: SkillAnimation, outsiders: Vec<Outsider>) -> Result<Sequence> {
 		self.switch_participants_parent(animation.participants())?;
 		
 		let mut seq = Sequence::new().bound_to(&self.combat_root);
@@ -115,7 +125,7 @@ impl AnimationNodes {
 		seq.append({
 			let participants_height =
 				animation.participants()
-				         .map(|p| p.godot.sprite_height())
+				         .map(|p| p.godot.name().required_height())
 				         .collect::<Vec<_>>();
 
 			let zoom_scale =
@@ -134,30 +144,45 @@ impl AnimationNodes {
 			ActionKind::OnSelf { .. } => { todo!() },
 			ActionKind::OnAllies { skill, allies } =>
 				self.animate_allies_skill(&mut seq, animation.caster, skill, allies),
-			ActionKind::OnEnemies { .. } => { todo!() },
+			ActionKind::OnEnemies { skill, enemies } => 
+				self.animate_enemies_skill(&mut seq, animation.caster, skill, enemies, outsiders)?,
 			ActionKind::Lewd { .. } => { todo!() },
 		}
 		
 		Ok(seq)
 	}
 
-	fn end_skill_anim(&self, sequence: &mut Sequence) {
+	fn join_end_skill_anim(&self, sequence: &mut Sequence) {
 		sequence.join(self.camera.do_zoom(Vector2::ONE, POP_DURATION));
 		sequence.join(self.outside_modulate.do_fade(1., POP_DURATION));
 		sequence.join(self.inside_modulate.do_fade(0., POP_DURATION));
 	}
 	
-	fn move_characters_to_default_positions(&self, _seq: &mut Sequence, _participants: impl Iterator<Item = &ActionParticipant>) {
-		todo!()
+	fn join_characters_to_default_positions(
+		&self,
+		seq: &mut Sequence,
+		participants: impl Iterator<Item = ActionParticipant>,
+		outsiders: impl Iterator<Item = Outsider>,
+	) {
+		let all_characters = 
+			participants
+				.map(|part| (part.godot, part.pos_after))
+				.chain(outsiders.map(|out| (out.godot, out.pos_after)));
+		
+		for (_, tween) in do_default_positions(self.stage.padding(), all_characters, POP_DURATION) {
+			seq.join(tween);
+		}
 	}
 
-	fn animate_enemies_skill(&self,
-	                         seq: &mut Sequence,
-	                         caster: ActionParticipant,
-	                         skill: impl OffensiveAnim + 'static,
-	                         enemies: Vec<(ActionParticipant, AttackResult)>)
-	                         -> Result<()> {
-		const MOVE_SPEED: f64 = 50.0; // todo! test this value
+	fn animate_enemies_skill(
+		&self,
+		seq: &mut Sequence,
+		caster: ActionParticipant,
+		skill: Box<dyn OffensiveAnim + 'static>,
+		enemies: CountOrMore<1, (ActionParticipant, AttackResult)>,
+		outsiders: Vec<Outsider>
+	) -> Result<()> {
+		const MOVE_SPEED: f64 = 50.0;
 		let _infinite_move_splash_screen =
 			splash_screen::animate_movement(self.splash_screen, self.splash_screen_local_start_pos, MOVE_SPEED)?;
 
@@ -184,10 +209,34 @@ impl AnimationNodes {
 
 		seq.append_sequence(skill.offensive_anim(caster.godot, enemy_nodes));
 		
-		//todo! This needs to only move characters that didn't die.
-		//self.move_characters_to_default_positions(seq, caster)
+		let is_caster_dead = enemies.iter().any(|(_, result)| matches!(result, AttackResult::Counter(_, CounterResult::Killed)));
+		if is_caster_dead {
+			let participants_to_move =
+				enemies.into_iter()
+				       .filter_map(|(part, result)| {
+					       if matches!(result, AttackResult::Killed) {
+						       None
+					       } else {
+						       Some(part)
+					       }
+				       });
+			
+			self.join_characters_to_default_positions(seq, participants_to_move, outsiders.into_iter());
+		} else {
+			let participants_to_move =
+				iter::once(caster)
+					.chain(enemies.into_iter().filter_map(|(part, result)| {
+						if matches!(result, AttackResult::Killed) {
+							None
+						} else {
+							Some(part)
+						}
+					}));
+			
+			self.join_characters_to_default_positions(seq, participants_to_move, outsiders.into_iter());
+		}
 		
-		self.end_skill_anim(seq);
+		self.join_end_skill_anim(seq);
 		
 		Ok(())
 	}

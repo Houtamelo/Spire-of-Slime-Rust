@@ -18,7 +18,7 @@ pub enum MovementType {
 impl CharacterMovement {
 	pub fn animate(&self, part: &ActionParticipant, duration: f64) -> TweenProperty_f64 {
 		let x =
-			match (self.movement_type, part.pos.side) {
+			match (self.movement_type, part.pos_before.side) {
 				(MovementType::TowardsCenter(x), Side::Left) => x,
 				(MovementType::TowardsCenter(x), Side::Right) => -x,
 				(MovementType::TowardsEdge(x), Side::Left) => -x,

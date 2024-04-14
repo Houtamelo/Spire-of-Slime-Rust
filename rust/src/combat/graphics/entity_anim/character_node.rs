@@ -18,8 +18,6 @@ impl CharacterNode {
 	pub fn node(&self) -> Ref<Node2D> { self.node }
 	pub fn guid(&self) -> Uuid { self.guid }
 	pub fn name(&self) -> CharacterName { self.name }
-	
-	pub fn sprite_height(&self) -> f64 { todo!() }
 
 	pub fn spawn(parent: &Node, prefab: &PackedScene, name: CharacterName, guid: Uuid) -> Result<CharacterNode> {
 		let node_ref = 

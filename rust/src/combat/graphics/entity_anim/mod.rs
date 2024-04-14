@@ -1,20 +1,16 @@
+use enum_dispatch::enum_dispatch;
 #[allow(unused_imports)]
 use crate::*;
 use crate::combat::shared::*;
 
 pub mod character_node;
+pub mod default_position;
 
+#[enum_dispatch]
 pub trait EntityAnim {
 	fn prefab_path(&self) -> &'static str;
-}
-
-impl EntityAnim for CharacterName {
-	fn prefab_path(&self) -> &'static str {
-		match self {
-			CharacterName::Girl(girl) => girl.prefab_path(),
-			CharacterName::NPC(npc) => npc.prefab_path(),
-		}
-	}
+	fn required_height(&self) -> f64;
+	fn required_width(&self) -> f64;
 }
 
 impl EntityAnim for NPCName {
@@ -26,6 +22,24 @@ impl EntityAnim for NPCName {
 			NPCName::BellPlant => "res://Core/Combat/BellPlant/bell-plant.tscn",
 		}
 	}
+	
+	fn required_height(&self) -> f64 {
+		match self {
+			NPCName::Crabdra => 360.,
+			NPCName::Trent => 360.,
+			NPCName::Wolfhydra => 360.,
+			NPCName::BellPlant => 360.,
+		}
+	}
+	
+	fn required_width(&self) -> f64 {
+		match self {
+			NPCName::Crabdra => 360.,
+			NPCName::Trent => 360.,
+			NPCName::Wolfhydra => 360.,
+			NPCName::BellPlant => 360.,
+		}
+	}
 }
 
 impl EntityAnim for GirlName {
@@ -33,6 +47,20 @@ impl EntityAnim for GirlName {
 		match self {
 			GirlName::Ethel => "res://Core/Combat/Ethel/ethel.tscn",
 			GirlName::Nema => "res://Core/Combat/Nema/nema.tscn",
+		}
+	}
+	
+	fn required_height(&self) -> f64 {
+		match self {
+			GirlName::Ethel => 360.,
+			GirlName::Nema => 360.,
+		}
+	}
+	
+	fn required_width(&self) -> f64 {
+		match self {
+			GirlName::Ethel => 360.,
+			GirlName::Nema => 360.,
 		}
 	}
 }

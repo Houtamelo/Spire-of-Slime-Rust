@@ -34,6 +34,7 @@ pub trait SkillUser {
 	fn skills(&self) -> &[Skill];
 }
 
+#[enum_dispatch(EntityAnim)]
 #[enum_dispatch(AttackedAnim)]
 #[derive(Debug, Copy, Clone, Serialize, Deserialize)]
 pub enum CharacterName {
