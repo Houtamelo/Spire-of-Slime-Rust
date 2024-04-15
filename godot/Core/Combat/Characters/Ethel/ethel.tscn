@@ -1,0 +1,60 @@
+[gd_scene load_steps=7 format=2]
+
+[ext_resource path="res://Ideas/shader-material_post-processor_motion-blur.tres" type="Material" id=1]
+[ext_resource path="res://Ideas/fx_FHD_pivoted.png" type="Texture" id=2]
+[ext_resource path="res://Ideas/pierce.png" type="Texture" id=3]
+[ext_resource path="res://Ideas/particles-material_trail.tres" type="Material" id=4]
+[ext_resource path="res://Ideas/particles-material_pierce-fx.tres" type="Material" id=5]
+[ext_resource path="res://Core/Combat/Characters/Ethel/Anims/Idle/sprite-frames.tres" type="SpriteFrames" id=6]
+
+[node name="ethel" type="Node2D"]
+position = Vector2( 863, 699 )
+
+[node name="anims" type="Node2D" parent="."]
+__meta__ = {
+"_edit_lock_": true
+}
+
+[node name="pierce" type="Node2D" parent="anims"]
+visible = false
+__meta__ = {
+"_edit_lock_": true
+}
+
+[node name="sprite" type="Sprite" parent="anims/pierce"]
+texture = ExtResource( 3 )
+offset = Vector2( 0, -180 )
+
+[node name="slash_sprite" type="Sprite" parent="anims/pierce"]
+position = Vector2( 105, -212 )
+texture = ExtResource( 2 )
+
+[node name="slash_particles" type="Particles2D" parent="anims/pierce"]
+position = Vector2( 105, -212 )
+emitting = false
+amount = 3
+lifetime = 0.75
+one_shot = true
+explosiveness = 0.5
+process_material = ExtResource( 5 )
+texture = ExtResource( 2 )
+
+[node name="trail" type="Particles2D" parent="anims/pierce"]
+show_behind_parent = true
+material = ExtResource( 1 )
+position = Vector2( 0, -180 )
+emitting = false
+amount = 6
+lifetime = 0.6
+explosiveness = 0.75
+local_coords = false
+process_material = ExtResource( 4 )
+texture = ExtResource( 3 )
+
+[node name="idle" type="Node2D" parent="anims"]
+
+[node name="sprite" type="AnimatedSprite" parent="anims/idle"]
+frames = ExtResource( 6 )
+frame = 34
+playing = true
+offset = Vector2( -26, -180 )

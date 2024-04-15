@@ -1,0 +1,35 @@
+[remap]
+
+importer="texture"
+type="StreamTexture"
+path="res://import/frame (24).png-2e4d6c89f5da1233262fd6e4b5b427f6.stex"
+metadata={
+"vram_texture": false
+}
+
+[deps]
+
+source_file="res://Core/Combat/Characters/Ethel/Anims/Idle/Frames/frame (24).png"
+dest_files=[ "res://import/frame (24).png-2e4d6c89f5da1233262fd6e4b5b427f6.stex" ]
+
+[params]
+
+compress/mode=1
+compress/lossy_quality=0.7
+compress/hdr_mode=0
+compress/bptc_ldr=0
+compress/normal_map=2
+flags/repeat=0
+flags/filter=true
+flags/mipmaps=false
+flags/anisotropic=false
+flags/srgb=2
+process/fix_alpha_border=true
+process/premult_alpha=false
+process/HDR_as_SRGB=false
+process/invert_color=false
+process/normal_map_invert_y=false
+stream=false
+size_limit=0
+detect_3d=true
+svg/scale=1.0

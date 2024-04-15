@@ -1,4 +1,4 @@
-[gd_scene load_steps=67 format=2]
+[gd_scene load_steps=62 format=2]
 
 [ext_resource path="res://Core/Combat/UI/Announcer/announcer_background.png" type="Texture" id=1]
 [ext_resource path="res://Core/Combat/UI/Announcer/font_announcer.tres" type="DynamicFont" id=2]
@@ -58,15 +58,8 @@
 [ext_resource path="res://Core/Combat/UI/Character Stats/Stat Icons/damage.png" type="Texture" id=56]
 [ext_resource path="res://Core/Combat/UI/Targeting Tooltip/font_audiomat_20.tres" type="DynamicFont" id=57]
 [ext_resource path="res://Core/Combat/UI/Targeting Tooltip/theme_targeting-tooltip.tres" type="Theme" id=58]
-[ext_resource path="res://Ideas/fx_FHD_pivoted.png" type="Texture" id=59]
-[ext_resource path="res://Ideas/pierce.png" type="Texture" id=60]
-[ext_resource path="res://Ideas/particles-material_pierce-fx.tres" type="Material" id=61]
-[ext_resource path="res://Ideas/particles-material_trail.tres" type="Material" id=62]
-[ext_resource path="res://Ideas/shader-material_post-processor_motion-blur.tres" type="Material" id=63]
-
-[sub_resource type="GradientTexture2D" id=10]
-width = 1920
-height = 1080
+[ext_resource path="res://Core/Combat/Characters/Ethel/ethel.tscn" type="PackedScene" id=59]
+[ext_resource path="res://Core/Combat/Skill Anim/Splash Screen/Background.png" type="Texture" id=60]
 
 [sub_resource type="Animation" id=1]
 length = 0.001
@@ -107,72 +100,28 @@ tracks/2/keys = {
 "values": [ Vector2( 1, 1 ) ]
 }
 
-[sub_resource type="Animation" id=3]
-resource_name = "pierce_anim"
-step = 0.01
-tracks/0/type = "value"
-tracks/0/path = NodePath("pierce/sprite/trail:emitting")
-tracks/0/interp = 1
-tracks/0/loop_wrap = true
-tracks/0/imported = false
-tracks/0/enabled = true
-tracks/0/keys = {
-"times": PoolRealArray( 0, 0.15 ),
-"transitions": PoolRealArray( 1, 1 ),
-"update": 0,
-"values": [ true, false ]
-}
-tracks/1/type = "value"
-tracks/1/path = NodePath("pierce/sprite/slash_particles:emitting")
-tracks/1/interp = 1
-tracks/1/loop_wrap = true
-tracks/1/imported = false
-tracks/1/enabled = true
-tracks/1/keys = {
-"times": PoolRealArray( 0, 0.1, 0.51 ),
-"transitions": PoolRealArray( 1, 1, 1 ),
-"update": 0,
-"values": [ false, true, false ]
-}
-tracks/2/type = "value"
-tracks/2/path = NodePath("pierce/sprite:position")
-tracks/2/interp = 1
-tracks/2/loop_wrap = true
-tracks/2/imported = false
-tracks/2/enabled = true
-tracks/2/keys = {
-"times": PoolRealArray( 0, 0.16, 1 ),
-"transitions": PoolRealArray( 1, 1, 1 ),
-"update": 0,
-"values": [ Vector2( -24, 64 ), Vector2( 707, -61.549 ), Vector2( 807, -61.549 ) ]
-}
-
 [node name="scene_combat" type="Node2D"]
 
-[node name="sprite" type="Sprite" parent="."]
-position = Vector2( 963, 538 )
-texture = SubResource( 10 )
-__meta__ = {
-"_edit_lock_": true
-}
-
-[node name="camera_2d" type="Camera2D" parent="."]
+[node name="camera" type="Camera2D" parent="."]
 position = Vector2( 960, 540 )
 current = true
-zoom = Vector2( 0.77, 0.77 )
 
-[node name="ui" type="Control" parent="."]
-visible = false
+[node name="canvas-layer_default" type="CanvasLayer" parent="."]
+layer = 0
+
+[node name="canvas-modulate" type="CanvasModulate" parent="canvas-layer_default"]
+
+[node name="ui" type="Control" parent="canvas-layer_default"]
 margin_right = 1920.0
 margin_bottom = 1080.0
 rect_min_size = Vector2( 1920, 1080 )
 
-[node name="animation_announcer" type="AnimationPlayer" parent="ui"]
+[node name="animation_announcer" type="AnimationPlayer" parent="canvas-layer_default/ui"]
 anims/RESET = SubResource( 1 )
 anims/anim_fade-in = ExtResource( 3 )
 anims/anim_fade-out = ExtResource( 4 )
 
-[node name="announcer" type="TextureRect" parent="ui/animation_announcer"]
+[node name="announcer" type="TextureRect" parent="canvas-layer_default/ui/animation_announcer"]
 modulate = Color( 1, 1, 1, 0 )
 self_modulate = Color( 1, 0, 0.752941, 1 )
 anchor_left = 0.5
@@ -185,7 +134,7 @@ texture = ExtResource( 1 )
 expand = true
 stretch_mode = 1
 
-[node name="label" type="Label" parent="ui/animation_announcer/announcer"]
+[node name="label" type="Label" parent="canvas-layer_default/ui/animation_announcer/announcer"]
 anchor_top = 0.34
 anchor_right = 1.0
 anchor_bottom = 0.704
@@ -197,7 +146,7 @@ align = 1
 valign = 1
 clip_text = true
 
-[node name="speed-buttons" type="GridContainer" parent="ui"]
+[node name="speed-buttons" type="GridContainer" parent="canvas-layer_default/ui"]
 anchor_right = 0.144
 anchor_bottom = 0.059
 margin_right = -236.48
@@ -205,7 +154,7 @@ margin_bottom = -23.72
 custom_constants/hseparation = 8
 columns = 4
 
-[node name="pause" type="Button" parent="ui/speed-buttons"]
+[node name="pause" type="Button" parent="canvas-layer_default/ui/speed-buttons"]
 margin_right = 63.0
 margin_bottom = 64.0
 rect_min_size = Vector2( 63, 64 )
@@ -216,10 +165,10 @@ custom_styles/disabled = ExtResource( 46 )
 custom_styles/normal = ExtResource( 46 )
 action_mode = 0
 
-[node name="disallow_click_focus_on_parent" type="Node" parent="ui/speed-buttons/pause"]
+[node name="disallow_click_focus_on_parent" type="Node" parent="canvas-layer_default/ui/speed-buttons/pause"]
 script = ExtResource( 44 )
 
-[node name="indicator" type="TextureRect" parent="ui/speed-buttons/pause"]
+[node name="indicator" type="TextureRect" parent="canvas-layer_default/ui/speed-buttons/pause"]
 visible = false
 modulate = Color( 0.513726, 0, 0.447059, 1 )
 anchor_right = 1.0
@@ -227,7 +176,7 @@ anchor_bottom = 1.0
 rect_min_size = Vector2( 63, 64 )
 texture = ExtResource( 45 )
 
-[node name="speed_1x" type="Button" parent="ui/speed-buttons"]
+[node name="speed_1x" type="Button" parent="canvas-layer_default/ui/speed-buttons"]
 margin_left = 71.0
 margin_right = 134.0
 margin_bottom = 64.0
@@ -239,10 +188,10 @@ custom_styles/disabled = ExtResource( 50 )
 custom_styles/normal = ExtResource( 50 )
 action_mode = 0
 
-[node name="disallow_click_focus_on_parent" type="Node" parent="ui/speed-buttons/speed_1x"]
+[node name="disallow_click_focus_on_parent" type="Node" parent="canvas-layer_default/ui/speed-buttons/speed_1x"]
 script = ExtResource( 44 )
 
-[node name="indicator" type="TextureRect" parent="ui/speed-buttons/speed_1x"]
+[node name="indicator" type="TextureRect" parent="canvas-layer_default/ui/speed-buttons/speed_1x"]
 visible = false
 modulate = Color( 0.513726, 0, 0.447059, 1 )
 anchor_right = 1.0
@@ -250,7 +199,7 @@ anchor_bottom = 1.0
 rect_min_size = Vector2( 63, 64 )
 texture = ExtResource( 45 )
 
-[node name="speed_2x" type="Button" parent="ui/speed-buttons"]
+[node name="speed_2x" type="Button" parent="canvas-layer_default/ui/speed-buttons"]
 margin_left = 142.0
 margin_right = 205.0
 margin_bottom = 64.0
@@ -262,10 +211,10 @@ custom_styles/disabled = ExtResource( 51 )
 custom_styles/normal = ExtResource( 51 )
 action_mode = 0
 
-[node name="disallow_click_focus_on_parent" type="Node" parent="ui/speed-buttons/speed_2x"]
+[node name="disallow_click_focus_on_parent" type="Node" parent="canvas-layer_default/ui/speed-buttons/speed_2x"]
 script = ExtResource( 44 )
 
-[node name="indicator" type="TextureRect" parent="ui/speed-buttons/speed_2x"]
+[node name="indicator" type="TextureRect" parent="canvas-layer_default/ui/speed-buttons/speed_2x"]
 visible = false
 modulate = Color( 0.513726, 0, 0.447059, 1 )
 anchor_right = 1.0
@@ -273,7 +222,7 @@ anchor_bottom = 1.0
 rect_min_size = Vector2( 63, 64 )
 texture = ExtResource( 45 )
 
-[node name="speed_3x" type="Button" parent="ui/speed-buttons"]
+[node name="speed_3x" type="Button" parent="canvas-layer_default/ui/speed-buttons"]
 margin_left = 213.0
 margin_right = 276.0
 margin_bottom = 64.0
@@ -285,10 +234,10 @@ custom_styles/disabled = ExtResource( 48 )
 custom_styles/normal = ExtResource( 48 )
 action_mode = 0
 
-[node name="disallow_click_focus_on_parent" type="Node" parent="ui/speed-buttons/speed_3x"]
+[node name="disallow_click_focus_on_parent" type="Node" parent="canvas-layer_default/ui/speed-buttons/speed_3x"]
 script = ExtResource( 44 )
 
-[node name="indicator" type="TextureRect" parent="ui/speed-buttons/speed_3x"]
+[node name="indicator" type="TextureRect" parent="canvas-layer_default/ui/speed-buttons/speed_3x"]
 visible = false
 modulate = Color( 0.513726, 0, 0.447059, 1 )
 anchor_right = 1.0
@@ -296,7 +245,7 @@ anchor_bottom = 1.0
 rect_min_size = Vector2( 63, 64 )
 texture = ExtResource( 45 )
 
-[node name="elapsed time" type="Control" parent="ui"]
+[node name="elapsed time" type="Control" parent="canvas-layer_default/ui"]
 anchor_left = 0.167
 anchor_top = 0.009
 anchor_right = 0.231
@@ -306,14 +255,14 @@ margin_top = 0.280001
 margin_right = 28.48
 margin_bottom = 0.0800018
 
-[node name="icon" type="TextureRect" parent="ui/elapsed time"]
+[node name="icon" type="TextureRect" parent="canvas-layer_default/ui/elapsed time"]
 modulate = Color( 0.694118, 0, 1, 1 )
 margin_right = 28.0
 margin_bottom = 43.0
 rect_min_size = Vector2( 28, 43 )
 texture = ExtResource( 54 )
 
-[node name="value" type="Label" parent="ui/elapsed time"]
+[node name="value" type="Label" parent="canvas-layer_default/ui/elapsed time"]
 modulate = Color( 0.521569, 0, 0.45098, 1 )
 margin_left = 44.0
 margin_right = 140.0
@@ -323,27 +272,27 @@ custom_fonts/font = ExtResource( 55 )
 text = "120.5"
 valign = 1
 
-[node name="character-stats" type="Control" parent="ui"]
+[node name="character-stats" type="Control" parent="canvas-layer_default/ui"]
 anchor_right = 1.0
 anchor_bottom = 1.0
 theme = ExtResource( 8 )
 
-[node name="background" type="TextureRect" parent="ui/character-stats"]
+[node name="background" type="TextureRect" parent="canvas-layer_default/ui/character-stats"]
 anchor_right = 1.0
 anchor_bottom = 1.0
 texture = ExtResource( 5 )
 
-[node name="left-side" type="Control" parent="ui/character-stats"]
+[node name="left-side" type="Control" parent="canvas-layer_default/ui/character-stats"]
 anchor_right = 0.5
 anchor_bottom = 1.0
 
-[node name="stamina" type="TextureRect" parent="ui/character-stats/left-side"]
+[node name="stamina" type="TextureRect" parent="canvas-layer_default/ui/character-stats/left-side"]
 margin_top = 761.0
 margin_right = 36.0
 margin_bottom = 1080.0
 texture = ExtResource( 12 )
 
-[node name="fill" type="TextureProgress" parent="ui/character-stats/left-side/stamina"]
+[node name="fill" type="TextureProgress" parent="canvas-layer_default/ui/character-stats/left-side/stamina"]
 anchor_right = 1.0
 anchor_bottom = 1.0
 margin_top = 1.0
@@ -352,7 +301,7 @@ value = 60.0
 texture_progress = ExtResource( 11 )
 fill_mode = 3
 
-[node name="value" type="Label" parent="ui/character-stats/left-side/stamina"]
+[node name="value" type="Label" parent="canvas-layer_default/ui/character-stats/left-side/stamina"]
 anchor_left = 0.722
 anchor_top = -0.113
 anchor_right = 4.278
@@ -370,14 +319,14 @@ autowrap = true
 max_lines_visible = 1
 script = ExtResource( 31 )
 
-[node name="temptation" type="TextureRect" parent="ui/character-stats/left-side"]
+[node name="temptation" type="TextureRect" parent="canvas-layer_default/ui/character-stats/left-side"]
 margin_left = 45.0
 margin_top = 1039.0
 margin_right = 305.0
 margin_bottom = 1063.0
 texture = ExtResource( 10 )
 
-[node name="fill" type="TextureProgress" parent="ui/character-stats/left-side/temptation"]
+[node name="fill" type="TextureProgress" parent="canvas-layer_default/ui/character-stats/left-side/temptation"]
 anchor_right = 1.0
 anchor_bottom = 1.0
 margin_top = 1.0
@@ -386,7 +335,7 @@ margin_bottom = -5.0
 value = 53.0
 texture_progress = ExtResource( 9 )
 
-[node name="value" type="Label" parent="ui/character-stats/left-side/temptation"]
+[node name="value" type="Label" parent="canvas-layer_default/ui/character-stats/left-side/temptation"]
 anchor_left = 1.047
 anchor_right = 1.343
 anchor_bottom = 0.818
@@ -403,14 +352,14 @@ autowrap = true
 max_lines_visible = 1
 script = ExtResource( 31 )
 
-[node name="lust" type="TextureRect" parent="ui/character-stats/left-side"]
+[node name="lust" type="TextureRect" parent="canvas-layer_default/ui/character-stats/left-side"]
 margin_left = 46.0
 margin_top = 1061.0
 margin_right = 304.0
 margin_bottom = 1080.0
 texture = ExtResource( 7 )
 
-[node name="low_fill" type="TextureProgress" parent="ui/character-stats/left-side/lust"]
+[node name="low_fill" type="TextureProgress" parent="canvas-layer_default/ui/character-stats/left-side/lust"]
 modulate = Color( 0.34902, 0.34902, 0.34902, 1 )
 anchor_right = 1.0
 anchor_bottom = 1.0
@@ -421,7 +370,7 @@ margin_bottom = -0.999989
 value = 100.0
 texture_progress = ExtResource( 6 )
 
-[node name="high_fill" type="TextureProgress" parent="ui/character-stats/left-side/lust"]
+[node name="high_fill" type="TextureProgress" parent="canvas-layer_default/ui/character-stats/left-side/lust"]
 anchor_right = 1.0
 anchor_bottom = 1.0
 margin_left = 5.0
@@ -431,7 +380,7 @@ margin_bottom = -0.999989
 value = 50.0
 texture_progress = ExtResource( 6 )
 
-[node name="value" type="Label" parent="ui/character-stats/left-side/lust"]
+[node name="value" type="Label" parent="canvas-layer_default/ui/character-stats/left-side/lust"]
 anchor_left = 1.047
 anchor_right = 1.345
 anchor_bottom = 1.0
@@ -448,7 +397,7 @@ autowrap = true
 max_lines_visible = 1
 script = ExtResource( 31 )
 
-[node name="grid-stats" type="GridContainer" parent="ui/character-stats/left-side"]
+[node name="grid-stats" type="GridContainer" parent="canvas-layer_default/ui/character-stats/left-side"]
 margin_left = 315.0
 margin_top = 864.0
 margin_right = 823.0
@@ -458,10 +407,10 @@ custom_constants/vseparation = 0
 custom_constants/hseparation = 12
 columns = 5
 
-[node name="damage" parent="ui/character-stats/left-side/grid-stats" instance=ExtResource( 21 )]
+[node name="damage" parent="canvas-layer_default/ui/character-stats/left-side/grid-stats" instance=ExtResource( 21 )]
 margin_right = 92.0
 
-[node name="value" parent="ui/character-stats/left-side/grid-stats/damage" index="1"]
+[node name="value" parent="canvas-layer_default/ui/character-stats/left-side/grid-stats/damage" index="1"]
 margin_left = -3.956
 margin_top = 2.0
 margin_right = 5.996
@@ -470,15 +419,15 @@ text = "5~7"
 min_size = null
 max_size = null
 
-[node name="crit-rate" parent="ui/character-stats/left-side/grid-stats" instance=ExtResource( 21 )]
+[node name="crit-rate" parent="canvas-layer_default/ui/character-stats/left-side/grid-stats" instance=ExtResource( 21 )]
 margin_left = 104.0
 margin_right = 196.0
 
-[node name="icon" parent="ui/character-stats/left-side/grid-stats/crit-rate" index="0"]
+[node name="icon" parent="canvas-layer_default/ui/character-stats/left-side/grid-stats/crit-rate" index="0"]
 texture = ExtResource( 20 )
 region_rect = Rect2( 8, 9, 48, 48 )
 
-[node name="value" parent="ui/character-stats/left-side/grid-stats/crit-rate" index="1"]
+[node name="value" parent="canvas-layer_default/ui/character-stats/left-side/grid-stats/crit-rate" index="1"]
 margin_left = -3.956
 margin_top = 2.0
 margin_right = 5.996
@@ -487,15 +436,15 @@ text = "+8"
 min_size = null
 max_size = null
 
-[node name="toughness" parent="ui/character-stats/left-side/grid-stats" instance=ExtResource( 21 )]
+[node name="toughness" parent="canvas-layer_default/ui/character-stats/left-side/grid-stats" instance=ExtResource( 21 )]
 margin_left = 208.0
 margin_right = 300.0
 
-[node name="icon" parent="ui/character-stats/left-side/grid-stats/toughness" index="0"]
+[node name="icon" parent="canvas-layer_default/ui/character-stats/left-side/grid-stats/toughness" index="0"]
 texture = ExtResource( 30 )
 region_rect = Rect2( 10, 7, 48, 48 )
 
-[node name="value" parent="ui/character-stats/left-side/grid-stats/toughness" index="1"]
+[node name="value" parent="canvas-layer_default/ui/character-stats/left-side/grid-stats/toughness" index="1"]
 margin_left = -3.956
 margin_top = 2.0
 margin_right = 5.996
@@ -504,15 +453,15 @@ text = "20"
 min_size = null
 max_size = null
 
-[node name="debuff-resistance" parent="ui/character-stats/left-side/grid-stats" instance=ExtResource( 21 )]
+[node name="debuff-resistance" parent="canvas-layer_default/ui/character-stats/left-side/grid-stats" instance=ExtResource( 21 )]
 margin_left = 312.0
 margin_right = 404.0
 
-[node name="icon" parent="ui/character-stats/left-side/grid-stats/debuff-resistance" index="0"]
+[node name="icon" parent="canvas-layer_default/ui/character-stats/left-side/grid-stats/debuff-resistance" index="0"]
 texture = ExtResource( 26 )
 region_rect = Rect2( 11, 7, 48, 48 )
 
-[node name="value" parent="ui/character-stats/left-side/grid-stats/debuff-resistance" index="1"]
+[node name="value" parent="canvas-layer_default/ui/character-stats/left-side/grid-stats/debuff-resistance" index="1"]
 margin_left = -3.956
 margin_top = 2.0
 margin_right = 5.996
@@ -521,15 +470,15 @@ text = "20"
 min_size = null
 max_size = null
 
-[node name="debuff-rate" parent="ui/character-stats/left-side/grid-stats" instance=ExtResource( 21 )]
+[node name="debuff-rate" parent="canvas-layer_default/ui/character-stats/left-side/grid-stats" instance=ExtResource( 21 )]
 margin_left = 416.0
 margin_right = 508.0
 
-[node name="icon" parent="ui/character-stats/left-side/grid-stats/debuff-rate" index="0"]
+[node name="icon" parent="canvas-layer_default/ui/character-stats/left-side/grid-stats/debuff-rate" index="0"]
 texture = ExtResource( 25 )
 region_rect = Rect2( 11, 7, 48, 48 )
 
-[node name="value" parent="ui/character-stats/left-side/grid-stats/debuff-rate" index="1"]
+[node name="value" parent="canvas-layer_default/ui/character-stats/left-side/grid-stats/debuff-rate" index="1"]
 margin_left = -3.956
 margin_top = 2.0
 margin_right = 5.996
@@ -538,15 +487,15 @@ text = "20"
 min_size = null
 max_size = null
 
-[node name="power" parent="ui/character-stats/left-side/grid-stats" instance=ExtResource( 21 )]
+[node name="power" parent="canvas-layer_default/ui/character-stats/left-side/grid-stats" instance=ExtResource( 21 )]
 margin_top = 42.0
 margin_right = 92.0
 margin_bottom = 84.0
 
-[node name="icon" parent="ui/character-stats/left-side/grid-stats/power" index="0"]
+[node name="icon" parent="canvas-layer_default/ui/character-stats/left-side/grid-stats/power" index="0"]
 texture = ExtResource( 17 )
 
-[node name="value" parent="ui/character-stats/left-side/grid-stats/power" index="1"]
+[node name="value" parent="canvas-layer_default/ui/character-stats/left-side/grid-stats/power" index="1"]
 margin_left = -3.956
 margin_top = 2.0
 margin_right = 5.996
@@ -555,17 +504,17 @@ text = "100"
 min_size = null
 max_size = null
 
-[node name="speed" parent="ui/character-stats/left-side/grid-stats" instance=ExtResource( 21 )]
+[node name="speed" parent="canvas-layer_default/ui/character-stats/left-side/grid-stats" instance=ExtResource( 21 )]
 margin_left = 104.0
 margin_top = 42.0
 margin_right = 196.0
 margin_bottom = 84.0
 
-[node name="icon" parent="ui/character-stats/left-side/grid-stats/speed" index="0"]
+[node name="icon" parent="canvas-layer_default/ui/character-stats/left-side/grid-stats/speed" index="0"]
 texture = ExtResource( 16 )
 region_rect = Rect2( 9, 8, 48, 48 )
 
-[node name="value" parent="ui/character-stats/left-side/grid-stats/speed" index="1"]
+[node name="value" parent="canvas-layer_default/ui/character-stats/left-side/grid-stats/speed" index="1"]
 margin_left = -3.956
 margin_top = 2.0
 margin_right = 5.996
@@ -574,17 +523,17 @@ text = "120"
 min_size = null
 max_size = null
 
-[node name="composure" parent="ui/character-stats/left-side/grid-stats" instance=ExtResource( 21 )]
+[node name="composure" parent="canvas-layer_default/ui/character-stats/left-side/grid-stats" instance=ExtResource( 21 )]
 margin_left = 208.0
 margin_top = 42.0
 margin_right = 300.0
 margin_bottom = 84.0
 
-[node name="icon" parent="ui/character-stats/left-side/grid-stats/composure" index="0"]
+[node name="icon" parent="canvas-layer_default/ui/character-stats/left-side/grid-stats/composure" index="0"]
 texture = ExtResource( 29 )
 region_rect = Rect2( 10, 7, 48, 48 )
 
-[node name="value" parent="ui/character-stats/left-side/grid-stats/composure" index="1"]
+[node name="value" parent="canvas-layer_default/ui/character-stats/left-side/grid-stats/composure" index="1"]
 margin_left = -3.956
 margin_top = 2.0
 margin_right = 5.996
@@ -593,17 +542,17 @@ text = "20"
 min_size = null
 max_size = null
 
-[node name="move-resistance" parent="ui/character-stats/left-side/grid-stats" instance=ExtResource( 21 )]
+[node name="move-resistance" parent="canvas-layer_default/ui/character-stats/left-side/grid-stats" instance=ExtResource( 21 )]
 margin_left = 312.0
 margin_top = 42.0
 margin_right = 404.0
 margin_bottom = 84.0
 
-[node name="icon" parent="ui/character-stats/left-side/grid-stats/move-resistance" index="0"]
+[node name="icon" parent="canvas-layer_default/ui/character-stats/left-side/grid-stats/move-resistance" index="0"]
 texture = ExtResource( 27 )
 region_rect = Rect2( 11, 7, 48, 48 )
 
-[node name="value" parent="ui/character-stats/left-side/grid-stats/move-resistance" index="1"]
+[node name="value" parent="canvas-layer_default/ui/character-stats/left-side/grid-stats/move-resistance" index="1"]
 margin_left = -3.956
 margin_top = 2.0
 margin_right = 5.996
@@ -612,17 +561,17 @@ text = "20"
 min_size = null
 max_size = null
 
-[node name="move-rate" parent="ui/character-stats/left-side/grid-stats" instance=ExtResource( 21 )]
+[node name="move-rate" parent="canvas-layer_default/ui/character-stats/left-side/grid-stats" instance=ExtResource( 21 )]
 margin_left = 416.0
 margin_top = 42.0
 margin_right = 508.0
 margin_bottom = 84.0
 
-[node name="icon" parent="ui/character-stats/left-side/grid-stats/move-rate" index="0"]
+[node name="icon" parent="canvas-layer_default/ui/character-stats/left-side/grid-stats/move-rate" index="0"]
 texture = ExtResource( 28 )
 region_rect = Rect2( 11, 7, 48, 48 )
 
-[node name="value" parent="ui/character-stats/left-side/grid-stats/move-rate" index="1"]
+[node name="value" parent="canvas-layer_default/ui/character-stats/left-side/grid-stats/move-rate" index="1"]
 margin_left = -3.956
 margin_top = 2.0
 margin_right = 5.996
@@ -631,16 +580,16 @@ text = "20"
 min_size = null
 max_size = null
 
-[node name="accuracy" parent="ui/character-stats/left-side/grid-stats" instance=ExtResource( 21 )]
+[node name="accuracy" parent="canvas-layer_default/ui/character-stats/left-side/grid-stats" instance=ExtResource( 21 )]
 margin_top = 84.0
 margin_right = 92.0
 margin_bottom = 126.0
 
-[node name="icon" parent="ui/character-stats/left-side/grid-stats/accuracy" index="0"]
+[node name="icon" parent="canvas-layer_default/ui/character-stats/left-side/grid-stats/accuracy" index="0"]
 texture = ExtResource( 19 )
 region_rect = Rect2( 8, 9, 48, 48 )
 
-[node name="value" parent="ui/character-stats/left-side/grid-stats/accuracy" index="1"]
+[node name="value" parent="canvas-layer_default/ui/character-stats/left-side/grid-stats/accuracy" index="1"]
 margin_left = -3.956
 margin_top = 2.0
 margin_right = 5.996
@@ -649,17 +598,17 @@ text = "+15"
 min_size = null
 max_size = null
 
-[node name="dodge" parent="ui/character-stats/left-side/grid-stats" instance=ExtResource( 21 )]
+[node name="dodge" parent="canvas-layer_default/ui/character-stats/left-side/grid-stats" instance=ExtResource( 21 )]
 margin_left = 104.0
 margin_top = 84.0
 margin_right = 196.0
 margin_bottom = 126.0
 
-[node name="icon" parent="ui/character-stats/left-side/grid-stats/dodge" index="0"]
+[node name="icon" parent="canvas-layer_default/ui/character-stats/left-side/grid-stats/dodge" index="0"]
 texture = ExtResource( 18 )
 region_rect = Rect2( 10, 9, 48, 48 )
 
-[node name="value" parent="ui/character-stats/left-side/grid-stats/dodge" index="1"]
+[node name="value" parent="canvas-layer_default/ui/character-stats/left-side/grid-stats/dodge" index="1"]
 margin_left = -3.956
 margin_top = 2.0
 margin_right = 5.996
@@ -668,17 +617,17 @@ text = "10"
 min_size = null
 max_size = null
 
-[node name="stun-mitigation" parent="ui/character-stats/left-side/grid-stats" instance=ExtResource( 21 )]
+[node name="stun-mitigation" parent="canvas-layer_default/ui/character-stats/left-side/grid-stats" instance=ExtResource( 21 )]
 margin_left = 208.0
 margin_top = 84.0
 margin_right = 300.0
 margin_bottom = 126.0
 
-[node name="icon" parent="ui/character-stats/left-side/grid-stats/stun-mitigation" index="0"]
+[node name="icon" parent="canvas-layer_default/ui/character-stats/left-side/grid-stats/stun-mitigation" index="0"]
 texture = ExtResource( 23 )
 region_rect = Rect2( 10, 7, 48, 48 )
 
-[node name="value" parent="ui/character-stats/left-side/grid-stats/stun-mitigation" index="1"]
+[node name="value" parent="canvas-layer_default/ui/character-stats/left-side/grid-stats/stun-mitigation" index="1"]
 margin_left = -3.956
 margin_top = 2.0
 margin_right = 5.996
@@ -687,17 +636,17 @@ text = "20"
 min_size = null
 max_size = null
 
-[node name="poison-resistance" parent="ui/character-stats/left-side/grid-stats" instance=ExtResource( 21 )]
+[node name="poison-resistance" parent="canvas-layer_default/ui/character-stats/left-side/grid-stats" instance=ExtResource( 21 )]
 margin_left = 312.0
 margin_top = 84.0
 margin_right = 404.0
 margin_bottom = 126.0
 
-[node name="icon" parent="ui/character-stats/left-side/grid-stats/poison-resistance" index="0"]
+[node name="icon" parent="canvas-layer_default/ui/character-stats/left-side/grid-stats/poison-resistance" index="0"]
 texture = ExtResource( 24 )
 region_rect = Rect2( 11, 7, 48, 48 )
 
-[node name="value" parent="ui/character-stats/left-side/grid-stats/poison-resistance" index="1"]
+[node name="value" parent="canvas-layer_default/ui/character-stats/left-side/grid-stats/poison-resistance" index="1"]
 margin_left = -3.956
 margin_top = 2.0
 margin_right = 5.996
@@ -706,17 +655,17 @@ text = "20"
 min_size = null
 max_size = null
 
-[node name="poison-rate" parent="ui/character-stats/left-side/grid-stats" instance=ExtResource( 21 )]
+[node name="poison-rate" parent="canvas-layer_default/ui/character-stats/left-side/grid-stats" instance=ExtResource( 21 )]
 margin_left = 416.0
 margin_top = 84.0
 margin_right = 508.0
 margin_bottom = 126.0
 
-[node name="icon" parent="ui/character-stats/left-side/grid-stats/poison-rate" index="0"]
+[node name="icon" parent="canvas-layer_default/ui/character-stats/left-side/grid-stats/poison-rate" index="0"]
 texture = ExtResource( 22 )
 region_rect = Rect2( 11, 7, 48, 48 )
 
-[node name="value" parent="ui/character-stats/left-side/grid-stats/poison-rate" index="1"]
+[node name="value" parent="canvas-layer_default/ui/character-stats/left-side/grid-stats/poison-rate" index="1"]
 margin_left = -3.956
 margin_top = 2.0
 margin_right = 5.996
@@ -725,61 +674,61 @@ text = "20"
 min_size = null
 max_size = null
 
-[node name="orgasm-counter" type="HBoxContainer" parent="ui/character-stats/left-side"]
+[node name="orgasm-counter" type="HBoxContainer" parent="canvas-layer_default/ui/character-stats/left-side"]
 margin_left = 400.0
 margin_top = 1016.0
 margin_right = 912.0
 margin_bottom = 1080.0
 rect_clip_content = true
 
-[node name="prefab_orgasm_toggle" type="TextureRect" parent="ui/character-stats/left-side/orgasm-counter"]
+[node name="prefab_orgasm_toggle" type="TextureRect" parent="canvas-layer_default/ui/character-stats/left-side/orgasm-counter"]
 margin_right = 64.0
 margin_bottom = 64.0
 texture = ExtResource( 34 )
 
-[node name="prefab_orgasm_toggle_2" type="TextureRect" parent="ui/character-stats/left-side/orgasm-counter"]
+[node name="prefab_orgasm_toggle_2" type="TextureRect" parent="canvas-layer_default/ui/character-stats/left-side/orgasm-counter"]
 margin_left = 68.0
 margin_right = 132.0
 margin_bottom = 64.0
 texture = ExtResource( 34 )
 
-[node name="prefab_orgasm_toggle_3" type="TextureRect" parent="ui/character-stats/left-side/orgasm-counter"]
+[node name="prefab_orgasm_toggle_3" type="TextureRect" parent="canvas-layer_default/ui/character-stats/left-side/orgasm-counter"]
 margin_left = 136.0
 margin_right = 200.0
 margin_bottom = 64.0
 texture = ExtResource( 34 )
 
-[node name="prefab_orgasm_toggle_4" type="TextureRect" parent="ui/character-stats/left-side/orgasm-counter"]
+[node name="prefab_orgasm_toggle_4" type="TextureRect" parent="canvas-layer_default/ui/character-stats/left-side/orgasm-counter"]
 margin_left = 204.0
 margin_right = 268.0
 margin_bottom = 64.0
 texture = ExtResource( 34 )
 
-[node name="prefab_orgasm_toggle_5" type="TextureRect" parent="ui/character-stats/left-side/orgasm-counter"]
+[node name="prefab_orgasm_toggle_5" type="TextureRect" parent="canvas-layer_default/ui/character-stats/left-side/orgasm-counter"]
 margin_left = 272.0
 margin_right = 336.0
 margin_bottom = 64.0
 texture = ExtResource( 34 )
 
-[node name="prefab_orgasm_toggle_6" type="TextureRect" parent="ui/character-stats/left-side/orgasm-counter"]
+[node name="prefab_orgasm_toggle_6" type="TextureRect" parent="canvas-layer_default/ui/character-stats/left-side/orgasm-counter"]
 margin_left = 340.0
 margin_right = 404.0
 margin_bottom = 64.0
 texture = ExtResource( 34 )
 
-[node name="prefab_orgasm_toggle_7" type="TextureRect" parent="ui/character-stats/left-side/orgasm-counter"]
+[node name="prefab_orgasm_toggle_7" type="TextureRect" parent="canvas-layer_default/ui/character-stats/left-side/orgasm-counter"]
 margin_left = 408.0
 margin_right = 472.0
 margin_bottom = 64.0
 texture = ExtResource( 34 )
 
-[node name="prefab_orgasm_toggle_8" type="TextureRect" parent="ui/character-stats/left-side/orgasm-counter"]
+[node name="prefab_orgasm_toggle_8" type="TextureRect" parent="canvas-layer_default/ui/character-stats/left-side/orgasm-counter"]
 margin_left = 476.0
 margin_right = 540.0
 margin_bottom = 64.0
 texture = ExtResource( 34 )
 
-[node name="portrait" type="TextureRect" parent="ui/character-stats/left-side"]
+[node name="portrait" type="TextureRect" parent="canvas-layer_default/ui/character-stats/left-side"]
 margin_left = 48.0
 margin_top = 740.0
 margin_right = 304.0
@@ -789,12 +738,12 @@ texture = ExtResource( 33 )
 expand = true
 stretch_mode = 1
 
-[node name="frame" type="TextureRect" parent="ui/character-stats/left-side"]
+[node name="frame" type="TextureRect" parent="canvas-layer_default/ui/character-stats/left-side"]
 anchor_right = 1.0
 anchor_bottom = 1.0
 texture = ExtResource( 14 )
 
-[node name="name" type="Label" parent="ui/character-stats/left-side"]
+[node name="name" type="Label" parent="canvas-layer_default/ui/character-stats/left-side"]
 margin_left = 60.0
 margin_top = 998.0
 margin_right = 300.0
@@ -808,12 +757,12 @@ autowrap = true
 max_lines_visible = 1
 script = ExtResource( 31 )
 
-[node name="right-side" type="Control" parent="ui/character-stats"]
+[node name="right-side" type="Control" parent="canvas-layer_default/ui/character-stats"]
 anchor_left = 0.5
 anchor_right = 1.0
 anchor_bottom = 1.0
 
-[node name="stamina" type="TextureRect" parent="ui/character-stats/right-side"]
+[node name="stamina" type="TextureRect" parent="canvas-layer_default/ui/character-stats/right-side"]
 margin_left = 913.0
 margin_top = 761.0
 margin_right = 960.0
@@ -821,7 +770,7 @@ margin_bottom = 1080.0
 rect_min_size = Vector2( 47, 319 )
 texture = ExtResource( 38 )
 
-[node name="fill" type="TextureProgress" parent="ui/character-stats/right-side/stamina"]
+[node name="fill" type="TextureProgress" parent="canvas-layer_default/ui/character-stats/right-side/stamina"]
 anchor_left = 0.277
 anchor_top = 0.003
 anchor_right = 1.0
@@ -833,7 +782,7 @@ value = 60.0
 texture_progress = ExtResource( 37 )
 fill_mode = 3
 
-[node name="value" type="Label" parent="ui/character-stats/right-side/stamina"]
+[node name="value" type="Label" parent="canvas-layer_default/ui/character-stats/right-side/stamina"]
 anchor_left = -2.277
 anchor_top = -0.113
 anchor_right = 0.447
@@ -855,7 +804,7 @@ __meta__ = {
 "_edit_use_anchors_": true
 }
 
-[node name="temptation" type="TextureRect" parent="ui/character-stats/right-side"]
+[node name="temptation" type="TextureRect" parent="canvas-layer_default/ui/character-stats/right-side"]
 margin_left = 657.0
 margin_top = 1039.0
 margin_right = 917.0
@@ -863,7 +812,7 @@ margin_bottom = 1063.0
 rect_min_size = Vector2( 260, 24 )
 texture = ExtResource( 40 )
 
-[node name="fill" type="TextureProgress" parent="ui/character-stats/right-side/temptation"]
+[node name="fill" type="TextureProgress" parent="canvas-layer_default/ui/character-stats/right-side/temptation"]
 anchor_left = 0.004
 anchor_right = 1.0
 anchor_bottom = 0.75
@@ -873,7 +822,7 @@ value = 53.0
 texture_progress = ExtResource( 41 )
 fill_mode = 1
 
-[node name="value" type="Label" parent="ui/character-stats/right-side/temptation"]
+[node name="value" type="Label" parent="canvas-layer_default/ui/character-stats/right-side/temptation"]
 anchor_left = -0.346
 anchor_right = -0.046
 anchor_bottom = 0.875
@@ -888,7 +837,7 @@ autowrap = true
 max_lines_visible = 1
 script = ExtResource( 31 )
 
-[node name="lust" type="TextureRect" parent="ui/character-stats/right-side"]
+[node name="lust" type="TextureRect" parent="canvas-layer_default/ui/character-stats/right-side"]
 margin_left = 658.0
 margin_top = 1061.0
 margin_right = 916.0
@@ -896,7 +845,7 @@ margin_bottom = 1079.0
 rect_min_size = Vector2( 258, 18 )
 texture = ExtResource( 42 )
 
-[node name="low_fill" type="TextureProgress" parent="ui/character-stats/right-side/lust"]
+[node name="low_fill" type="TextureProgress" parent="canvas-layer_default/ui/character-stats/right-side/lust"]
 modulate = Color( 0.34902, 0.34902, 0.34902, 1 )
 anchor_left = 0.019
 anchor_top = 0.167
@@ -910,7 +859,7 @@ value = 100.0
 texture_progress = ExtResource( 43 )
 fill_mode = 1
 
-[node name="high_fill" type="TextureProgress" parent="ui/character-stats/right-side/lust"]
+[node name="high_fill" type="TextureProgress" parent="canvas-layer_default/ui/character-stats/right-side/lust"]
 anchor_left = 0.019
 anchor_top = 0.167
 anchor_right = 0.988
@@ -923,7 +872,7 @@ value = 50.0
 texture_progress = ExtResource( 43 )
 fill_mode = 1
 
-[node name="value" type="Label" parent="ui/character-stats/right-side/lust"]
+[node name="value" type="Label" parent="canvas-layer_default/ui/character-stats/right-side/lust"]
 anchor_left = -0.349
 anchor_right = -0.047
 anchor_bottom = 1.167
@@ -940,7 +889,7 @@ autowrap = true
 max_lines_visible = 1
 script = ExtResource( 31 )
 
-[node name="grid-stats" type="GridContainer" parent="ui/character-stats/right-side"]
+[node name="grid-stats" type="GridContainer" parent="canvas-layer_default/ui/character-stats/right-side"]
 margin_left = 137.0
 margin_top = 864.0
 margin_right = 645.0
@@ -952,14 +901,14 @@ custom_constants/vseparation = 0
 custom_constants/hseparation = 12
 columns = 5
 
-[node name="debuff-rate" parent="ui/character-stats/right-side/grid-stats" instance=ExtResource( 21 )]
+[node name="debuff-rate" parent="canvas-layer_default/ui/character-stats/right-side/grid-stats" instance=ExtResource( 21 )]
 margin_right = 92.0
 
-[node name="icon" parent="ui/character-stats/right-side/grid-stats/debuff-rate" index="0"]
+[node name="icon" parent="canvas-layer_default/ui/character-stats/right-side/grid-stats/debuff-rate" index="0"]
 texture = ExtResource( 25 )
 region_rect = Rect2( 11, 7, 48, 48 )
 
-[node name="value" parent="ui/character-stats/right-side/grid-stats/debuff-rate" index="1"]
+[node name="value" parent="canvas-layer_default/ui/character-stats/right-side/grid-stats/debuff-rate" index="1"]
 margin_left = -3.956
 margin_top = 2.0
 margin_right = 5.996
@@ -968,15 +917,15 @@ text = "20"
 min_size = null
 max_size = null
 
-[node name="debuff-resistance" parent="ui/character-stats/right-side/grid-stats" instance=ExtResource( 21 )]
+[node name="debuff-resistance" parent="canvas-layer_default/ui/character-stats/right-side/grid-stats" instance=ExtResource( 21 )]
 margin_left = 104.0
 margin_right = 196.0
 
-[node name="icon" parent="ui/character-stats/right-side/grid-stats/debuff-resistance" index="0"]
+[node name="icon" parent="canvas-layer_default/ui/character-stats/right-side/grid-stats/debuff-resistance" index="0"]
 texture = ExtResource( 26 )
 region_rect = Rect2( 11, 7, 48, 48 )
 
-[node name="value" parent="ui/character-stats/right-side/grid-stats/debuff-resistance" index="1"]
+[node name="value" parent="canvas-layer_default/ui/character-stats/right-side/grid-stats/debuff-resistance" index="1"]
 margin_left = -3.956
 margin_top = 2.0
 margin_right = 5.996
@@ -985,15 +934,15 @@ text = "20"
 min_size = null
 max_size = null
 
-[node name="toughness" parent="ui/character-stats/right-side/grid-stats" instance=ExtResource( 21 )]
+[node name="toughness" parent="canvas-layer_default/ui/character-stats/right-side/grid-stats" instance=ExtResource( 21 )]
 margin_left = 208.0
 margin_right = 300.0
 
-[node name="icon" parent="ui/character-stats/right-side/grid-stats/toughness" index="0"]
+[node name="icon" parent="canvas-layer_default/ui/character-stats/right-side/grid-stats/toughness" index="0"]
 texture = ExtResource( 30 )
 region_rect = Rect2( 10, 7, 48, 48 )
 
-[node name="value" parent="ui/character-stats/right-side/grid-stats/toughness" index="1"]
+[node name="value" parent="canvas-layer_default/ui/character-stats/right-side/grid-stats/toughness" index="1"]
 margin_left = -3.956
 margin_top = 2.0
 margin_right = 5.996
@@ -1002,15 +951,15 @@ text = "20"
 min_size = null
 max_size = null
 
-[node name="crit-rate" parent="ui/character-stats/right-side/grid-stats" instance=ExtResource( 21 )]
+[node name="crit-rate" parent="canvas-layer_default/ui/character-stats/right-side/grid-stats" instance=ExtResource( 21 )]
 margin_left = 312.0
 margin_right = 404.0
 
-[node name="icon" parent="ui/character-stats/right-side/grid-stats/crit-rate" index="0"]
+[node name="icon" parent="canvas-layer_default/ui/character-stats/right-side/grid-stats/crit-rate" index="0"]
 texture = ExtResource( 20 )
 region_rect = Rect2( 8, 9, 48, 48 )
 
-[node name="value" parent="ui/character-stats/right-side/grid-stats/crit-rate" index="1"]
+[node name="value" parent="canvas-layer_default/ui/character-stats/right-side/grid-stats/crit-rate" index="1"]
 margin_left = -3.956
 margin_top = 2.0
 margin_right = 5.996
@@ -1019,11 +968,11 @@ text = "+8"
 min_size = null
 max_size = null
 
-[node name="damage" parent="ui/character-stats/right-side/grid-stats" instance=ExtResource( 21 )]
+[node name="damage" parent="canvas-layer_default/ui/character-stats/right-side/grid-stats" instance=ExtResource( 21 )]
 margin_left = 416.0
 margin_right = 508.0
 
-[node name="value" parent="ui/character-stats/right-side/grid-stats/damage" index="1"]
+[node name="value" parent="canvas-layer_default/ui/character-stats/right-side/grid-stats/damage" index="1"]
 margin_left = -3.956
 margin_top = 2.0
 margin_right = 5.996
@@ -1031,16 +980,16 @@ margin_bottom = 0.0
 min_size = null
 max_size = null
 
-[node name="move-rate" parent="ui/character-stats/right-side/grid-stats" instance=ExtResource( 21 )]
+[node name="move-rate" parent="canvas-layer_default/ui/character-stats/right-side/grid-stats" instance=ExtResource( 21 )]
 margin_top = 42.0
 margin_right = 92.0
 margin_bottom = 84.0
 
-[node name="icon" parent="ui/character-stats/right-side/grid-stats/move-rate" index="0"]
+[node name="icon" parent="canvas-layer_default/ui/character-stats/right-side/grid-stats/move-rate" index="0"]
 texture = ExtResource( 28 )
 region_rect = Rect2( 11, 7, 48, 48 )
 
-[node name="value" parent="ui/character-stats/right-side/grid-stats/move-rate" index="1"]
+[node name="value" parent="canvas-layer_default/ui/character-stats/right-side/grid-stats/move-rate" index="1"]
 margin_left = -3.956
 margin_top = 2.0
 margin_right = 5.996
@@ -1049,17 +998,17 @@ text = "20"
 min_size = null
 max_size = null
 
-[node name="move-resistance" parent="ui/character-stats/right-side/grid-stats" instance=ExtResource( 21 )]
+[node name="move-resistance" parent="canvas-layer_default/ui/character-stats/right-side/grid-stats" instance=ExtResource( 21 )]
 margin_left = 104.0
 margin_top = 42.0
 margin_right = 196.0
 margin_bottom = 84.0
 
-[node name="icon" parent="ui/character-stats/right-side/grid-stats/move-resistance" index="0"]
+[node name="icon" parent="canvas-layer_default/ui/character-stats/right-side/grid-stats/move-resistance" index="0"]
 texture = ExtResource( 27 )
 region_rect = Rect2( 11, 7, 48, 48 )
 
-[node name="value" parent="ui/character-stats/right-side/grid-stats/move-resistance" index="1"]
+[node name="value" parent="canvas-layer_default/ui/character-stats/right-side/grid-stats/move-resistance" index="1"]
 margin_left = -3.956
 margin_top = 2.0
 margin_right = 5.996
@@ -1068,17 +1017,17 @@ text = "20"
 min_size = null
 max_size = null
 
-[node name="composure" parent="ui/character-stats/right-side/grid-stats" instance=ExtResource( 21 )]
+[node name="composure" parent="canvas-layer_default/ui/character-stats/right-side/grid-stats" instance=ExtResource( 21 )]
 margin_left = 208.0
 margin_top = 42.0
 margin_right = 300.0
 margin_bottom = 84.0
 
-[node name="icon" parent="ui/character-stats/right-side/grid-stats/composure" index="0"]
+[node name="icon" parent="canvas-layer_default/ui/character-stats/right-side/grid-stats/composure" index="0"]
 texture = ExtResource( 29 )
 region_rect = Rect2( 10, 7, 48, 48 )
 
-[node name="value" parent="ui/character-stats/right-side/grid-stats/composure" index="1"]
+[node name="value" parent="canvas-layer_default/ui/character-stats/right-side/grid-stats/composure" index="1"]
 margin_left = -3.956
 margin_top = 2.0
 margin_right = 5.996
@@ -1087,17 +1036,17 @@ text = "20"
 min_size = null
 max_size = null
 
-[node name="speed" parent="ui/character-stats/right-side/grid-stats" instance=ExtResource( 21 )]
+[node name="speed" parent="canvas-layer_default/ui/character-stats/right-side/grid-stats" instance=ExtResource( 21 )]
 margin_left = 312.0
 margin_top = 42.0
 margin_right = 404.0
 margin_bottom = 84.0
 
-[node name="icon" parent="ui/character-stats/right-side/grid-stats/speed" index="0"]
+[node name="icon" parent="canvas-layer_default/ui/character-stats/right-side/grid-stats/speed" index="0"]
 texture = ExtResource( 16 )
 region_rect = Rect2( 9, 8, 48, 48 )
 
-[node name="value" parent="ui/character-stats/right-side/grid-stats/speed" index="1"]
+[node name="value" parent="canvas-layer_default/ui/character-stats/right-side/grid-stats/speed" index="1"]
 margin_left = -3.956
 margin_top = 2.0
 margin_right = 5.996
@@ -1106,16 +1055,16 @@ text = "120"
 min_size = null
 max_size = null
 
-[node name="power" parent="ui/character-stats/right-side/grid-stats" instance=ExtResource( 21 )]
+[node name="power" parent="canvas-layer_default/ui/character-stats/right-side/grid-stats" instance=ExtResource( 21 )]
 margin_left = 416.0
 margin_top = 42.0
 margin_right = 508.0
 margin_bottom = 84.0
 
-[node name="icon" parent="ui/character-stats/right-side/grid-stats/power" index="0"]
+[node name="icon" parent="canvas-layer_default/ui/character-stats/right-side/grid-stats/power" index="0"]
 texture = ExtResource( 17 )
 
-[node name="value" parent="ui/character-stats/right-side/grid-stats/power" index="1"]
+[node name="value" parent="canvas-layer_default/ui/character-stats/right-side/grid-stats/power" index="1"]
 margin_left = -3.956
 margin_top = 2.0
 margin_right = 5.996
@@ -1124,16 +1073,16 @@ text = "100"
 min_size = null
 max_size = null
 
-[node name="poison-rate" parent="ui/character-stats/right-side/grid-stats" instance=ExtResource( 21 )]
+[node name="poison-rate" parent="canvas-layer_default/ui/character-stats/right-side/grid-stats" instance=ExtResource( 21 )]
 margin_top = 84.0
 margin_right = 92.0
 margin_bottom = 126.0
 
-[node name="icon" parent="ui/character-stats/right-side/grid-stats/poison-rate" index="0"]
+[node name="icon" parent="canvas-layer_default/ui/character-stats/right-side/grid-stats/poison-rate" index="0"]
 texture = ExtResource( 22 )
 region_rect = Rect2( 11, 7, 48, 48 )
 
-[node name="value" parent="ui/character-stats/right-side/grid-stats/poison-rate" index="1"]
+[node name="value" parent="canvas-layer_default/ui/character-stats/right-side/grid-stats/poison-rate" index="1"]
 margin_left = -3.956
 margin_top = 2.0
 margin_right = 5.996
@@ -1142,17 +1091,17 @@ text = "20"
 min_size = null
 max_size = null
 
-[node name="poison-resistance" parent="ui/character-stats/right-side/grid-stats" instance=ExtResource( 21 )]
+[node name="poison-resistance" parent="canvas-layer_default/ui/character-stats/right-side/grid-stats" instance=ExtResource( 21 )]
 margin_left = 104.0
 margin_top = 84.0
 margin_right = 196.0
 margin_bottom = 126.0
 
-[node name="icon" parent="ui/character-stats/right-side/grid-stats/poison-resistance" index="0"]
+[node name="icon" parent="canvas-layer_default/ui/character-stats/right-side/grid-stats/poison-resistance" index="0"]
 texture = ExtResource( 24 )
 region_rect = Rect2( 11, 7, 48, 48 )
 
-[node name="value" parent="ui/character-stats/right-side/grid-stats/poison-resistance" index="1"]
+[node name="value" parent="canvas-layer_default/ui/character-stats/right-side/grid-stats/poison-resistance" index="1"]
 margin_left = -3.956
 margin_top = 2.0
 margin_right = 5.996
@@ -1161,17 +1110,17 @@ text = "20"
 min_size = null
 max_size = null
 
-[node name="stun-mitigation" parent="ui/character-stats/right-side/grid-stats" instance=ExtResource( 21 )]
+[node name="stun-mitigation" parent="canvas-layer_default/ui/character-stats/right-side/grid-stats" instance=ExtResource( 21 )]
 margin_left = 208.0
 margin_top = 84.0
 margin_right = 300.0
 margin_bottom = 126.0
 
-[node name="icon" parent="ui/character-stats/right-side/grid-stats/stun-mitigation" index="0"]
+[node name="icon" parent="canvas-layer_default/ui/character-stats/right-side/grid-stats/stun-mitigation" index="0"]
 texture = ExtResource( 23 )
 region_rect = Rect2( 10, 7, 48, 48 )
 
-[node name="value" parent="ui/character-stats/right-side/grid-stats/stun-mitigation" index="1"]
+[node name="value" parent="canvas-layer_default/ui/character-stats/right-side/grid-stats/stun-mitigation" index="1"]
 margin_left = -3.956
 margin_top = 2.0
 margin_right = 5.996
@@ -1180,17 +1129,17 @@ text = "20"
 min_size = null
 max_size = null
 
-[node name="dodge" parent="ui/character-stats/right-side/grid-stats" instance=ExtResource( 21 )]
+[node name="dodge" parent="canvas-layer_default/ui/character-stats/right-side/grid-stats" instance=ExtResource( 21 )]
 margin_left = 312.0
 margin_top = 84.0
 margin_right = 404.0
 margin_bottom = 126.0
 
-[node name="icon" parent="ui/character-stats/right-side/grid-stats/dodge" index="0"]
+[node name="icon" parent="canvas-layer_default/ui/character-stats/right-side/grid-stats/dodge" index="0"]
 texture = ExtResource( 18 )
 region_rect = Rect2( 10, 9, 48, 48 )
 
-[node name="value" parent="ui/character-stats/right-side/grid-stats/dodge" index="1"]
+[node name="value" parent="canvas-layer_default/ui/character-stats/right-side/grid-stats/dodge" index="1"]
 margin_left = -3.956
 margin_top = 2.0
 margin_right = 5.996
@@ -1199,17 +1148,17 @@ text = "10"
 min_size = null
 max_size = null
 
-[node name="accuracy" parent="ui/character-stats/right-side/grid-stats" instance=ExtResource( 21 )]
+[node name="accuracy" parent="canvas-layer_default/ui/character-stats/right-side/grid-stats" instance=ExtResource( 21 )]
 margin_left = 416.0
 margin_top = 84.0
 margin_right = 508.0
 margin_bottom = 126.0
 
-[node name="icon" parent="ui/character-stats/right-side/grid-stats/accuracy" index="0"]
+[node name="icon" parent="canvas-layer_default/ui/character-stats/right-side/grid-stats/accuracy" index="0"]
 texture = ExtResource( 19 )
 region_rect = Rect2( 8, 9, 48, 48 )
 
-[node name="value" parent="ui/character-stats/right-side/grid-stats/accuracy" index="1"]
+[node name="value" parent="canvas-layer_default/ui/character-stats/right-side/grid-stats/accuracy" index="1"]
 margin_left = -3.956
 margin_top = 2.0
 margin_right = 5.996
@@ -1218,7 +1167,7 @@ text = "+15"
 min_size = null
 max_size = null
 
-[node name="orgasm-counter" type="HBoxContainer" parent="ui/character-stats/right-side"]
+[node name="orgasm-counter" type="HBoxContainer" parent="canvas-layer_default/ui/character-stats/right-side"]
 margin_left = 20.0
 margin_top = 1016.0
 margin_right = 560.0
@@ -1226,54 +1175,54 @@ margin_bottom = 1080.0
 rect_clip_content = true
 alignment = 2
 
-[node name="prefab_orgasm_toggle" type="TextureRect" parent="ui/character-stats/right-side/orgasm-counter"]
+[node name="prefab_orgasm_toggle" type="TextureRect" parent="canvas-layer_default/ui/character-stats/right-side/orgasm-counter"]
 margin_right = 64.0
 margin_bottom = 64.0
 texture = ExtResource( 34 )
 
-[node name="prefab_orgasm_toggle_2" type="TextureRect" parent="ui/character-stats/right-side/orgasm-counter"]
+[node name="prefab_orgasm_toggle_2" type="TextureRect" parent="canvas-layer_default/ui/character-stats/right-side/orgasm-counter"]
 margin_left = 68.0
 margin_right = 132.0
 margin_bottom = 64.0
 texture = ExtResource( 34 )
 
-[node name="prefab_orgasm_toggle_3" type="TextureRect" parent="ui/character-stats/right-side/orgasm-counter"]
+[node name="prefab_orgasm_toggle_3" type="TextureRect" parent="canvas-layer_default/ui/character-stats/right-side/orgasm-counter"]
 margin_left = 136.0
 margin_right = 200.0
 margin_bottom = 64.0
 texture = ExtResource( 34 )
 
-[node name="prefab_orgasm_toggle_4" type="TextureRect" parent="ui/character-stats/right-side/orgasm-counter"]
+[node name="prefab_orgasm_toggle_4" type="TextureRect" parent="canvas-layer_default/ui/character-stats/right-side/orgasm-counter"]
 margin_left = 204.0
 margin_right = 268.0
 margin_bottom = 64.0
 texture = ExtResource( 34 )
 
-[node name="prefab_orgasm_toggle_5" type="TextureRect" parent="ui/character-stats/right-side/orgasm-counter"]
+[node name="prefab_orgasm_toggle_5" type="TextureRect" parent="canvas-layer_default/ui/character-stats/right-side/orgasm-counter"]
 margin_left = 272.0
 margin_right = 336.0
 margin_bottom = 64.0
 texture = ExtResource( 34 )
 
-[node name="prefab_orgasm_toggle_6" type="TextureRect" parent="ui/character-stats/right-side/orgasm-counter"]
+[node name="prefab_orgasm_toggle_6" type="TextureRect" parent="canvas-layer_default/ui/character-stats/right-side/orgasm-counter"]
 margin_left = 340.0
 margin_right = 404.0
 margin_bottom = 64.0
 texture = ExtResource( 34 )
 
-[node name="prefab_orgasm_toggle_7" type="TextureRect" parent="ui/character-stats/right-side/orgasm-counter"]
+[node name="prefab_orgasm_toggle_7" type="TextureRect" parent="canvas-layer_default/ui/character-stats/right-side/orgasm-counter"]
 margin_left = 408.0
 margin_right = 472.0
 margin_bottom = 64.0
 texture = ExtResource( 34 )
 
-[node name="prefab_orgasm_toggle_8" type="TextureRect" parent="ui/character-stats/right-side/orgasm-counter"]
+[node name="prefab_orgasm_toggle_8" type="TextureRect" parent="canvas-layer_default/ui/character-stats/right-side/orgasm-counter"]
 margin_left = 476.0
 margin_right = 540.0
 margin_bottom = 64.0
 texture = ExtResource( 34 )
 
-[node name="portrait" type="TextureRect" parent="ui/character-stats/right-side"]
+[node name="portrait" type="TextureRect" parent="canvas-layer_default/ui/character-stats/right-side"]
 margin_left = 656.0
 margin_top = 740.0
 margin_right = 912.0
@@ -1283,13 +1232,13 @@ expand = true
 stretch_mode = 1
 flip_h = true
 
-[node name="frame" type="TextureRect" parent="ui/character-stats/right-side"]
+[node name="frame" type="TextureRect" parent="canvas-layer_default/ui/character-stats/right-side"]
 anchor_left = -1.0
 anchor_right = 1.0
 anchor_bottom = 1.0
 texture = ExtResource( 39 )
 
-[node name="name" type="Label" parent="ui/character-stats/right-side"]
+[node name="name" type="Label" parent="canvas-layer_default/ui/character-stats/right-side"]
 margin_left = 660.0
 margin_top = 998.0
 margin_right = 900.0
@@ -1303,41 +1252,41 @@ autowrap = true
 max_lines_visible = 1
 script = ExtResource( 31 )
 
-[node name="skills" type="Control" parent="ui/character-stats"]
+[node name="skills" type="Control" parent="canvas-layer_default/ui/character-stats"]
 anchor_right = 1.0
 anchor_bottom = 1.0
 
-[node name="prefab_skill_button" parent="ui/character-stats/skills" instance=ExtResource( 36 )]
+[node name="prefab_skill_button" parent="canvas-layer_default/ui/character-stats/skills" instance=ExtResource( 36 )]
 
-[node name="prefab_skill_button_2" parent="ui/character-stats/skills" instance=ExtResource( 36 )]
+[node name="prefab_skill_button_2" parent="canvas-layer_default/ui/character-stats/skills" instance=ExtResource( 36 )]
 margin_left = 814.0
 margin_right = 942.0
 
-[node name="prefab_skill_button_3" parent="ui/character-stats/skills" instance=ExtResource( 36 )]
+[node name="prefab_skill_button_3" parent="canvas-layer_default/ui/character-stats/skills" instance=ExtResource( 36 )]
 margin_left = 974.0
 margin_right = 1102.0
 
-[node name="prefab_skill_button_4" parent="ui/character-stats/skills" instance=ExtResource( 36 )]
+[node name="prefab_skill_button_4" parent="canvas-layer_default/ui/character-stats/skills" instance=ExtResource( 36 )]
 margin_left = 1126.0
 margin_right = 1254.0
 
-[node name="frame" type="TextureRect" parent="ui/character-stats/skills"]
+[node name="frame" type="TextureRect" parent="canvas-layer_default/ui/character-stats/skills"]
 anchor_right = 1.0
 anchor_bottom = 1.0
 texture = ExtResource( 35 )
 
-[node name="targeting_tooltip" type="VBoxContainer" parent="ui"]
+[node name="targeting_tooltip" type="VBoxContainer" parent="canvas-layer_default/ui"]
 margin_left = 742.0
 margin_top = 298.0
 margin_right = 843.0
 margin_bottom = 354.0
 
-[node name="painel-container" type="PanelContainer" parent="ui/targeting_tooltip"]
+[node name="painel-container" type="PanelContainer" parent="canvas-layer_default/ui/targeting_tooltip"]
 margin_right = 216.0
 margin_bottom = 196.0
 theme = ExtResource( 58 )
 
-[node name="vertical-container" type="VBoxContainer" parent="ui/targeting_tooltip/painel-container"]
+[node name="vertical-container" type="VBoxContainer" parent="canvas-layer_default/ui/targeting_tooltip/painel-container"]
 margin_left = 8.0
 margin_top = 8.0
 margin_right = 208.0
@@ -1347,18 +1296,18 @@ grow_vertical = 2
 size_flags_horizontal = 0
 size_flags_vertical = 0
 
-[node name="hit-chance" type="CenterContainer" parent="ui/targeting_tooltip/painel-container/vertical-container"]
+[node name="hit-chance" type="CenterContainer" parent="canvas-layer_default/ui/targeting_tooltip/painel-container/vertical-container"]
 margin_right = 200.0
 margin_bottom = 48.0
 
-[node name="horizontal-container" type="HBoxContainer" parent="ui/targeting_tooltip/painel-container/vertical-container/hit-chance"]
+[node name="horizontal-container" type="HBoxContainer" parent="canvas-layer_default/ui/targeting_tooltip/painel-container/vertical-container/hit-chance"]
 margin_left = 51.0
 margin_right = 148.0
 margin_bottom = 48.0
 size_flags_horizontal = 0
 size_flags_vertical = 0
 
-[node name="icon" type="NinePatchRect" parent="ui/targeting_tooltip/painel-container/vertical-container/hit-chance/horizontal-container"]
+[node name="icon" type="NinePatchRect" parent="canvas-layer_default/ui/targeting_tooltip/painel-container/vertical-container/hit-chance/horizontal-container"]
 margin_right = 48.0
 margin_bottom = 48.0
 grow_horizontal = 0
@@ -1366,7 +1315,7 @@ rect_min_size = Vector2( 48, 48 )
 texture = ExtResource( 19 )
 region_rect = Rect2( 8, 9, 48, 48 )
 
-[node name="value" type="Label" parent="ui/targeting_tooltip/painel-container/vertical-container/hit-chance/horizontal-container"]
+[node name="value" type="Label" parent="canvas-layer_default/ui/targeting_tooltip/painel-container/vertical-container/hit-chance/horizontal-container"]
 margin_left = 52.0
 margin_right = 97.0
 margin_bottom = 48.0
@@ -1374,19 +1323,19 @@ rect_min_size = Vector2( 0, 48 )
 text = "80%"
 valign = 1
 
-[node name="crit-chance" type="CenterContainer" parent="ui/targeting_tooltip/painel-container/vertical-container"]
+[node name="crit-chance" type="CenterContainer" parent="canvas-layer_default/ui/targeting_tooltip/painel-container/vertical-container"]
 margin_top = 52.0
 margin_right = 200.0
 margin_bottom = 100.0
 
-[node name="horizontal-container" type="HBoxContainer" parent="ui/targeting_tooltip/painel-container/vertical-container/crit-chance"]
+[node name="horizontal-container" type="HBoxContainer" parent="canvas-layer_default/ui/targeting_tooltip/painel-container/vertical-container/crit-chance"]
 margin_left = 51.0
 margin_right = 148.0
 margin_bottom = 48.0
 size_flags_horizontal = 0
 size_flags_vertical = 0
 
-[node name="icon" type="NinePatchRect" parent="ui/targeting_tooltip/painel-container/vertical-container/crit-chance/horizontal-container"]
+[node name="icon" type="NinePatchRect" parent="canvas-layer_default/ui/targeting_tooltip/painel-container/vertical-container/crit-chance/horizontal-container"]
 margin_right = 48.0
 margin_bottom = 48.0
 grow_horizontal = 0
@@ -1394,7 +1343,7 @@ rect_min_size = Vector2( 48, 48 )
 texture = ExtResource( 20 )
 region_rect = Rect2( 8, 9, 48, 48 )
 
-[node name="value" type="Label" parent="ui/targeting_tooltip/painel-container/vertical-container/crit-chance/horizontal-container"]
+[node name="value" type="Label" parent="canvas-layer_default/ui/targeting_tooltip/painel-container/vertical-container/crit-chance/horizontal-container"]
 margin_left = 52.0
 margin_right = 97.0
 margin_bottom = 48.0
@@ -1402,19 +1351,19 @@ rect_min_size = Vector2( 0, 48 )
 text = "15%"
 valign = 1
 
-[node name="damage" type="CenterContainer" parent="ui/targeting_tooltip/painel-container/vertical-container"]
+[node name="damage" type="CenterContainer" parent="canvas-layer_default/ui/targeting_tooltip/painel-container/vertical-container"]
 margin_top = 104.0
 margin_right = 200.0
 margin_bottom = 152.0
 
-[node name="horizontal-container" type="HBoxContainer" parent="ui/targeting_tooltip/painel-container/vertical-container/damage"]
+[node name="horizontal-container" type="HBoxContainer" parent="canvas-layer_default/ui/targeting_tooltip/painel-container/vertical-container/damage"]
 margin_left = 51.0
 margin_right = 148.0
 margin_bottom = 48.0
 size_flags_horizontal = 0
 size_flags_vertical = 0
 
-[node name="icon" type="NinePatchRect" parent="ui/targeting_tooltip/painel-container/vertical-container/damage/horizontal-container"]
+[node name="icon" type="NinePatchRect" parent="canvas-layer_default/ui/targeting_tooltip/painel-container/vertical-container/damage/horizontal-container"]
 margin_right = 48.0
 margin_bottom = 48.0
 grow_horizontal = 0
@@ -1422,7 +1371,7 @@ rect_min_size = Vector2( 48, 48 )
 texture = ExtResource( 56 )
 region_rect = Rect2( 8, 8, 48, 48 )
 
-[node name="value" type="Label" parent="ui/targeting_tooltip/painel-container/vertical-container/damage/horizontal-container"]
+[node name="value" type="Label" parent="canvas-layer_default/ui/targeting_tooltip/painel-container/vertical-container/damage/horizontal-container"]
 margin_left = 52.0
 margin_right = 97.0
 margin_bottom = 48.0
@@ -1430,86 +1379,58 @@ rect_min_size = Vector2( 0, 48 )
 text = "5~7"
 valign = 1
 
-[node name="effects" type="Label" parent="ui/targeting_tooltip/painel-container/vertical-container"]
+[node name="effects" type="Label" parent="canvas-layer_default/ui/targeting_tooltip/painel-container/vertical-container"]
 margin_top = 155.0
 margin_right = 200.0
 margin_bottom = 179.188
 custom_fonts/font = ExtResource( 57 )
 text = "Poison 5 pts => 50%"
 
-[node name="animation_player" type="AnimationPlayer" parent="."]
-root_node = NodePath("../animation test")
-anims/pierce_anim = SubResource( 3 )
+[node name="characters" type="Node2D" parent="canvas-layer_default"]
 
-[node name="animation test" type="Node2D" parent="."]
+[node name="ethel" parent="canvas-layer_default/characters" instance=ExtResource( 59 )]
 
-[node name="pierce" type="Node2D" parent="animation test"]
-position = Vector2( 276, 678 )
-
-[node name="sprite" type="Sprite" parent="animation test/pierce"]
-position = Vector2( 807, -61.549 )
-scale = Vector2( 1.25, 1.25 )
-texture = ExtResource( 60 )
-offset = Vector2( 0, -180 )
-
-[node name="slash_sprite" type="Sprite" parent="animation test/pierce/sprite"]
-visible = false
-position = Vector2( 105, -212 )
-texture = ExtResource( 59 )
-
-[node name="trail" type="Particles2D" parent="animation test/pierce/sprite"]
-show_behind_parent = true
-material = ExtResource( 63 )
-position = Vector2( 0, -180 )
-emitting = false
-amount = 6
-lifetime = 0.6
-explosiveness = 0.75
-local_coords = false
-process_material = ExtResource( 62 )
-texture = ExtResource( 60 )
-
-[node name="slash_particles" type="Particles2D" parent="animation test/pierce/sprite"]
-position = Vector2( 105, -212 )
-emitting = false
-amount = 3
-lifetime = 0.75
-explosiveness = 0.5
-process_material = ExtResource( 61 )
-texture = ExtResource( 59 )
-
-[node name="canvas-layer_skill-animation" type="CanvasLayer" parent="."]
+[node name="canvas-layer_skill-anim" type="CanvasLayer" parent="."]
 follow_viewport_enable = true
 
-[node name="skill-animation" type="Node2D" parent="canvas-layer_skill-animation"]
+[node name="canvas-modulate" type="CanvasModulate" parent="canvas-layer_skill-anim"]
+color = Color( 1, 1, 1, 0 )
 
-[editable path="ui/character-stats/left-side/grid-stats/damage"]
-[editable path="ui/character-stats/left-side/grid-stats/crit-rate"]
-[editable path="ui/character-stats/left-side/grid-stats/toughness"]
-[editable path="ui/character-stats/left-side/grid-stats/debuff-resistance"]
-[editable path="ui/character-stats/left-side/grid-stats/debuff-rate"]
-[editable path="ui/character-stats/left-side/grid-stats/power"]
-[editable path="ui/character-stats/left-side/grid-stats/speed"]
-[editable path="ui/character-stats/left-side/grid-stats/composure"]
-[editable path="ui/character-stats/left-side/grid-stats/move-resistance"]
-[editable path="ui/character-stats/left-side/grid-stats/move-rate"]
-[editable path="ui/character-stats/left-side/grid-stats/accuracy"]
-[editable path="ui/character-stats/left-side/grid-stats/dodge"]
-[editable path="ui/character-stats/left-side/grid-stats/stun-mitigation"]
-[editable path="ui/character-stats/left-side/grid-stats/poison-resistance"]
-[editable path="ui/character-stats/left-side/grid-stats/poison-rate"]
-[editable path="ui/character-stats/right-side/grid-stats/debuff-rate"]
-[editable path="ui/character-stats/right-side/grid-stats/debuff-resistance"]
-[editable path="ui/character-stats/right-side/grid-stats/toughness"]
-[editable path="ui/character-stats/right-side/grid-stats/crit-rate"]
-[editable path="ui/character-stats/right-side/grid-stats/damage"]
-[editable path="ui/character-stats/right-side/grid-stats/move-rate"]
-[editable path="ui/character-stats/right-side/grid-stats/move-resistance"]
-[editable path="ui/character-stats/right-side/grid-stats/composure"]
-[editable path="ui/character-stats/right-side/grid-stats/speed"]
-[editable path="ui/character-stats/right-side/grid-stats/power"]
-[editable path="ui/character-stats/right-side/grid-stats/poison-rate"]
-[editable path="ui/character-stats/right-side/grid-stats/poison-resistance"]
-[editable path="ui/character-stats/right-side/grid-stats/stun-mitigation"]
-[editable path="ui/character-stats/right-side/grid-stats/dodge"]
-[editable path="ui/character-stats/right-side/grid-stats/accuracy"]
+[node name="splash-screen" type="Sprite" parent="canvas-layer_skill-anim"]
+position = Vector2( 960, 540 )
+texture = ExtResource( 60 )
+
+[node name="skill-animation" type="Node2D" parent="canvas-layer_skill-anim"]
+
+[node name="characters" type="Node2D" parent="canvas-layer_skill-anim"]
+
+[editable path="canvas-layer_default/ui/character-stats/left-side/grid-stats/damage"]
+[editable path="canvas-layer_default/ui/character-stats/left-side/grid-stats/crit-rate"]
+[editable path="canvas-layer_default/ui/character-stats/left-side/grid-stats/toughness"]
+[editable path="canvas-layer_default/ui/character-stats/left-side/grid-stats/debuff-resistance"]
+[editable path="canvas-layer_default/ui/character-stats/left-side/grid-stats/debuff-rate"]
+[editable path="canvas-layer_default/ui/character-stats/left-side/grid-stats/power"]
+[editable path="canvas-layer_default/ui/character-stats/left-side/grid-stats/speed"]
+[editable path="canvas-layer_default/ui/character-stats/left-side/grid-stats/composure"]
+[editable path="canvas-layer_default/ui/character-stats/left-side/grid-stats/move-resistance"]
+[editable path="canvas-layer_default/ui/character-stats/left-side/grid-stats/move-rate"]
+[editable path="canvas-layer_default/ui/character-stats/left-side/grid-stats/accuracy"]
+[editable path="canvas-layer_default/ui/character-stats/left-side/grid-stats/dodge"]
+[editable path="canvas-layer_default/ui/character-stats/left-side/grid-stats/stun-mitigation"]
+[editable path="canvas-layer_default/ui/character-stats/left-side/grid-stats/poison-resistance"]
+[editable path="canvas-layer_default/ui/character-stats/left-side/grid-stats/poison-rate"]
+[editable path="canvas-layer_default/ui/character-stats/right-side/grid-stats/debuff-rate"]
+[editable path="canvas-layer_default/ui/character-stats/right-side/grid-stats/debuff-resistance"]
+[editable path="canvas-layer_default/ui/character-stats/right-side/grid-stats/toughness"]
+[editable path="canvas-layer_default/ui/character-stats/right-side/grid-stats/crit-rate"]
+[editable path="canvas-layer_default/ui/character-stats/right-side/grid-stats/damage"]
+[editable path="canvas-layer_default/ui/character-stats/right-side/grid-stats/move-rate"]
+[editable path="canvas-layer_default/ui/character-stats/right-side/grid-stats/move-resistance"]
+[editable path="canvas-layer_default/ui/character-stats/right-side/grid-stats/composure"]
+[editable path="canvas-layer_default/ui/character-stats/right-side/grid-stats/speed"]
+[editable path="canvas-layer_default/ui/character-stats/right-side/grid-stats/power"]
+[editable path="canvas-layer_default/ui/character-stats/right-side/grid-stats/poison-rate"]
+[editable path="canvas-layer_default/ui/character-stats/right-side/grid-stats/poison-resistance"]
+[editable path="canvas-layer_default/ui/character-stats/right-side/grid-stats/stun-mitigation"]
+[editable path="canvas-layer_default/ui/character-stats/right-side/grid-stats/dodge"]
+[editable path="canvas-layer_default/ui/character-stats/right-side/grid-stats/accuracy"]

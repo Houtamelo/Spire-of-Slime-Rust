@@ -10,13 +10,34 @@ use crate::combat::graphics::entity_anim::EntityAnim;
 use crate::combat::graphics::stages::CombatStage;
 
 use std::iter;
+use gdnative::export::Export;
+use gdnative::export::hint::{ArrayHint, EnumHint, IntHint};
 use rand::{Rng, SeedableRng};
 use rand_xoshiro::Xoshiro256StarStar;
+use strum::VariantNames;
 use entity_anim::default_position::calc_default_positions;
 use exported_skill::SkillWrapper;
 
 mod exported_skill;
 mod exported_character;
+
+#[derive(Default, FromVariant, ToVariant)]
+struct Targets(pub Vec<NameWrapper>);
+
+impl Export for Targets {
+	type Hint = ArrayHint;
+
+	fn export_info(_hint: Option<Self::Hint>) -> ExportInfo {
+		let values =
+			GirlName::VARIANTS.iter()
+			                  .chain(NPCName::VARIANTS)
+			                  .map(|v| v.to_string())
+			                  .collect::<Vec<_>>();
+		
+		ArrayHint::with_element_hint::<CharacterName>(<IntHint<u16>>::Enum(EnumHint::new(values))).export_info()
+	}
+}
+
 
 #[extends(Node)]
 pub struct AnimTester {
@@ -24,7 +45,7 @@ pub struct AnimTester {
 	#[export_path] button_play_defensive: Option<Ref<Button>>,
 	#[export_path] button_play_lewd: Option<Ref<Button>>,
 	#[property] caster: NameWrapper,
-	#[property] targets: Vec<NameWrapper>,
+	#[property] targets: Targets,
 	#[property] skill: SkillWrapper,
 	loaded_characters: Vec<CharacterNode>,
 	current_sequence: Option<SequenceID>,
@@ -62,7 +83,7 @@ impl AnimTester {
 		let caster = load_character(owner, self.caster.0);
 		let mut rng = Xoshiro256StarStar::from_entropy();
 		let targets = 
-			self.targets
+			self.targets.0
 				.iter()
 				.map(|node| {
 					(load_character(owner, node.0),
@@ -97,7 +118,7 @@ impl AnimTester {
 						(target.clone(), Position { order: i.into(), size: target.name().position_size(), side: Side::Right })
 					})).collect::<Vec<_>>();
 			
-			calc_default_positions(CombatStage::BellPlantGrove.padding(), with_positions.into_iter())
+			calc_default_positions(CombatStage::Grove.padding(), with_positions.into_iter())
 				.into_iter()
 				.for_each(|(character, pos)| {
 					character

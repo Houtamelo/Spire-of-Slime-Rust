@@ -4,6 +4,7 @@ use character_position::{do_anim_positions, do_default_positions};
 use crate::*;
 
 use crate::combat::entity::position::Position;
+use crate::combat::graphics::action_animation::skills::anim_utils::TryGetNode;
 use crate::combat::graphics::action_animation::skills::offensive::{AttackResult, CounterResult, OffensiveAnim};
 use crate::combat::graphics::entity_anim::character_node::CharacterNode;
 use crate::combat::skill_types::defensive::DefensiveSkill;
@@ -75,17 +76,10 @@ impl SkillAnimation {
 	}
 }
 
-pub struct ActionTweens {
-	camera: TweenID<TweenProperty_Vector2>,
-	fade_hide_outsiders: TweenID<TweenProperty_f64>,
-	fade_show_participants: TweenID<TweenProperty_f64>,
-	infinite_move_splash_screen: TweenID<TweenProperty_f64>,
-}
-
 pub struct AnimationNodes {
 	combat_root: Ref<Node2D>,
-	outside_modulate: Ref<CanvasModulate>,
 	camera: Ref<Camera2D>,
+	outside_modulate: Ref<CanvasModulate>,
 	splash_screen: Ref<Node2D>,
 	splash_screen_local_start_pos: Vector2,
 	characters_container: Ref<Node2D>,
@@ -95,6 +89,40 @@ pub struct AnimationNodes {
 }
 
 impl AnimationNodes {
+	unsafe fn from_combat_root(root: &Node2D, stage: CombatStage) -> Result<AnimationNodes> {
+		let combat_root = root.assume_shared();
+		let camera = root
+			.try_get_node::<Camera2D>("camera")?.assume_shared();
+		let outside_modulate = root
+			.try_get_node::<CanvasModulate>("canvas-layer_default/canvas-modulate")?.assume_shared();
+		
+		let (splash_screen, splash_screen_local_start_pos) = { 
+			let node = root
+				.try_get_node::<Node2D>("canvas-layer_skill-anim/splash-screen")?;
+			let pos = node.position();
+			(node.assume_shared(), pos)
+		};
+		
+		let characters_container = root
+			.try_get_node::<Node2D>("canvas-layer_default/characters")?.assume_shared();
+		let in_action_container = root
+			.try_get_node::<Node2D>("canvas-layer_skill-anim/characters")?.assume_shared();
+		let inside_modulate = root
+			.try_get_node::<CanvasModulate>("canvas-layer_skill-anim/canvas-modulate")?.assume_shared();
+		
+		Ok(Self {
+			combat_root,
+			camera,
+			outside_modulate,
+			splash_screen,
+			splash_screen_local_start_pos,
+			characters_container,
+			in_action_container,
+			inside_modulate,
+			stage,
+		})
+	}
+	
 	fn switch_participants_parent(&self, participants: impl Iterator<Item = &ActionParticipant>) -> Result<()> {
 		let origin =
 			unsafe { self.characters_container.assume_safe_if_sane() }
