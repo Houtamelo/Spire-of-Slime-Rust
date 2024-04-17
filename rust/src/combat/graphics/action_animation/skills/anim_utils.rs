@@ -31,11 +31,11 @@ impl<TSelf: SubClass<Node>> MapNode for &TSelf {
 }
 
 pub trait TryGetNode {
-	unsafe fn try_get_node<T: SubClass<Node>>(self, node_path: &'static str) -> Result<TRef<T>>;
+	unsafe fn try_get_node<T: SubClass<Node>>(self, node_path: &str) -> Result<TRef<T>>;
 }
 
 impl<TSelf: SubClass<Node>> TryGetNode for &TSelf {
-	unsafe fn try_get_node<T: SubClass<Node>>(self, node_path: &'static str) -> Result<TRef<T>> {
+	unsafe fn try_get_node<T: SubClass<Node>>(self, node_path: &str) -> Result<TRef<T>> {
 		let owner: &Node = &self.upcast();
 
 		owner.get_node_as::<T>(node_path)

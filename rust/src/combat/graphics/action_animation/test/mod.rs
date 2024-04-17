@@ -5,9 +5,9 @@ use crate::combat::entity::data::skill_name::EthelSkill;
 use crate::combat::shared::*;
 use crate::combat::graphics::action_animation::skills::offensive::*;
 use crate::combat::graphics::action_animation::test::exported_character::NameWrapper;
-use crate::combat::graphics::entity_anim;
+use crate::combat::graphics::{CombatScene, entity_anim};
 use crate::combat::graphics::entity_anim::EntityAnim;
-use crate::combat::graphics::stages::CombatStage;
+use crate::combat::graphics::stages::CombatBG;
 
 use std::iter;
 use gdnative::export::Export;
@@ -17,6 +17,7 @@ use rand_xoshiro::Xoshiro256StarStar;
 use strum::VariantNames;
 use entity_anim::default_position::calc_default_positions;
 use exported_skill::SkillWrapper;
+use crate::combat::graphics::action_animation::{ActionKind, ActionParticipant, AnimationNodes, SkillAnimation};
 
 mod exported_skill;
 mod exported_character;
@@ -49,6 +50,7 @@ pub struct AnimTester {
 	#[property] skill: SkillWrapper,
 	loaded_characters: Vec<CharacterNode>,
 	current_sequence: Option<SequenceID>,
+	animation_nodes: Option<AnimationNodes>,
 }
 
 unsafe fn load_character(parent: &Node, name: CharacterName) -> CharacterNode {
@@ -62,13 +64,25 @@ fn unload_characters(parent: &Node, character: impl Iterator<Item = &CharacterNo
 	}
 }
 
+const CASTER_POS: Position = Position {
+	order: Bound_u8::new(0),
+	size: Bound_u8::new(1),
+	side: Side::Left,
+};
+
 #[methods]
 impl AnimTester {
 	#[method]
-	unsafe fn _ready(&self, #[base] owner: &Node) {
+	unsafe fn _ready(&mut self, #[base] owner: &Node) {
+		self.grab_nodes_by_path(owner);
+		
 		self.button_play_offensive.unwrap().connect_fn("pressed", owner, fn_name(&Self::_play_offensive));
 		self.button_play_defensive.unwrap().connect_fn("pressed", owner, fn_name(&Self::_play_defensive));
 		self.button_play_lewd.unwrap().connect_fn("pressed", owner, fn_name(&Self::_play_lewd));
+		
+		let mut rng = Xoshiro256StarStar::from_entropy();
+		let combat_scene = CombatScene::load(owner, CombatBG::Grove, &mut rng).unwrap().into_base().assume_safe();
+		self.animation_nodes = Some(AnimationNodes::from_combat_root(&combat_scene, CombatBG::Grove).unwrap());
 	}
 	
 	#[method]
@@ -107,18 +121,18 @@ impl AnimTester {
 				_ => return,
 			});
 		
-		let targets_clone = targets.clone();
+		let mut targets_clone = targets.clone();
 		
 		let mut seq = Sequence::new();
 		seq.append_interval(0.1);
 		seq.append_call(move || {
 			let with_positions =
-				iter::once((caster, Position { order: 0.into(), size: caster.name().position_size(), side: Side::Left }))
+				iter::once((caster, CASTER_POS))
 					.chain(targets.iter().enumerate().map(|(i, (target, _))| {
 						(target.clone(), Position { order: i.into(), size: target.name().position_size(), side: Side::Right })
 					})).collect::<Vec<_>>();
 			
-			calc_default_positions(CombatStage::Grove.padding(), with_positions.into_iter())
+			calc_default_positions(CombatBG::Grove.padding(), with_positions.into_iter())
 				.into_iter()
 				.for_each(|(character, pos)| {
 					character
@@ -129,7 +143,27 @@ impl AnimTester {
 				});
 		});
 		
-		seq.append_sequence(skill.offensive_anim(caster, targets_clone));
+		let enemies = CountOrMore::new([{
+			let (first_target, result) = targets_clone.remove(0);
+			(ActionParticipant { 
+				godot: first_target,
+				pos_before: Position { order: 0.into(), size: first_target.name().position_size(), side: Side::Right },
+				pos_after: Position { order: 0.into(), size: first_target.name().position_size(), side: Side::Right },
+			}, result)
+		}], targets_clone.into_iter().enumerate().map(|(index, (target, result))| {
+			(ActionParticipant {
+				godot: target,
+				pos_before: Position { order: index.into(), size: target.name().position_size(), side: Side::Right },
+				pos_after: Position { order: index.into(), size: target.name().position_size(), side: Side::Right },
+			}, result)
+		}).collect());
+		
+		let skill_anim = SkillAnimation {
+			caster: ActionParticipant { godot: caster, pos_before: CASTER_POS, pos_after: CASTER_POS },
+			kind: ActionKind::OnEnemies { skill, enemies }
+		};
+		
+		seq.append_sequence(self.animation_nodes.as_ref().unwrap().animate_skill(skill_anim, Vec::new()).unwrap());
 		self.current_sequence = Some(seq.register().unwrap());
 	}
 	

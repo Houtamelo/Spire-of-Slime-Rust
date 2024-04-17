@@ -1,8 +1,7 @@
-[gd_scene load_steps=4 format=2]
+[gd_scene load_steps=3 format=2]
 
 [ext_resource path="res://Core/Combat/Tests/AnimTester.gdns" type="Script" id=1]
 [ext_resource path="res://Fonts/font_audimat-mono_24.tres" type="DynamicFont" id=2]
-[ext_resource path="res://Core/Combat/Characters/Ethel/ethel.tscn" type="PackedScene" id=3]
 
 [node name="node_2d" type="Node2D"]
 script = ExtResource( 1 )
@@ -11,10 +10,6 @@ path_button_play_defensive = NodePath("buttons/defensive")
 path_button_play_offensive = NodePath("buttons/offensive")
 targets = [ 0 ]
 skill = 6
-
-[node name="camera_2d" type="Camera2D" parent="."]
-position = Vector2( 960, 540 )
-current = true
 
 [node name="buttons" type="Control" parent="."]
 margin_right = 40.0
@@ -43,5 +38,3 @@ margin_right = 196.75
 margin_bottom = 134.625
 custom_fonts/font = ExtResource( 2 )
 text = "Play Lewd"
-
-[node name="ethel" parent="." instance=ExtResource( 3 )]

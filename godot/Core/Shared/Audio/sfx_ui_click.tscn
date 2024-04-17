@@ -1,0 +1,9 @@
+[gd_scene load_steps=3 format=2]
+
+[ext_resource path="res://Core/Audio/PlayOnClickAndPitchRandomizer.gdns" type="Script" id=1]
+[ext_resource path="res://Core/Shared/Audio/click.mp3" type="AudioStream" id=2]
+
+[node name="sfx_ui_click" type="AudioStreamPlayer2D"]
+stream = ExtResource( 2 )
+bus = "Sfx"
+script = ExtResource( 1 )

@@ -1,0 +1,523 @@
+[gd_scene load_steps=98 format=2]
+
+[ext_resource path="res://Core/Combat/Backgrounds/Grove/07-switch/09-switch/12 - fixed/ripples-light.png" type="Texture" id=1]
+[ext_resource path="res://Core/Combat/Backgrounds/Grove/02-fixed/spire.png" type="Texture" id=2]
+[ext_resource path="res://Core/Combat/Backgrounds/Grove/07-switch/09-switch/10-fixed mutually exclusive/small-lake.png" type="Texture" id=3]
+[ext_resource path="res://Core/Combat/Backgrounds/Grove/07-switch/09-switch/11 - fixed/darkest-ripples.png" type="Texture" id=4]
+[ext_resource path="res://Core/Combat/Backgrounds/Grove/03-switch/05-fixed/heavy-atmosfere.png" type="Texture" id=5]
+[ext_resource path="res://Core/Combat/Backgrounds/Grove/00-fixed/background_lighting.png" type="Texture" id=6]
+[ext_resource path="res://Core/Combat/Backgrounds/Grove/01-fixed/ground.png" type="Texture" id=7]
+[ext_resource path="res://Core/Combat/Backgrounds/Grove/03-switch/04-mutually exclusive/rock-formation-no-trees.png" type="Texture" id=8]
+[ext_resource path="res://Core/Combat/Backgrounds/Grove/03-switch/04-mutually exclusive/rockformation+trees.png" type="Texture" id=9]
+[ext_resource path="res://Core/Combat/Backgrounds/Grove/03-switch/11-toggleable/lights.png" type="Texture" id=10]
+[ext_resource path="res://Core/Combat/Backgrounds/Grove/07-switch/08-fixed/ground.png" type="Texture" id=11]
+[ext_resource path="res://Core/Combat/Backgrounds/Grove/07-switch/09-switch/10-fixed mutually exclusive/small-lake(corrupted).png" type="Texture" id=12]
+[ext_resource path="res://Core/Combat/Backgrounds/Grove/06-switch/close-hills.png" type="Texture" id=13]
+[ext_resource path="res://Core/Combat/Backgrounds/Grove/14-switch/15-switch/old bridge.png" type="Texture" id=14]
+[ext_resource path="res://Core/Combat/Backgrounds/Grove/17-fixed/hills-closest.png" type="Texture" id=15]
+[ext_resource path="res://Core/Combat/Backgrounds/Grove/14-switch/16-fixed/hills-closer.png" type="Texture" id=16]
+[ext_resource path="res://Core/Combat/Backgrounds/Grove/18-props/Common trees/tree-right.png" type="Texture" id=17]
+[ext_resource path="res://Core/Combat/Backgrounds/Grove/18-props/Common trees/tree-middle.png" type="Texture" id=18]
+[ext_resource path="res://Core/Combat/Backgrounds/Grove/18-props/Common trees/19-switch/leaves-middle.png" type="Texture" id=19]
+[ext_resource path="res://Core/Combat/Backgrounds/Grove/18-props/Old trees/dead-tree_left.png" type="Texture" id=20]
+[ext_resource path="res://Core/Combat/Backgrounds/Grove/18-props/Old trees/dead-tree_right.png" type="Texture" id=21]
+[ext_resource path="res://Core/Combat/Backgrounds/Grove/18-props/roses/bush_1.png" type="Texture" id=22]
+[ext_resource path="res://Core/Combat/Backgrounds/Grove/18-props/roses/roses_1.png" type="Texture" id=23]
+[ext_resource path="res://Core/Combat/Backgrounds/Grove/18-props/roses/bush_2.png" type="Texture" id=24]
+[ext_resource path="res://Core/Combat/Backgrounds/Grove/18-props/roses/bush_1_roses.png" type="Texture" id=25]
+[ext_resource path="res://Core/Combat/Backgrounds/Grove/18-props/roses/bush_0.png" type="Texture" id=26]
+[ext_resource path="res://Core/Combat/Backgrounds/Grove/20-props/Old trees/dead-tree_left.png" type="Texture" id=27]
+[ext_resource path="res://Core/Combat/Backgrounds/Grove/20-props/Common trees/tree-right.png" type="Texture" id=28]
+[ext_resource path="res://Core/Combat/Backgrounds/Grove/20-props/Common trees/tree-middle.png" type="Texture" id=29]
+[ext_resource path="res://Core/Combat/Backgrounds/Grove/20-props/Old trees/dead-tree_right.png" type="Texture" id=30]
+[ext_resource path="res://Core/Combat/Backgrounds/Grove/20-props/Old trees/dead-tree_middle.png" type="Texture" id=31]
+[ext_resource path="res://Core/Combat/Backgrounds/Grove/20-props/props/plants/strelitzia-plant.png" type="Texture" id=32]
+[ext_resource path="res://Core/Combat/Backgrounds/Grove/20-props/props/Crabdabra remains/1.png" type="Texture" id=33]
+[ext_resource path="res://Core/Combat/Backgrounds/Grove/20-props/props/Crabdabra remains/2.png" type="Texture" id=34]
+[ext_resource path="res://Core/Combat/Backgrounds/Grove/20-props/props/Crabdabra remains/5.png" type="Texture" id=35]
+[ext_resource path="res://Core/Combat/Backgrounds/Grove/20-props/props/Crabdabra remains/4.png" type="Texture" id=36]
+[ext_resource path="res://Core/Combat/Backgrounds/Grove/20-props/props/bell plant/plant_1.png" type="Texture" id=37]
+[ext_resource path="res://Core/Combat/Backgrounds/Grove/20-props/props/bell plant/plant_2.png" type="Texture" id=38]
+[ext_resource path="res://Core/Combat/Backgrounds/Grove/20-props/props/bell plant/plant_3.png" type="Texture" id=39]
+[ext_resource path="res://Core/Combat/Backgrounds/Grove/20-props/props/Crabdabra remains/3.png" type="Texture" id=40]
+[ext_resource path="res://Core/Combat/Backgrounds/Grove/20-props/props/plants/lavander_1.png" type="Texture" id=41]
+[ext_resource path="res://Core/Combat/Backgrounds/Grove/20-props/props/plants/lavander_2.png" type="Texture" id=42]
+[ext_resource path="res://Core/Combat/Backgrounds/Grove/20-props/props/bell plant/plant_4.png" type="Texture" id=43]
+[ext_resource path="res://Core/Combat/Backgrounds/Grove/20-props/props/plants/lamprocapnos-plant.png" type="Texture" id=44]
+[ext_resource path="res://Core/Combat/Backgrounds/Grove/18-props/roses/bush_5_roses.png" type="Texture" id=45]
+[ext_resource path="res://Core/Combat/Backgrounds/Grove/18-props/roses/bush_4.png" type="Texture" id=46]
+[ext_resource path="res://Core/Combat/Backgrounds/Grove/18-props/roses/bush_0_roses.png" type="Texture" id=47]
+[ext_resource path="res://Core/Combat/Backgrounds/Grove/18-props/roses/bush_2_roses.png" type="Texture" id=48]
+[ext_resource path="res://Core/Combat/Backgrounds/Grove/18-props/roses/roses_2.png" type="Texture" id=49]
+[ext_resource path="res://Core/Combat/Backgrounds/Grove/18-props/roses/bush_5.png" type="Texture" id=50]
+[ext_resource path="res://Core/Combat/Backgrounds/Grove/18-props/roses/bush_3_roses.png" type="Texture" id=51]
+[ext_resource path="res://Core/Combat/Backgrounds/Grove/18-props/roses/bush_4_roses.png" type="Texture" id=52]
+[ext_resource path="res://Core/Combat/Backgrounds/Grove/18-props/roses/bush_3.png" type="Texture" id=53]
+[ext_resource path="res://Core/Combat/Backgrounds/Grove/28-props/slime/slime-pool_1.png" type="Texture" id=54]
+[ext_resource path="res://Core/Combat/Backgrounds/Grove/20-props/props/spider web/spider-web_2.png" type="Texture" id=55]
+[ext_resource path="res://Core/Combat/Backgrounds/Grove/28-props/Crabdra Remains/crabdra-remains_5.png" type="Texture" id=56]
+[ext_resource path="res://Core/Combat/Backgrounds/Grove/28-props/plants/lamprocapnos-plant.png" type="Texture" id=57]
+[ext_resource path="res://Core/Combat/Backgrounds/Grove/20-props/props/vines/vine_3.png" type="Texture" id=58]
+[ext_resource path="res://Core/Combat/Backgrounds/Grove/20-props/props/vines/vine_1.png" type="Texture" id=59]
+[ext_resource path="res://Core/Combat/Backgrounds/Grove/20-props/props/vines/vine_2.png" type="Texture" id=60]
+[ext_resource path="res://Core/Combat/Backgrounds/Grove/20-props/props/vines/vine_4.png" type="Texture" id=61]
+[ext_resource path="res://Core/Combat/Backgrounds/Grove/26-props/roses/bush_2.png" type="Texture" id=62]
+[ext_resource path="res://Core/Combat/Backgrounds/Grove/26-props/roses/bush_1_roses.png" type="Texture" id=63]
+[ext_resource path="res://Core/Combat/Backgrounds/Grove/23-fixed/ground-grass.png" type="Texture" id=64]
+[ext_resource path="res://Core/Combat/Backgrounds/Grove/25-switch/particles.png" type="Texture" id=65]
+[ext_resource path="res://Core/Combat/Backgrounds/Grove/26-props/roses/roses.png" type="Texture" id=66]
+[ext_resource path="res://Core/Combat/Backgrounds/Grove/26-props/roses/bush_1.png" type="Texture" id=67]
+[ext_resource path="res://Core/Combat/Backgrounds/Grove/25-switch/focal-light.png" type="Texture" id=68]
+[ext_resource path="res://Core/Combat/Backgrounds/Grove/26-props/roses/bush_3.png" type="Texture" id=69]
+[ext_resource path="res://Core/Combat/Backgrounds/Grove/26-props/roses/bush_2_roses.png" type="Texture" id=70]
+[ext_resource path="res://Core/Combat/Backgrounds/Grove/26-props/thorn trees/dead-tree_left.png" type="Texture" id=71]
+[ext_resource path="res://Core/Combat/Backgrounds/Grove/26-props/thorn trees/dead-tree_right.png" type="Texture" id=72]
+[ext_resource path="res://Core/Combat/Backgrounds/Grove/27-props/leaves_left.png" type="Texture" id=73]
+[ext_resource path="res://Core/Combat/Backgrounds/Grove/26-props/roses/bush_3_roses.png" type="Texture" id=74]
+[ext_resource path="res://Core/Combat/Backgrounds/Grove/27-props/leaves_right.png" type="Texture" id=75]
+[ext_resource path="res://Core/Combat/Backgrounds/Grove/27-props/tree-left.png" type="Texture" id=76]
+[ext_resource path="res://Core/Combat/Backgrounds/Grove/27-props/tree-right.png" type="Texture" id=77]
+[ext_resource path="res://Core/Combat/Backgrounds/Grove/28-props/plants/lavander.png" type="Texture" id=78]
+[ext_resource path="res://Core/Combat/Backgrounds/Grove/28-props/plants/strelitzia-plant.png" type="Texture" id=79]
+[ext_resource path="res://Core/Combat/Backgrounds/Grove/27-props/slime_left.png" type="Texture" id=80]
+[ext_resource path="res://Core/Combat/Backgrounds/Grove/28-props/slime/slime-pool_2.png" type="Texture" id=81]
+[ext_resource path="res://Core/Combat/Backgrounds/Grove/28-props/Crabdra Remains/crabdra-remains_3.png" type="Texture" id=82]
+[ext_resource path="res://Core/Combat/Backgrounds/Grove/28-props/Crabdra Remains/crabdra-remains_1.png" type="Texture" id=83]
+[ext_resource path="res://Core/Combat/Backgrounds/Grove/28-props/Crabdra Remains/crabdra-remains_2.png" type="Texture" id=84]
+[ext_resource path="res://Core/Combat/Backgrounds/Grove/28-props/Crabdra Remains/crabdra-remains_4.png" type="Texture" id=85]
+[ext_resource path="res://Core/Combat/Backgrounds/Grove/28-props/vines/2.png" type="Texture" id=86]
+[ext_resource path="res://Core/Combat/Backgrounds/Grove/30-props/plant_4.png" type="Texture" id=87]
+[ext_resource path="res://Core/Combat/Backgrounds/Grove/30-props/plant_3.png" type="Texture" id=88]
+[ext_resource path="res://Core/Combat/Backgrounds/Grove/30-props/plant_2.png" type="Texture" id=89]
+[ext_resource path="res://Core/Combat/Backgrounds/Grove/30-props/plant_1.png" type="Texture" id=90]
+[ext_resource path="res://Core/Combat/Backgrounds/Grove/28-props/vines/3.png" type="Texture" id=91]
+[ext_resource path="res://Core/Combat/Backgrounds/Grove/28-props/vines/4.png" type="Texture" id=92]
+[ext_resource path="res://Core/Combat/Backgrounds/Grove/27-props/web.png" type="Texture" id=93]
+[ext_resource path="res://Core/Combat/Backgrounds/Grove/20-props/Old trees/dead-tree_middle_web.png" type="Texture" id=94]
+[ext_resource path="res://Core/Combat/Backgrounds/Grove/28-props/vines/1.png" type="Texture" id=95]
+[ext_resource path="res://Core/Combat/Backgrounds/Grove/30-props/slimeflow_3.png" type="Texture" id=96]
+[ext_resource path="res://Core/Combat/Backgrounds/Grove/30-props/slimeflow_1.png" type="Texture" id=97]
+
+[node name="bg_grove" type="Node2D"]
+
+[node name="00_background_lighting" type="Sprite" parent="."]
+texture = ExtResource( 6 )
+centered = false
+
+[node name="01_ground" type="Sprite" parent="."]
+texture = ExtResource( 7 )
+centered = false
+
+[node name="02_spire" type="Sprite" parent="."]
+texture = ExtResource( 2 )
+centered = false
+
+[node name="SW_03" type="Node2D" parent="."]
+
+[node name="ME_04" type="Node2D" parent="SW_03"]
+
+[node name="04A_rock-formation-no-trees" type="Sprite" parent="SW_03/ME_04"]
+texture = ExtResource( 8 )
+centered = false
+
+[node name="04B_rock-formation+trees" type="Sprite" parent="SW_03/ME_04"]
+texture = ExtResource( 9 )
+centered = false
+
+[node name="05_heavy-atmosfere" type="Sprite" parent="SW_03"]
+texture = ExtResource( 5 )
+centered = false
+
+[node name="SW_11_lights" type="Sprite" parent="SW_03"]
+texture = ExtResource( 10 )
+centered = false
+
+[node name="SW_06_close-hills" type="Sprite" parent="."]
+texture = ExtResource( 13 )
+centered = false
+
+[node name="SW_07" type="Node2D" parent="."]
+
+[node name="08_ground" type="Sprite" parent="SW_07"]
+texture = ExtResource( 11 )
+centered = false
+
+[node name="SW_09" type="Node2D" parent="SW_07"]
+
+[node name="ME_10" type="Node2D" parent="SW_07/SW_09"]
+
+[node name="10A_small-lake-corrupted" type="Sprite" parent="SW_07/SW_09/ME_10"]
+texture = ExtResource( 12 )
+centered = false
+
+[node name="10B_small-lake" type="Sprite" parent="SW_07/SW_09/ME_10"]
+texture = ExtResource( 3 )
+centered = false
+
+[node name="11_darkest-ripples" type="Sprite" parent="SW_07/SW_09"]
+texture = ExtResource( 4 )
+centered = false
+
+[node name="11_ripples-light" type="Sprite" parent="SW_07/SW_09"]
+texture = ExtResource( 1 )
+centered = false
+
+[node name="SW_14" type="Node2D" parent="."]
+
+[node name="SW_15_old-bridge" type="Sprite" parent="SW_14"]
+texture = ExtResource( 14 )
+centered = false
+
+[node name="16_hills-closer" type="Sprite" parent="SW_14"]
+texture = ExtResource( 16 )
+centered = false
+
+[node name="17_hills-closest" type="Sprite" parent="."]
+texture = ExtResource( 15 )
+centered = false
+
+[node name="PP_18" type="Node2D" parent="."]
+
+[node name="bush_0" type="Sprite" parent="PP_18"]
+texture = ExtResource( 26 )
+centered = false
+
+[node name="SW_roses" type="Sprite" parent="PP_18/bush_0"]
+texture = ExtResource( 47 )
+centered = false
+
+[node name="bush_1" type="Sprite" parent="PP_18"]
+texture = ExtResource( 22 )
+centered = false
+
+[node name="SW_roses" type="Sprite" parent="PP_18/bush_1"]
+texture = ExtResource( 25 )
+centered = false
+
+[node name="bush_2" type="Sprite" parent="PP_18"]
+texture = ExtResource( 24 )
+centered = false
+
+[node name="SW_roses" type="Sprite" parent="PP_18/bush_2"]
+texture = ExtResource( 48 )
+centered = false
+
+[node name="bush_3" type="Sprite" parent="PP_18"]
+texture = ExtResource( 53 )
+centered = false
+
+[node name="SW_roses" type="Sprite" parent="PP_18/bush_3"]
+texture = ExtResource( 51 )
+centered = false
+
+[node name="roses_1" type="Sprite" parent="PP_18"]
+texture = ExtResource( 23 )
+centered = false
+
+[node name="roses_2" type="Sprite" parent="PP_18"]
+texture = ExtResource( 49 )
+centered = false
+
+[node name="tree-middle" type="Sprite" parent="PP_18"]
+texture = ExtResource( 18 )
+centered = false
+
+[node name="SW_19_leaves-middle" type="Sprite" parent="PP_18/tree-middle"]
+texture = ExtResource( 19 )
+centered = false
+
+[node name="tree-right" type="Sprite" parent="PP_18"]
+texture = ExtResource( 17 )
+centered = false
+
+[node name="dead-tree_left" type="Sprite" parent="PP_18"]
+texture = ExtResource( 20 )
+centered = false
+
+[node name="dead-tree_right" type="Sprite" parent="PP_18"]
+texture = ExtResource( 21 )
+centered = false
+
+[node name="PP_20" type="Node2D" parent="."]
+
+[node name="tree-middle" type="Sprite" parent="PP_20"]
+texture = ExtResource( 29 )
+centered = false
+
+[node name="SW_21_vine_1" type="Sprite" parent="PP_20/tree-middle"]
+texture = ExtResource( 59 )
+centered = false
+
+[node name="SW_21_vine_2" type="Sprite" parent="PP_20/tree-middle"]
+texture = ExtResource( 60 )
+centered = false
+
+[node name="tree-right" type="Sprite" parent="PP_20"]
+texture = ExtResource( 28 )
+centered = false
+
+[node name="SW_21_vine_3" type="Sprite" parent="PP_20/tree-right"]
+texture = ExtResource( 58 )
+centered = false
+
+[node name="SW_21_vine_4" type="Sprite" parent="PP_20/tree-right"]
+texture = ExtResource( 61 )
+centered = false
+
+[node name="dead-tree_right" type="Sprite" parent="PP_20"]
+texture = ExtResource( 30 )
+centered = false
+
+[node name="crabdra_3" type="Sprite" parent="PP_20"]
+texture = ExtResource( 40 )
+centered = false
+
+[node name="plant_1" type="Sprite" parent="PP_20"]
+texture = ExtResource( 37 )
+centered = false
+
+[node name="plant_3" type="Sprite" parent="PP_20"]
+texture = ExtResource( 39 )
+centered = false
+
+[node name="strelitzia-plant" type="Sprite" parent="PP_20"]
+texture = ExtResource( 32 )
+centered = false
+
+[node name="ME_21A" type="Node2D" parent="PP_20"]
+
+[node name="dead-tree_left" type="Sprite" parent="PP_20/ME_21A"]
+texture = ExtResource( 27 )
+centered = false
+
+[node name="lavender_1" type="Sprite" parent="PP_20/ME_21A"]
+texture = ExtResource( 41 )
+centered = false
+
+[node name="bush_5" type="Sprite" parent="PP_20/ME_21A"]
+texture = ExtResource( 50 )
+centered = false
+
+[node name="SW_roses" type="Sprite" parent="PP_20/ME_21A/bush_5"]
+texture = ExtResource( 45 )
+centered = false
+
+[node name="ME_21B" type="Node2D" parent="PP_20"]
+
+[node name="dead-tree_middle" type="Sprite" parent="PP_20/ME_21B"]
+texture = ExtResource( 31 )
+centered = false
+
+[node name="SW_web" type="Sprite" parent="PP_20/ME_21B/dead-tree_middle"]
+texture = ExtResource( 94 )
+centered = false
+
+[node name="crabdra_1" type="Sprite" parent="PP_20/ME_21B"]
+texture = ExtResource( 33 )
+centered = false
+
+[node name="crabdra_4" type="Sprite" parent="PP_20/ME_21B"]
+texture = ExtResource( 36 )
+centered = false
+
+[node name="plant_4" type="Sprite" parent="PP_20/ME_21B"]
+texture = ExtResource( 43 )
+centered = false
+
+[node name="ME_21C" type="Node2D" parent="PP_20"]
+
+[node name="plant_2" type="Sprite" parent="PP_20/ME_21C"]
+texture = ExtResource( 38 )
+centered = false
+
+[node name="crabdra_5" type="Sprite" parent="PP_20/ME_21C"]
+texture = ExtResource( 35 )
+centered = false
+
+[node name="lavender_2" type="Sprite" parent="PP_20/ME_21C"]
+texture = ExtResource( 42 )
+centered = false
+
+[node name="bush_4" type="Sprite" parent="PP_20/ME_21C"]
+texture = ExtResource( 46 )
+centered = false
+
+[node name="SW_roses" type="Sprite" parent="PP_20/ME_21C/bush_4"]
+texture = ExtResource( 52 )
+centered = false
+
+[node name="ME_21D" type="Node2D" parent="PP_20"]
+
+[node name="lamprocapnos-plant" type="Sprite" parent="PP_20/ME_21D"]
+texture = ExtResource( 44 )
+centered = false
+
+[node name="crabdra_2" type="Sprite" parent="PP_20/ME_21D"]
+texture = ExtResource( 34 )
+centered = false
+
+[node name="spider_web" type="Sprite" parent="PP_20"]
+texture = ExtResource( 55 )
+centered = false
+
+[node name="23_ground-grass" type="Sprite" parent="."]
+texture = ExtResource( 64 )
+centered = false
+
+[node name="SW_25" type="Node2D" parent="."]
+
+[node name="focal-light" type="Sprite" parent="SW_25"]
+texture = ExtResource( 68 )
+centered = false
+
+[node name="particles" type="Sprite" parent="SW_25"]
+texture = ExtResource( 65 )
+centered = false
+
+[node name="PP_26" type="Node2D" parent="."]
+
+[node name="dead-tree_left" type="Sprite" parent="PP_26"]
+texture = ExtResource( 71 )
+centered = false
+
+[node name="dead-tree_right" type="Sprite" parent="PP_26"]
+texture = ExtResource( 72 )
+centered = false
+
+[node name="bush_1" type="Sprite" parent="PP_26"]
+texture = ExtResource( 67 )
+centered = false
+
+[node name="SW_roses" type="Sprite" parent="PP_26/bush_1"]
+texture = ExtResource( 63 )
+centered = false
+
+[node name="bush_2" type="Sprite" parent="PP_26"]
+texture = ExtResource( 62 )
+centered = false
+
+[node name="SW_roses" type="Sprite" parent="PP_26/bush_2"]
+texture = ExtResource( 70 )
+centered = false
+
+[node name="bush_3" type="Sprite" parent="PP_26"]
+texture = ExtResource( 69 )
+centered = false
+
+[node name="SW_roses" type="Sprite" parent="PP_26/bush_3"]
+texture = ExtResource( 74 )
+centered = false
+
+[node name="roses" type="Sprite" parent="PP_26"]
+texture = ExtResource( 66 )
+centered = false
+
+[node name="PP_27" type="Node2D" parent="."]
+
+[node name="tree-left" type="Sprite" parent="PP_27"]
+texture = ExtResource( 76 )
+centered = false
+
+[node name="SW_leaves" type="Sprite" parent="PP_27/tree-left"]
+texture = ExtResource( 73 )
+centered = false
+
+[node name="SW_slime" type="Sprite" parent="PP_27/tree-left"]
+texture = ExtResource( 80 )
+centered = false
+
+[node name="SW_web" type="Sprite" parent="PP_27/tree-left"]
+texture = ExtResource( 93 )
+centered = false
+
+[node name="SW_vine_1" type="Sprite" parent="PP_27/tree-left"]
+texture = ExtResource( 95 )
+centered = false
+
+[node name="SW_vine_2" type="Sprite" parent="PP_27/tree-left"]
+texture = ExtResource( 86 )
+centered = false
+
+[node name="tree-right" type="Sprite" parent="PP_27"]
+texture = ExtResource( 77 )
+centered = false
+
+[node name="SW_leaves" type="Sprite" parent="PP_27/tree-right"]
+texture = ExtResource( 75 )
+centered = false
+
+[node name="SW_vine_3" type="Sprite" parent="PP_27/tree-right"]
+texture = ExtResource( 91 )
+centered = false
+
+[node name="SW_vine_4" type="Sprite" parent="PP_27/tree-right"]
+texture = ExtResource( 92 )
+centered = false
+
+[node name="PP_28" type="Node2D" parent="."]
+
+[node name="crabdra-remains_1" type="Sprite" parent="PP_28"]
+texture = ExtResource( 83 )
+centered = false
+
+[node name="crabdra-remains_2" type="Sprite" parent="PP_28"]
+texture = ExtResource( 84 )
+centered = false
+
+[node name="crabdra-remains_3" type="Sprite" parent="PP_28"]
+texture = ExtResource( 82 )
+centered = false
+
+[node name="crabdra-remains_4" type="Sprite" parent="PP_28"]
+texture = ExtResource( 85 )
+centered = false
+
+[node name="crabdra-remains_5" type="Sprite" parent="PP_28"]
+texture = ExtResource( 56 )
+centered = false
+
+[node name="strelitzia-plant" type="Sprite" parent="PP_28"]
+texture = ExtResource( 79 )
+centered = false
+
+[node name="ME_right-plants" type="Node2D" parent="PP_28"]
+
+[node name="lamprocapnos-plant" type="Sprite" parent="PP_28/ME_right-plants"]
+texture = ExtResource( 57 )
+centered = false
+
+[node name="lavander" type="Sprite" parent="PP_28/ME_right-plants"]
+texture = ExtResource( 78 )
+centered = false
+
+[node name="slime-pool_1" type="Sprite" parent="PP_28"]
+texture = ExtResource( 54 )
+centered = false
+
+[node name="slime-pool_2" type="Sprite" parent="PP_28"]
+texture = ExtResource( 81 )
+centered = false
+
+[node name="plant_1" type="Sprite" parent="PP_28"]
+texture = ExtResource( 90 )
+centered = false
+
+[node name="SW_slime" type="Sprite" parent="PP_28/plant_1"]
+texture = ExtResource( 97 )
+centered = false
+
+[node name="plant_2" type="Sprite" parent="PP_28"]
+texture = ExtResource( 89 )
+centered = false
+
+[node name="plant_3" type="Sprite" parent="PP_28"]
+texture = ExtResource( 88 )
+centered = false
+
+[node name="SW_slime" type="Sprite" parent="PP_28/plant_3"]
+texture = ExtResource( 96 )
+centered = false
+
+[node name="plant_4" type="Sprite" parent="PP_28"]
+texture = ExtResource( 87 )
+centered = false

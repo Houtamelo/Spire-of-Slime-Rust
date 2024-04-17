@@ -2,8 +2,6 @@ use std::str::FromStr;
 #[allow(unused_imports)]
 use crate::*;
 use crate::combat::shared::*;
-
-use enum_dispatch::enum_dispatch;
 use gdnative::export::Export;
 use gdnative::export::hint::{EnumHint, IntHint};
 use rand_xoshiro::Xoshiro256PlusPlus;
@@ -37,8 +35,7 @@ pub trait SkillUser {
 	fn skills(&self) -> &[Skill];
 }
 
-#[enum_dispatch(EntityAnim)]
-#[enum_dispatch(AttackedAnim)]
+#[enum_delegate::implement_conversions]
 #[derive(Debug, Copy, Clone, Serialize, Deserialize)]
 pub enum CharacterName {
 	Girl(GirlName),

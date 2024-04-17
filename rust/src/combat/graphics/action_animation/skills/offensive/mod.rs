@@ -1,5 +1,3 @@
-use enum_dispatch::enum_dispatch;
-
 #[allow(unused_imports)]
 use crate::*;
 use crate::combat::graphics::action_animation::character_movement::CharacterMovement;
@@ -7,54 +5,52 @@ use crate::combat::graphics::action_animation::character_position::OffensivePadd
 use crate::combat::graphics::action_animation::skills::anim_utils::*;
 use crate::combat::shared::*;
 
+#[enum_delegate::implement_for{
+	CharacterName,
+	enum CharacterName {
+		Girl(GirlName),
+		NPC(NPCName),
+	}
+}]
+pub trait AttackedAnim { // DO NOT RENAME `_target` TO `target`, IT BREAKS THE ENUM_DELEGATE MACRO
+	fn anim_hitted(&self, _target: CharacterNode, _attacker: CharacterNode) -> Sequence {
+		anim_std_hitted(_target)
+	}
+
+	fn anim_killed(&self, _target: CharacterNode, _attacker: CharacterNode) -> Sequence {
+		anim_std_killed(_target)
+	}
+
+	fn anim_dodged(&self, _target: CharacterNode, _attacker: CharacterNode) -> Sequence {
+		anim_std_dodged(_target)
+	}
+
+	fn anim_std_full_counter(&self, _target: CharacterNode, attacker: CharacterNode, before_counter: BeforeCounter, counter_result: CounterResult) -> Sequence {
+		anim_std_full_counter(_target, attacker, before_counter, counter_result)
+	}
+
+	fn anim_counter_only(&self, _target: CharacterNode, attacker: CharacterNode, result: CounterResult) -> Sequence {
+		anim_std_counter_only(_target, attacker, result)
+	}
+
+	fn anim_by_result(&self, _target: CharacterNode, attacker: CharacterNode, result: AttackResult) -> Sequence {
+		match result {
+			AttackResult::Hitted => self.anim_hitted(_target, attacker),
+			AttackResult::Killed => self.anim_killed(_target, attacker),
+			AttackResult::Dodged => self.anim_dodged(_target, attacker),
+			AttackResult::Counter(before_counter, counter_result) =>
+				self.anim_std_full_counter(_target, attacker, before_counter, counter_result),
+		}
+	}
+}
+
+
 pub trait OffensiveAnim {
 	fn offensive_anim(&self, caster: CharacterNode, enemies: Vec<(CharacterNode, AttackResult)>) -> Sequence;
 	fn reset(&self, caster: CharacterNode);
 	fn padding(&self) -> OffensivePadding;
 	fn caster_movement(&self) -> CharacterMovement;
 	fn enemies_movement(&self) -> CharacterMovement;
-}
-
-#[enum_dispatch]
-pub trait AttackedAnim {
-	fn anim_hitted(&self, target: CharacterNode, _attacker: CharacterNode) -> Sequence { 
-		anim_std_hitted(target)
-	}
-	
-	fn anim_killed(&self, target: CharacterNode, _attacker: CharacterNode) -> Sequence { 
-		anim_std_killed(target)
-	}
-	
-	fn anim_dodged(&self, target: CharacterNode, _attacker: CharacterNode) -> Sequence {
-		anim_std_dodged(target)
-	}
-
-	fn anim_std_full_counter(&self,
-	                         target: CharacterNode,
-	                         attacker: CharacterNode,
-	                         before_counter: BeforeCounter,
-	                         counter_result: CounterResult)
-	                         -> Sequence { 
-		anim_std_full_counter(target, attacker, before_counter, counter_result)
-	}
-
-	fn anim_counter_only(&self,
-	                     target: CharacterNode,
-	                     attacker: CharacterNode,
-	                     result: CounterResult)
-	                     -> Sequence {
-		anim_std_counter_only(target, attacker, result)
-	}
-	
-	fn anim_by_result(&self, target: CharacterNode, attacker: CharacterNode, result: AttackResult) -> Sequence {
-		match result {
-			AttackResult::Hitted => self.anim_hitted(target, attacker),
-			AttackResult::Killed => self.anim_killed(target, attacker),
-			AttackResult::Dodged => self.anim_dodged(target, attacker),
-			AttackResult::Counter(before_counter, counter_result) => 
-				self.anim_std_full_counter(target, attacker, before_counter, counter_result),
-		}
-	}
 }
 
 impl AttackedAnim for NPCName {}

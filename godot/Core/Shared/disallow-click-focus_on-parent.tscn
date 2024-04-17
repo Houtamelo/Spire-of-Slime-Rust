@@ -1,0 +1,6 @@
+[gd_scene load_steps=2 format=2]
+
+[ext_resource path="res://Core/Shared/DisallowClickFocusOnParent.gdns" type="Script" id=1]
+
+[node name="disallow-click-focus_on-parent" type="Node"]
+script = ExtResource( 1 )

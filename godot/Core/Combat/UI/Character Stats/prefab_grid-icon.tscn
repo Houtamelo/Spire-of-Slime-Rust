@@ -1,7 +1,7 @@
 [gd_scene load_steps=3 format=2]
 
 [ext_resource path="res://Core/Combat/UI/Character Stats/Stat Icons/damage.png" type="Texture" id=1]
-[ext_resource path="res://Core/Shared_UI/AutoTextResize.gdns" type="Script" id=2]
+[ext_resource path="res://Core/Shared/AutoTextResize.gdns" type="Script" id=2]
 
 [node name="prefab_grid-icon" type="Control"]
 margin_right = 96.0

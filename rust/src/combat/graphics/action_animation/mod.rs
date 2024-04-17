@@ -10,7 +10,7 @@ use crate::combat::graphics::entity_anim::character_node::CharacterNode;
 use crate::combat::skill_types::defensive::DefensiveSkill;
 use crate::combat::skill_types::lewd::LewdSkill;
 use crate::combat::graphics::entity_anim::EntityAnim;
-use crate::combat::graphics::stages::CombatStage;
+use crate::combat::graphics::stages::CombatBG;
 
 pub mod camera;
 pub mod speed_lines;
@@ -38,8 +38,8 @@ pub struct Outsider {
 }
 
 pub struct SkillAnimation {
-	caster: ActionParticipant,
-	kind: ActionKind,
+	pub caster: ActionParticipant,
+	pub kind: ActionKind,
 }
 
 pub enum ActionKind {
@@ -79,18 +79,19 @@ impl SkillAnimation {
 pub struct AnimationNodes {
 	combat_root: Ref<Node2D>,
 	camera: Ref<Camera2D>,
-	outside_modulate: Ref<CanvasModulate>,
+	stage: CombatBG,
+	default_modulate: Ref<CanvasModulate>,
+	characters_container: Ref<Node2D>,
+	action_modulate: Ref<CanvasModulate>,
+	action_container: Ref<Node2D>,
 	splash_screen: Ref<Node2D>,
 	splash_screen_local_start_pos: Vector2,
-	characters_container: Ref<Node2D>,
-	in_action_container: Ref<Node2D>,
-	inside_modulate: Ref<CanvasModulate>,
-	stage: CombatStage,
 }
 
 impl AnimationNodes {
-	unsafe fn from_combat_root(root: &Node2D, stage: CombatStage) -> Result<AnimationNodes> {
-		let combat_root = root.assume_shared();
+	pub unsafe fn from_combat_root(root: &Node2D, stage: CombatBG) -> Result<AnimationNodes> {
+		let combat_root =
+			root.assume_shared();
 		let camera = root
 			.try_get_node::<Camera2D>("camera")?.assume_shared();
 		let outside_modulate = root
@@ -113,12 +114,12 @@ impl AnimationNodes {
 		Ok(Self {
 			combat_root,
 			camera,
-			outside_modulate,
+			default_modulate: outside_modulate,
 			splash_screen,
 			splash_screen_local_start_pos,
 			characters_container,
-			in_action_container,
-			inside_modulate,
+			action_container: in_action_container,
+			action_modulate: inside_modulate,
 			stage,
 		})
 	}
@@ -129,7 +130,7 @@ impl AnimationNodes {
 				.ok_or_else(|| anyhow!("switch_participants_parent(): characters_container is not sane."))?;
 		
 		let destination =
-			unsafe { self.in_action_container.assume_safe_if_sane() }
+			unsafe { self.action_container.assume_safe_if_sane() }
 				.ok_or_else(|| anyhow!("switch_participants_parent(): in_action_container is not sane."))?;
 
 		participants
@@ -165,8 +166,8 @@ impl AnimationNodes {
 			    .do_zoom(end_zoom, POP_DURATION)
 		});
 
-		seq.join(self.outside_modulate.do_fade(0., POP_DURATION));
-		seq.join(self.inside_modulate.do_fade(1., POP_DURATION));
+		seq.join(self.default_modulate.do_fade(0., POP_DURATION));
+		seq.join(self.action_modulate.do_fade(1., POP_DURATION));
 		
 		match animation.kind {
 			ActionKind::OnSelf { .. } => { todo!() },
@@ -182,8 +183,8 @@ impl AnimationNodes {
 
 	fn join_end_skill_anim(&self, sequence: &mut Sequence) {
 		sequence.join(self.camera.do_zoom(Vector2::ONE, POP_DURATION));
-		sequence.join(self.outside_modulate.do_fade(1., POP_DURATION));
-		sequence.join(self.inside_modulate.do_fade(0., POP_DURATION));
+		sequence.join(self.default_modulate.do_fade(1., POP_DURATION));
+		sequence.join(self.action_modulate.do_fade(0., POP_DURATION));
 	}
 	
 	fn join_characters_to_default_positions(

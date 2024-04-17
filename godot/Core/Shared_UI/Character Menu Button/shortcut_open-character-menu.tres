@@ -1,6 +1,0 @@
-[gd_resource type="ShortCut" load_steps=2 format=2]
-
-[ext_resource path="res://Core/Shared_UI/Character Menu Button/input-action_open-character-menu.tres" type="InputEventAction" id=1]
-
-[resource]
-shortcut = ExtResource( 1 )

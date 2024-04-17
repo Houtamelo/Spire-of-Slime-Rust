@@ -1,0 +1,15 @@
+[remap]
+
+importer="mp3"
+type="AudioStreamMP3"
+path="res://import/invalid.mp3-f4035add73006efc1dc60a4768c61033.mp3str"
+
+[deps]
+
+source_file="res://Core/Shared/Audio/invalid.mp3"
+dest_files=[ "res://import/invalid.mp3-f4035add73006efc1dc60a4768c61033.mp3str" ]
+
+[params]
+
+loop=false
+loop_offset=0

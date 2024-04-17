@@ -1,0 +1,6 @@
+[gd_resource type="ShortCut" load_steps=2 format=2]
+
+[ext_resource path="res://Core/Shared/Settings Menu Button/input-action_open-settings-menu.tres" type="InputEventAction" id=1]
+
+[resource]
+shortcut = ExtResource( 1 )

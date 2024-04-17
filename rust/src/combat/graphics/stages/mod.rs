@@ -1,34 +1,73 @@
+use rand::Rng;
 #[allow(unused_imports)]
 use crate::*;
+use serialization::SerializedBG;
 
-#[derive(Debug, Copy, Clone, PartialEq, Eq, Hash)]
-pub enum CombatStage {
+pub mod randomizer;
+pub mod serialization;
+mod grove;
+mod forest;
+mod cave;
+
+#[derive(Debug, Copy, Clone, PartialEq, Eq, Hash, Serialize, Deserialize)]
+pub enum CombatBG {
 	Grove,
 	Forest,
 	Cave,
 }
 
-impl CombatStage {
+impl CombatBG {
 	pub fn padding(&self) -> StagePadding {
 		match self {
-			CombatStage::Grove => default(),
-			CombatStage::Forest => default(),
-			CombatStage::Cave => default(),
+			CombatBG::Grove => default(),
+			CombatBG::Forest => default(),
+			CombatBG::Cave => default(),
 		}
 	}
 	
-	pub fn load_background(&self, parent: &Node2D) -> Result<Ref<Node2D>> {
-		let path =
+	fn path(&self) -> &'static str {
+		match self {
+			CombatBG::Grove => "res://Core/Combat/Backgrounds/Grove/grove.tscn",
+			CombatBG::Forest => "res://Core/Combat/Backgrounds/Forest/forest.tscn",
+			CombatBG::Cave => "res://Core/Combat/Backgrounds/Cave/cave.tscn",
+		}
+	}
+	
+	fn randomize(&self, rng: &mut impl Rng, parent: &Node2D, name: &str) -> Result<SerializedBG> {
+		let bg_tree =
 			match self {
-				CombatStage::Grove => "res://Core/Combat/Backgrounds/Grove/grove.tscn",
-				CombatStage::Forest => "res://Core/Combat/Backgrounds/Forest/forest.tscn",
-				CombatStage::Cave => "res://Core/Combat/Backgrounds/Cave/cave.tscn",
+				CombatBG::Grove => grove::GROVE_NODE,
+				CombatBG::Forest => forest::FOREST_NODE,
+				CombatBG::Cave => cave::CAVE_NODE,
 			};
-		
-		let node = spawn_prefab_as::<Node2D>(path)?;
-		let bg_ref = unsafe { node.assume_shared() };
-		parent.add_child(node, false);
+
+		let tree = unsafe { bg_tree.randomize_recursive(rng, name, parent)? };
+		Ok(SerializedBG { stage: *self, tree })
+	}
+	
+	fn spawn(&self, parent: &Node2D) -> Result<Ref<Node2D>> {
+		let bg = spawn_prefab_as::<Node2D>(self.path())?;
+
+		let bg_ref = unsafe { bg.assume_shared() };
+		parent.add_child(bg, false);
+
 		Ok(bg_ref)
+	}
+	
+	pub fn spawn_randomized(&self, parent: &Node2D, rng: &mut impl Rng) -> Result<(Ref<Node2D>, SerializedBG)> {
+		let bg = spawn_prefab_as::<Node2D>(self.path())?;
+		
+		let bg_ref = unsafe { bg.assume_shared() };
+		parent.add_child(bg, false);
+		
+		let serial = 
+			self.randomize(rng, parent, bg.name().to_string().as_str())?;
+		
+		Ok((bg_ref, serial))
+	}
+	
+	pub fn deserialize(serial: SerializedBG, parent: &Node2D) -> Result<Ref<Node2D>> {
+		serial.deserialize(parent)
 	}
 }
 

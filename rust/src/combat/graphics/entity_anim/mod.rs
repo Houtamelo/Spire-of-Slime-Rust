@@ -1,4 +1,3 @@
-use enum_dispatch::enum_dispatch;
 #[allow(unused_imports)]
 use crate::*;
 use crate::combat::graphics::action_animation::skills::anim_utils::node_show;
@@ -7,7 +6,13 @@ use crate::combat::shared::*;
 pub mod character_node;
 pub mod default_position;
 
-#[enum_dispatch]
+#[enum_delegate::implement_for{
+	CharacterName,
+	enum CharacterName {
+		Girl(GirlName),
+		NPC(NPCName),
+	}
+}]
 pub trait EntityAnim {
 	fn prefab_path(&self) -> &'static str;
 	fn required_height(&self) -> f64;

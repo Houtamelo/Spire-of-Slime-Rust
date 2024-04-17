@@ -95,6 +95,7 @@ fn init(handle: InitHandle) {
 	handle.add_class::<DisallowClickFocusOnParent>();
 	handle.add_class::<AutoTextResize>();
 	handle.add_class::<combat::graphics::action_animation::test::AnimTester>();
+	handle.add_class::<TweensController>();
 }
 
 godot_init!(init);

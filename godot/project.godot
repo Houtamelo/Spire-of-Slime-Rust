@@ -21,6 +21,7 @@ default_bus_layout="res://audio_bus_layout.tres"
 [autoload]
 
 rust_panic_hook="*res://rust_panic_hook.gd"
+tweens_controller="*res://Core/Shared/TweensController.gdns"
 
 [debug]
 
