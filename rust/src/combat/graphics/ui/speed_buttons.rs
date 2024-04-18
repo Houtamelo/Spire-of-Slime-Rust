@@ -1,6 +1,6 @@
 #[allow(unused_imports)]
 use crate::*;
-use crate::combat::ui::get_tref_or_bail;
+use super::{get_tref_or_bail, get_ref_or_bail};
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum Speed {
@@ -27,6 +27,7 @@ impl SpeedSetting {
 #[derive(NativeClass)]
 #[no_constructor]
 #[inherit(Reference)]
+#[user_data(GoodCellData<SpeedButtons>)]
 pub struct SpeedButtons {
 	speed_setting: SpeedSetting,
 	pause_button: Ref<Button>,
@@ -62,7 +63,7 @@ macro_rules! set_indicator_visible {
 
 #[methods]
 impl SpeedButtons {
-	pub fn build_in(owner: TRef<Control>, speed_setting: SpeedSetting) -> Result<()> {
+	pub fn build_in(owner: &Control, speed_setting: SpeedSetting) -> Result<Instance<SpeedButtons>> {
 		let owner_ref = unsafe { owner.assume_shared() };
 
 		let pause_indicator = get_tref_or_bail!(owner, "pause/indicator", Control)?;
@@ -110,7 +111,12 @@ impl SpeedButtons {
 			         VariantArray::new_shared(), Object::CONNECT_DEFERRED)
 			.log_if_err();
 
-		return Ok(());
+		owner.get_script()
+		     .ok_or_else(|| anyhow!("Failed to set `{}` script for {}", type_name::<Self>(), owner.name()))
+		     .map(|script| {
+			     script.cast_instance()
+			           .ok_or_else(|| anyhow!("Failed to cast `{}` script for {}", type_name::<Self>(), owner.name()))
+		     }).flatten()
 	}
 	
 	#[method]

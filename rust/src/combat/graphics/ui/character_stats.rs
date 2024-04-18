@@ -10,10 +10,9 @@ use crate::combat::entity::stat::*;
 
 use super::get_ref_or_bail;
 
-#[derive(NativeClass)]
-#[no_constructor]
-#[inherit(Reference)]
-pub struct UI_CharacterStats {
+pub struct CharacterStatsUI {
+	root: Ref<Control>,
+	
 	name_label: Ref<Label>,
 	portrait: Ref<TextureRect>,
 	
@@ -53,48 +52,44 @@ pub struct UI_CharacterStats {
 	orgasm_texture_on: Ref<Texture>,
 }
 
-#[methods]
-impl UI_CharacterStats {
-	pub fn build_in(owner: TRef<Control>,
-	                orgasm_texture_off: Ref<Texture>,
-	                orgasm_texture_on: Ref<Texture>)
-	                -> Result<()> {
-		let name_label = get_ref_or_bail!(owner, "name", Label)?;
-		let portrait = get_ref_or_bail!(owner, "portrait", TextureRect)?;
+impl CharacterStatsUI {
+	pub fn new(root: &Control) -> Result<Self> {
+		let name_label = get_ref_or_bail!(root, "name", Label)?;
+		let portrait = get_ref_or_bail!(root, "portrait", TextureRect)?;
 		
-		let stamina_fill = get_ref_or_bail!(owner, "stamina/fill", Range)?;
-		let stamina_label = get_ref_or_bail!(owner, "stamina/value", Label)?;
+		let stamina_fill = get_ref_or_bail!(root, "stamina/fill", Range)?;
+		let stamina_label = get_ref_or_bail!(root, "stamina/value", Label)?;
 		
-		let temptation_fill = get_ref_or_bail!(owner, "temptation/fill", Range)?;
-		let temptation_label = get_ref_or_bail!(owner, "temptation/value", Label)?;
+		let temptation_fill = get_ref_or_bail!(root, "temptation/fill", Range)?;
+		let temptation_label = get_ref_or_bail!(root, "temptation/value", Label)?;
 		
-		let lust_low_fill = get_ref_or_bail!(owner, "lust/low_fill", Range)?;
-		let lust_high_fill = get_ref_or_bail!(owner, "lust/high_fill", Range)?;
-		let lust_label = get_ref_or_bail!(owner, "lust/value", Label)?;
+		let lust_low_fill = get_ref_or_bail!(root, "lust/low_fill", Range)?;
+		let lust_high_fill = get_ref_or_bail!(root, "lust/high_fill", Range)?;
+		let lust_label = get_ref_or_bail!(root, "lust/value", Label)?;
 		
-		let dmg_label = get_ref_or_bail!(owner, "grid-stats/damage/value", Label)?;
-		let power_label = get_ref_or_bail!(owner, "grid-stats/power/value", Label)?;
-		let acc_label = get_ref_or_bail!(owner, "grid-stats/accuracy/value", Label)?;
-		let crit_rate_label = get_ref_or_bail!(owner, "grid-stats/crit-rate/value", Label)?;
-		let speed_label = get_ref_or_bail!(owner, "grid-stats/speed/value", Label)?;
-		let dodge_label = get_ref_or_bail!(owner, "grid-stats/dodge/value", Label)?;
+		let dmg_label = get_ref_or_bail!(root, "grid-stats/damage/value", Label)?;
+		let power_label = get_ref_or_bail!(root, "grid-stats/power/value", Label)?;
+		let acc_label = get_ref_or_bail!(root, "grid-stats/accuracy/value", Label)?;
+		let crit_rate_label = get_ref_or_bail!(root, "grid-stats/crit-rate/value", Label)?;
+		let speed_label = get_ref_or_bail!(root, "grid-stats/speed/value", Label)?;
+		let dodge_label = get_ref_or_bail!(root, "grid-stats/dodge/value", Label)?;
 		
-		let toughness_label = get_ref_or_bail!(owner, "grid-stats/toughness/value", Label)?;
-		let composure_label = get_ref_or_bail!(owner, "grid-stats/composure/value", Label)?;
-		let stun_def_label = get_ref_or_bail!(owner, "grid-stats/stun-mitigation/value", Label)?;
+		let toughness_label = get_ref_or_bail!(root, "grid-stats/toughness/value", Label)?;
+		let composure_label = get_ref_or_bail!(root, "grid-stats/composure/value", Label)?;
+		let stun_def_label = get_ref_or_bail!(root, "grid-stats/stun-mitigation/value", Label)?;
 		
-		let debuff_res_label = get_ref_or_bail!(owner, "grid-stats/debuff-resistance/value", Label)?;
-		let debuff_rate_label = get_ref_or_bail!(owner, "grid-stats/debuff-rate/value", Label)?;
+		let debuff_res_label = get_ref_or_bail!(root, "grid-stats/debuff-resistance/value", Label)?;
+		let debuff_rate_label = get_ref_or_bail!(root, "grid-stats/debuff-rate/value", Label)?;
 		
-		let move_res_label = get_ref_or_bail!(owner, "grid-stats/move-resistance/value", Label)?;
-		let move_rate_label = get_ref_or_bail!(owner, "grid-stats/move-rate/value", Label)?;
+		let move_res_label = get_ref_or_bail!(root, "grid-stats/move-resistance/value", Label)?;
+		let move_rate_label = get_ref_or_bail!(root, "grid-stats/move-rate/value", Label)?;
 		
-		let poison_res_label = get_ref_or_bail!(owner, "grid-stats/poison-resistance/value", Label)?;
-		let poison_rate_label = get_ref_or_bail!(owner, "grid-stats/poison-rate/value", Label)?;
+		let poison_res_label = get_ref_or_bail!(root, "grid-stats/poison-resistance/value", Label)?;
+		let poison_rate_label = get_ref_or_bail!(root, "grid-stats/poison-rate/value", Label)?;
 
 		let orgasm_parent_tref = unsafe {
-			owner.get_node_as::<Control>("orgasm-counter")
-			     .ok_or_else(|| anyhow!("Failed to orgasm-counter from {}", owner.name()))
+			root.get_node_as::<Control>("orgasm-counter")
+			    .ok_or_else(|| anyhow!("Failed to orgasm-counter from {}", root.name()))
 		}?;
 		
 		let orgasm_parent = unsafe { orgasm_parent_tref.assume_shared() };
@@ -117,7 +112,17 @@ impl UI_CharacterStats {
 			]
 		};
 		
-		let this = Self {
+		let orgasm_texture_off = load_resource_as::<Texture>(
+			"res://Core/Combat/UI/Character Stats/Orgasm Counter/orgasm_off.png")?;
+		
+		let orgasm_texture_on = load_resource_as::<Texture>(
+			"res://Core/Combat/UI/Character Stats/Orgasm Counter/orgasm_on.png")?;
+		
+		let root = unsafe { root.assume_shared() };
+		
+		let _self = Self {
+			root,
+			
 			name_label,
 			portrait,
 			
@@ -155,11 +160,9 @@ impl UI_CharacterStats {
 			orgasm_toggles,
 			orgasm_texture_off,
 			orgasm_texture_on,
-		}.emplace();
+		};
 		
-		owner.set_script(this);
-		
-		return Ok(());
+		return Ok(_self);
 	}
 	
 	pub fn set_character(&self, character: &CombatCharacter) {
@@ -294,5 +297,12 @@ impl UI_CharacterStats {
 		self.orgasm_parent
 		    .touch_assert_sane(|parent|
 			    parent.set_visible(is_girl));
+	}
+	
+	pub fn hide(&self) {
+		self.root
+			.touch_assert_sane(|node| {
+				node.hide();
+			});
 	}
 }

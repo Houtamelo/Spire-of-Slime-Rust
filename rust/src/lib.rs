@@ -79,9 +79,9 @@ fn init_panic_hook() {
 fn init(handle: InitHandle) {
 	init_panic_hook();
 	handle.add_class::<start_screen::StartScreenController>();
-	handle.add_class::<combat::ui::SpeedButtons>();
-	handle.add_class::<combat::ui::UI_CharacterStats>();
-	handle.add_class::<combat::ui::TargetingTooltip>();
+	handle.add_class::<combat::graphics::CombatScene>();
+	handle.add_class::<combat::graphics::ui::TargetingTooltip>();
+	handle.add_class::<combat::graphics::ui::SpeedButtons>();
 	handle.add_class::<game_manager::GameManager>();
 	handle.add_class::<misc::panel_are_you_sure::PanelAreYouSure>();
 	handle.add_class::<main_menu::MainMenuController>();
@@ -110,5 +110,5 @@ mod internal_prelude {
 	pub use serde::{Deserialize, Serialize};
 	pub use crate::misc::{SaturatedI64, SaturatedU8, SaturatedU64, ToSaturatedU64, ToSaturatedI64, 
 	                      ToU8Percentage, Base100ChanceGenerator, TrackedTicks, PercentageU8, Percentage_0_100,
-	                      spawn_prefab_as, spawn_prefab_as_inst, load_prefab};
+	                      spawn_prefab_as, spawn_prefab_as_inst, load_prefab, load_resource_as};
 }

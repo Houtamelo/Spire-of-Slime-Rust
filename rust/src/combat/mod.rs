@@ -13,7 +13,6 @@ mod timeline;
 mod skill_resolving;
 mod perk;
 pub mod entity;
-pub mod ui;
 pub mod graphics;
 
 #[derive(Debug, Clone, Serialize, Deserialize)]

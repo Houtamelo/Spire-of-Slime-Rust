@@ -1,28 +1,26 @@
-use anyhow::Result;
-use comfy_bounded_ints::prelude::Bound_u8;
-use full_fn_name;
-use gdnative::api::*;
-use gdnative::prelude::*;
-use util_gdnative::prelude::GodotManualSomeInspector;
-
 #[allow(unused_imports)]
 use crate::*;
-use crate::combat::entity::stat::CheckedRange;
-use crate::combat::ui::get_ref_or_bail;
 
-#[derive(PartialEq, Eq)]
+use crate::combat::entity::stat::CheckedRange;
+use super::get_ref_or_bail;
+
+#[derive(Debug, PartialEq, Eq)]
 enum State {
 	Hidden,
 	Displaying,
 }
 
-#[derive(NativeClass)]
+#[derive(Debug, NativeClass)]
 #[no_constructor]
 #[inherit(Reference)]
+#[user_data(GoodCellData<TargetingTooltip>)]
 pub struct TargetingTooltip {
 	owner_ref: Ref<Control>,
+	hit_root: Ref<Control>,
 	hit_label: Ref<Label>,
+	crit_root: Ref<Control>,
 	crit_label: Ref<Label>,
+	dmg_root: Ref<Control>,
 	dmg_label: Ref<Label>,
 	effects_label: Ref<Label>,
 	state: State,
@@ -42,27 +40,43 @@ fn hide_label(label: Ref<Label>) {
 
 #[methods]
 impl TargetingTooltip {
-	pub fn build_in(owner: TRef<Control>) -> Result<()> {
-		let hit_label = get_ref_or_bail!(owner, "hit", Label)?;
-		let crit_label = get_ref_or_bail!(owner, "crit", Label)?;
-		let dmg_label = get_ref_or_bail!(owner, "dmg", Label)?;
-		let effects_label = get_ref_or_bail!(owner, "effects", Label)?;
+	pub fn build_in(owner: &Control) -> Result<Instance<Self>> {
+		let hit_root = get_ref_or_bail!(owner, "panel-container/vertical-container/hit-chance", Control)?;
+		let hit_label = get_ref_or_bail!(hit_root.assume_safe(), "horizontal-container/value", Label)?;
+		
+		let crit_root = get_ref_or_bail!(owner, "panel-container/vertical-container/crit-chance", Control)?;
+		let crit_label = get_ref_or_bail!(crit_root.assume_safe(), "horizontal-container/value", Label)?;
+		
+		let dmg_root = get_ref_or_bail!(owner, "panel-container/vertical-container/damage", Control)?;
+		let dmg_label = get_ref_or_bail!(dmg_root.assume_safe(), "horizontal-container/value", Label)?;
+		
+		let effects_label = get_ref_or_bail!(owner, "panel-container/vertical-container/effects", Label)?;
 		
 		let owner_ref = unsafe { owner.assume_shared() };
 		
-		let this = TargetingTooltip {
+		let _self = TargetingTooltip {
 			owner_ref,
+			hit_root,
 			hit_label,
+			crit_root,
 			crit_label,
+			dmg_root,
 			dmg_label,
 			effects_label,
 			state: State::Hidden,
 		}.emplace();
 		
-		owner.set_script(this);
+		_self.map_mut(|inst, _| inst.hide())?;
+		
+		owner.set_script(_self);
 		owner.set_visible(false);
 		
-		return Ok(());
+		owner.get_script()
+			 .ok_or_else(|| anyhow!("Failed to set `{}` script for {}", type_name::<Self>(), owner.name()))
+			 .map(|script| { 
+				 script.cast_instance()
+					   .ok_or_else(|| anyhow!("Failed to cast `{}` script for {}", type_name::<Self>(), owner.name()))
+			 }).flatten()
 	}
 
 	#[method]

@@ -56,7 +56,18 @@ impl BGTree {
 		let self_node = parent.try_get_node::<Node2D>(name)?;
 		
 		let Some(mode) = &self.rng_mode
-			else { return Ok(SerializedBGTree { rng_mode: None, randomized_children: vec![] }) };
+			else {
+				let randomized_children =
+					self.randomized_children
+					    .iter()
+					    .try_fold(vec![], |mut sum, (child_name, bg_node)| {
+						    let child_result = bg_node.randomize_recursive(rng, child_name, &self_node)?;
+						    sum.push((child_name.to_string(), child_result));
+						    Result::<_>::Ok(sum)
+					    })?;
+				
+				return Ok(SerializedBGTree { rng_mode: None, randomized_children })
+			};
 		
 		let result = mode.randomize(rng, &self_node)?;
 		match result {
