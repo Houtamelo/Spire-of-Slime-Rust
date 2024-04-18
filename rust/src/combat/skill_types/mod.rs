@@ -15,7 +15,7 @@ pub enum Skill {
 	Lewd(LewdSkill),
 }
 
-pub trait SkillTrait {
+pub trait SkillData {
 	fn name            (&self) -> SkillName;
 	fn recovery_ms     (&self) -> &SaturatedU64;
 	fn charge_ms       (&self) -> &SaturatedU64;

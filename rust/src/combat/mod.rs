@@ -252,7 +252,7 @@ impl CombatState {
 #[allow(unused)]
 pub mod shared {
 	pub(crate) use super::perk::{Perk, get_perk, get_perk_mut, has_perk};
-	pub(crate) use super::skill_types::{Skill, ACCMode, CRITMode, DMGMode, SkillTrait, PositionMatrix, UseCounter};
+	pub(crate) use super::skill_types::{Skill, ACCMode, CRITMode, DMGMode, SkillData, PositionMatrix, UseCounter};
 	pub(crate) use super::skill_types::lewd::LewdSkill;
 	pub(crate) use super::skill_types::defensive::DefensiveSkill;
 	pub(crate) use super::skill_types::offensive::{OffensiveSkill, CustomOffensiveModifier};

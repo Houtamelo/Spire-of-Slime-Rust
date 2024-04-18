@@ -41,7 +41,7 @@ impl DefensiveSkill {
 	}
 }
 
-impl SkillTrait for DefensiveSkill {
+impl SkillData for DefensiveSkill {
 	fn name(&self) -> SkillName { return self.skill_name  ; }
 	fn recovery_ms(&self) -> &SaturatedU64 { return &self.recovery_ms; }
 	fn charge_ms  (&self) -> &SaturatedU64 { return &self.charge_ms  ; }

@@ -94,7 +94,7 @@ impl LewdSkill {
 	}
 }
 
-impl SkillTrait for LewdSkill {
+impl SkillData for LewdSkill {
 	fn name(&self) -> SkillName { return self.skill_name  ; }
 	fn recovery_ms(&self) -> &SaturatedU64 { return &self.recovery_ms; }
 	fn charge_ms  (&self) -> &SaturatedU64 { return &self.charge_ms  ; }

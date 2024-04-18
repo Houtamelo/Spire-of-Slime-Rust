@@ -10,6 +10,7 @@ use crate::*;
 mod character_stats;
 mod speed_buttons;
 mod targeting_tooltip;
+mod skill_button;
 
 macro_rules! get_ref_or_bail {
     ($root_node: expr, $path: literal, $node_ty: ty) => {
