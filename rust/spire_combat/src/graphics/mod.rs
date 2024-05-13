@@ -2,7 +2,7 @@
 use crate::prelude::*;
 
 use crate::graphics::action_animation::AnimationNodes;
-use crate::graphics::action_animation::skills::anim_utils::TryGetNode;
+
 use crate::graphics::stages::CombatBG;
 use crate::graphics::stages::serialization::SerializedBG;
 use crate::graphics::ui::{SpeedButtons, TargetingTooltip, CharacterStatsUI, SpeedSetting, Speed};
@@ -34,21 +34,21 @@ impl CombatScene {
 		let (bg, bg_serial) = stage.spawn_randomized(&scene, rng)?;
 		let animation_nodes = unsafe { AnimationNodes::from_combat_root(&scene, stage)? };
 		
-		let character_stats_left = unsafe {
+		let character_stats_left = {
 			let node = scene.try_get_node::<Control>("canvas-layer_default/ui/character-stats/left-side")?;
 			CharacterStatsUI::new(&node)?
 		};
 		
 		character_stats_left.hide();
 		
-		let character_stats_right = unsafe {
+		let character_stats_right = {
 			let node = scene.try_get_node::<Control>("canvas-layer_default/ui/character-stats/right-side")?;
 			CharacterStatsUI::new(&node)?
 		};
 
 		character_stats_right.hide();
 		
-		let targeting_tooltip = unsafe {
+		let targeting_tooltip = {
 			let node = scene.try_get_node::<Control>("canvas-layer_default/ui/targeting_tooltip")?;
 			TargetingTooltip::build_in(&node)?
 		};
@@ -57,7 +57,7 @@ impl CombatScene {
 			tooltip.hide()
 		});
 		
-		let speed_buttons = unsafe {
+		let speed_buttons = {
 			let node = scene.try_get_node::<Control>("canvas-layer_default/ui/speed-buttons")?;
 			SpeedButtons::build_in(&node, SpeedSetting::UnPaused { speed: Speed::X1 })?
 		};

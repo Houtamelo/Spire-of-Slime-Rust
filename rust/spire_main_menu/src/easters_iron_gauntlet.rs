@@ -1,7 +1,7 @@
 pub(super) const MAX_PRESSES: usize = 239;
 
 pub(super) fn get_easter(index: usize) -> &'static str {
-	return match index {
+	match index {
 		0 => "Why?",
 		1 => "Are you afraid of facing the consequences of your own actions?",
 		2 => "Seriously? You really want to play as if you could revert timelines?",

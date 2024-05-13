@@ -1,7 +1,7 @@
-//noinspection ALL
+//noinspection ALL,SpellCheckingInspection
 
 pub (super) fn get_name_easter(input: &str) -> Option<&'static str> {
-	return match input {
+	match input {
 		"srup"               => Some("It's pronounced 'syrup'"),
 		"houtamelia"         => Some("The true name"),
 		"houtamelio"         => Some("Wrong gender"),

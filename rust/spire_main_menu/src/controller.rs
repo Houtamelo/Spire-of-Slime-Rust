@@ -1,3 +1,7 @@
+use gdnative_tweener::prelude::*;
+
+use shared::node_utils::{InspectNode, SpawnAsInst, TryGetNode};
+
 use crate::internal_prelude::*;
 
 use super::{
@@ -17,30 +21,9 @@ pub static SIGNAL_OPEN_SETTINGS_MENU: &str = "open_settings_menu";
 #[register_with(Self::register)]
 #[derive(Debug)]
 pub struct MainMenuController {
-	#[export_path] background: Option<Ref<Control>>,
-
-	#[export_path] button_new_game : Option<Ref<Button>>,
-	#[export_path] button_load_game: Option<Ref<Button>>,
-	#[export_path] button_settings : Option<Ref<Button>>,
-	#[export_path] button_credit: Option<Ref<Button>>,
-	#[export_path] button_exit: Option<Ref<Button>>,
-
-	#[export_path] panel_new_game: Option<Ref<Control>>,
-	#[export_path] panel_load_game: Option<Ref<Control>>,
-	#[export_path] panel_credits: Option<Ref<Control>>,
-	
-	// Panel - NEW GAME
-	#[export_path] fake_toggle_iron_gauntlet: Option<Ref<Button>>,
+	references: Option<References>,
 	iron_gauntlet_times_pressed: usize,
-	#[export_path] label_easter_egg: Option<Ref<Label>>, 
-	tween_easter_egg_text: Option<Ref<SceneTreeTween>>,
-	#[export_path] line_edit_save_name: Option<Ref<LineEdit>>,
-	#[export_path] button_start_game  : Option<Ref<Button>>,
-	#[export_path] panel_are_you_sure_overwrite_save: Option<Instance<PanelAreYouSure>>,
-
-	// Panel - LOAD GAME
-	#[export_path] container_load_buttons: Option<Ref<Control>>,
-	#[property] prefab_load_button: Option<Ref<PackedScene>>,
+	tween_easter_egg_text: Option<TweenID<TweenProperty_f64>>,
 	spawned_load_buttons: Vec<Instance<LoadButton>>,
 }
 
@@ -53,137 +36,170 @@ fn crash_game() {
 		.quit(0);
 }
 
+#[derive(Debug)]
+struct References {
+	panel_new_game: Ref<Control>,
+	panel_load_game: Ref<Control>,
+	panel_credits: Ref<Control>,
+
+	// Panel - NEW GAME
+	label_easter_egg: Ref<Label>,
+	line_edit_save_name: Ref<LineEdit>,
+	panel_are_you_sure_overwrite_save: Instance<PanelAreYouSure>,
+
+	// Panel - LOAD GAME
+	container_load_buttons: Ref<Control>,
+	prefab_load_button: Ref<PackedScene>,
+}
+
+impl References {
+	fn load(owner: &Control) -> References {
+		macro_rules! get_ref {
+			($owner: ident :: <$node_ty: ty> ($path: literal)) => { unsafe {
+				$owner.try_get_node::<$node_ty>($path).unwrap().assume_shared()
+			}};
+		}
+
+		References {
+			panel_new_game: get_ref!(owner::<Control>("panel_new-game")),
+			panel_load_game: get_ref!(owner::<Control>("panel_load-game")),
+			panel_credits: get_ref!(owner::<Control>("panel_credits")),
+			label_easter_egg: get_ref!(owner::<Label>("panel_new-game/background_easter-egg/label_easter-egg")),
+			line_edit_save_name: get_ref!(owner::<LineEdit>("panel_new-game/line-edit_save-name")),
+			panel_are_you_sure_overwrite_save: unsafe {
+				owner.get_node_as_instance("panel_new-game/panel_are-you-sure-overwrite-save")
+				     .unwrap()
+				     .claim()
+			},
+			container_load_buttons: get_ref!(owner::<Control>("panel_load-game/scroll-container_load-game/v_box_container")),
+			prefab_load_button: load_resource_as("res://Core/Main Menu/UI/Load Game Panel/prefab_save-slot.tscn").unwrap(),
+		}
+	}
+}
+
 #[methods]
 impl MainMenuController {
 	fn register(builder: &ClassBuilder<Self>) {
 		builder.signal(SIGNAL_NEW_GAME)
-			.with_param("save_name", VariantType::GodotString)
-			.done();
-		
+		       .with_param("save_name", VariantType::GodotString)
+		       .done();
+
 		builder.signal(SIGNAL_LOAD_GAME)
-			.with_param("save_name", VariantType::GodotString)
-			.done();
-		
+		       .with_param("save_name", VariantType::GodotString)
+		       .done();
+
 		builder.signal(SIGNAL_DELETE_SAVE)
-			.with_param("save_name", VariantType::GodotString)
-			.done();
-		
+		       .with_param("save_name", VariantType::GodotString)
+		       .done();
+
 		builder.signal(SIGNAL_OVERWRITE_SAVE_AND_START)
-			.with_param("save_name", VariantType::GodotString)
-			.done();
-		
+		       .with_param("save_name", VariantType::GodotString)
+		       .done();
+
 		builder.signal(SIGNAL_OPEN_SETTINGS_MENU)
-			.done();
+		       .done();
 	}
-	
+
+	fn get_refs(&mut self, owner: &Control) -> &References {
+		self.references.get_or_insert_with(|| References::load(owner))
+	}
+
 	#[method]
 	fn _ready(&mut self, #[base] owner: &Control) {
 		self.grab_nodes_by_path(owner);
-		let owner_ref = unsafe { owner.assume_shared() };
+		self.references = Some(References::load(owner));
 
-		self.background
-			.unwrap_manual()
-			.connect("gui_input", owner_ref, fn_name(&Self::close_all_panels), 
-				VariantArray::new_shared(), Object::CONNECT_DEFERRED)
-			.log_if_err();
+		owner.inspect_node::<Control>("background", |bg| {
+			bg.connect_fn("gui_input", owner, fn_name(&Self::_background_gui_input));
+		});
+		
+		owner.inspect_node::<Button>("panel_credits/button_return", |button| {
+			button.connect_fn("pressed", &self.get_refs(owner).panel_credits, "hide");
+		});
+		
+		owner.inspect_node::<Button>("button_discord", |button| {
+			button.connect_fn_args("pressed", OS::godot_singleton(), 
+			                       "shell_open", "https://discord.gg/Cacam7yuqR".to_shared_array());
+		});
+		
+		owner.inspect_node::<Button>("button_subscribe-star", |button| {
+			button.connect_fn_args("pressed", OS::godot_singleton(), 
+			                       "shell_open", "https://subscribestar.adult/spire-of-slime-yonder".to_shared_array());
+		});
 
-		// Menu Buttons
+		// Main Buttons
 		{
-			self.button_new_game
-				.unwrap_manual()
-				.connect("pressed", owner_ref, fn_name(&Self::_open_panel_new_game),
-					VariantArray::new_shared(), Object::CONNECT_DEFERRED)
-				.log_if_err();
-			self.button_load_game
-				.unwrap_manual()
-				.connect("pressed", owner_ref, fn_name(&Self::_open_panel_load_game), 
-					VariantArray::new_shared(), Object::CONNECT_DEFERRED)
-				.log_if_err();
-			self.button_settings
-				.unwrap_manual()
-				.connect("pressed", owner_ref, fn_name(&Self::_open_settings_menu),
-					VariantArray::new_shared(), Object::CONNECT_DEFERRED)
-				.log_if_err();
-			self.button_credit
-				.unwrap_manual()
-				.connect("pressed", owner_ref, fn_name(&Self::_open_panel_credits), 
-					VariantArray::new_shared(), Object::CONNECT_DEFERRED)
-				.log_if_err();
-			self.button_exit
-				.unwrap_manual()
-				.connect("pressed", owner_ref, fn_name(&Self::_exit_game),
-					VariantArray::new_shared(), Object::CONNECT_DEFERRED)
-				.log_if_err();
+			owner.inspect_node::<Button>("main-buttons/new-game", |button| {
+				button.connect_fn("pressed", owner, fn_name(&Self::_toggle_panel_new_game));
+			});
+
+			owner.inspect_node::<Button>("main-buttons/load-game", |button| {
+				button.connect_fn("pressed", owner, fn_name(&Self::_toggle_panel_load_game));
+			});
+
+			owner.inspect_node::<Button>("main-buttons/settings", |button| {
+				button.connect_fn("pressed", owner, fn_name(&Self::_open_settings_menu));
+			});
+
+			owner.inspect_node::<Button>("main-buttons/credits", |button| {
+				button.connect_fn("pressed", owner, fn_name(&Self::_toggle_panel_credits));
+			});
+
+			owner.inspect_node::<Button>("main-buttons/quit", |button| {
+				button.connect_fn("pressed", owner, fn_name(&Self::_quit_game));
+			});
 		}
 
 		// Panel - NEW GAME
 		{
-			self.button_start_game
-				.unwrap_manual()
-				.connect("pressed", owner_ref, fn_name(&Self::_button_pressed_start_game),
-					VariantArray::new_shared(), Object::CONNECT_DEFERRED)
-				.log_if_err();
+			owner.inspect_node::<Button>("panel_new-game/button_start-game", |button| {
+				button.connect_fn("pressed", owner, fn_name(&Self::_button_pressed_start_game));
+			});
 
 			let config = ConfigFile::new();
 			config.load(shared::CONFIG_PATH)
-				.touch_if_err(|err| {
-					godot_error!("Failed to load config.cfg: {}", err);
-					config.set_value("iron_gauntlet", "times_pressed", 0);
-					config.save(shared::CONFIG_PATH).log_if_err();
-				});
+			      .map_err(|_| {
+				      config.set_value("iron_gauntlet", "times_pressed", 0);
+				      config.save(shared::CONFIG_PATH).log_if_err();
+			      }).ok();
 
-			self.iron_gauntlet_times_pressed = config.get_value("iron_gauntlet", "times_pressed", 0)
-				.to::<usize>()
-				.unwrap();
-			
-			self.fake_toggle_iron_gauntlet
-				.unwrap_manual()
-				.connect("pressed", owner_ref, fn_name(&Self::_toggle_pressed_fake_iron_gauntlet), 
-					VariantArray::new_shared(), Object::CONNECT_DEFERRED)
-				.log_if_err();
+			self.iron_gauntlet_times_pressed =
+				config.get_value("iron_gauntlet", "times_pressed", 0)
+				      .to::<usize>()
+				      .unwrap_or_else(|| {
+					      godot_error!("Failed to get iron gauntlet times pressed from config.cfg");
+					      0
+				      });
 
-			self.panel_are_you_sure_overwrite_save
-				.unwrap_inst()
-				.base()
-				.connect(panel_are_you_sure::SIGNAL_YES, owner_ref, fn_name(&Self::_are_you_sure_overwrite_save_yes), 
-					VariantArray::new_shared(), Object::CONNECT_DEFERRED)
-				.log_if_err();
+			owner.inspect_node::<Button>("panel_new-game/fake-toggle_iron-gauntlet", |button| {
+				button.connect_fn("pressed", owner, fn_name(&Self::_toggle_pressed_fake_iron_gauntlet));
+			});
+
+			self.get_refs(owner)
+			    .panel_are_you_sure_overwrite_save
+			    .connect_fn(panel_are_you_sure::SIGNAL_YES, owner, fn_name(&Self::_are_you_sure_overwrite_save_yes));
 		}
 	}
-	
+
 	pub fn create_and_assign_load_buttons(&mut self, owner: &Control, saves: impl IntoIterator<Item = &str>) {
 		fn spawn_load_button(
-			owner_ref: Ref<Control>, 
+			owner: &Control,
 			prefab: &PackedScene,
 			container: &Control
 		) -> Instance<LoadButton> {
-			let node = unsafe {
-				prefab.instance(PackedScene::GEN_EDIT_STATE_DISABLED)
-				      .expect("Failed to create LoadButton node from packed scene")
-				      .assume_safe_if_sane()
-				      .expect("Failed to assume safe and sane LoadButton node from packed scene")
-			};
+			let node = prefab.spawn_as_inst().unwrap();
 
-			container.add_child(node, false);
+			container.add_child(node.base(), false);
 
-			node.connect(load_button::SIGNAL_LOAD, owner_ref, fn_name(&MainMenuController::_button_pressed_save_slot_load),
-			             VariantArray::new_shared(), Object::CONNECT_DEFERRED)
-			    .log_if_err();
-			node.connect(load_button::SIGNAL_DELETE, owner_ref, fn_name(&MainMenuController::_button_pressed_save_slot_delete),
-			             VariantArray::new_shared(), Object::CONNECT_DEFERRED)
-			    .log_if_err();
+			node.connect_fn(load_button::SIGNAL_LOAD, owner, fn_name(&MainMenuController::_button_pressed_save_slot_load));
+			node.connect_fn(load_button::SIGNAL_DELETE, owner, fn_name(&MainMenuController::_button_pressed_save_slot_delete));
 
-			node.cast::<Control>()
-				.expect("Failed to cast node to `Control`")
-				.cast_instance()
-				.expect("Failed to cast node to `LoadButton`")
-				.claim()
+			node.claim()
 		}
-		
-		
-		let owner_ref = unsafe { owner.assume_shared() };
-		let container= self.container_load_buttons.unwrap_manual();
-		let prefab= self.prefab_load_button.unwrap_refcount();
+
+		let refs = self.references.get_or_insert_with(|| References::load(owner));
+		let container = unsafe { refs.container_load_buttons.assume_safe() };
+		let prefab = unsafe { refs.prefab_load_button.assume_safe() };
 
 		let save_count =
 			saves.into_iter()
@@ -193,7 +209,7 @@ impl MainMenuController {
 					     match self.spawned_load_buttons.get_mut(idx) {
 						     Some(button) => button,
 						     None => {
-							     let button = spawn_load_button(owner_ref, &prefab, &container);
+							     let button = spawn_load_button(owner, &prefab, &container);
 							     self.spawned_load_buttons.push(button);
 							     self.spawned_load_buttons.last_mut().unwrap()
 						     }
@@ -206,59 +222,74 @@ impl MainMenuController {
 
 				     idx + 1
 			     });
-		
+
 		self.spawned_load_buttons
-			.iter()
-			.skip(save_count)
-			.for_each(|button| {
-				button.touch_assert_safe_mut(|button, base| {
-					button.save_name = None;
-					base.set_visible(false);
-				});
-			});
+		    .iter()
+		    .skip(save_count)
+		    .for_each(|button| {
+			    button.touch_assert_safe_mut(|button, base| {
+				    button.save_name = None;
+				    base.set_visible(false);
+			    });
+		    });
+	}
+
+	#[method]
+	fn _unhandled_input(&mut self, #[base] owner: &Control, event_ref: Ref<InputEvent>) {
+		if shared::input::any_cancel_input(unsafe { &event_ref.assume_safe() }) {
+			self.close_all_panels(owner);
+		}
 	}
 	
 	#[method]
-	fn _unhandled_input(&self, event_ref: Ref<InputEvent>) {
-		if shared::input::any_cancel_input(unsafe { &event_ref.assume_safe() }) {
-			self.close_all_panels();
+	fn _background_gui_input(&mut self, #[base] owner: &Control, event: Ref<InputEvent>) {
+		let event = unsafe { event.assume_safe() };
+		if let Some(mouse_event) = event.cast::<InputEventMouseButton>() 
+			&& !mouse_event.is_echo() 
+			&& mouse_event.is_pressed()
+			&& mouse_event.button_index() == GlobalConstants::BUTTON_LEFT {
+			self.close_all_panels(owner);
 		}
 	}
 
 	#[method]
-	fn close_all_panels(&self) {
-		self.panel_new_game
-			.unwrap_manual()
-			.set_visible(false);
-		self.panel_are_you_sure_overwrite_save
-			.touch_assert_safe(|_, base| 
-				base.set_visible(false));
-		self.panel_load_game
-			.unwrap_manual()
-			.set_visible(false);
+	fn close_all_panels(&mut self, #[base] owner: &Control) {
+		let refs = self.get_refs(owner);
+
+		refs.panel_new_game.touch_assert_sane(|panel| {
+			panel.set_visible(false);
+		});
+		refs.panel_load_game.touch_assert_sane(|panel| {
+			panel.set_visible(false);
+		});
+		unsafe {
+			refs.panel_are_you_sure_overwrite_save
+			    .assume_safe()
+			    .base()
+			    .set_visible(false);
+		}
 	}
 
 	#[method]
-	fn _toggle_pressed_fake_iron_gauntlet(&mut self) {
+	fn _toggle_pressed_fake_iron_gauntlet(&mut self, #[base] owner: &Control) {
 		self.iron_gauntlet_times_pressed += 1;
 
 		let config = ConfigFile::new();
-		
+
 		config.load(shared::CONFIG_PATH)
-			.log_if_err();
-		
+		      .log_if_err();
+
 		config.set_value("iron_gauntlet", "times_pressed", self.iron_gauntlet_times_pressed);
-		
+
 		config.save(shared::CONFIG_PATH)
-			.log_if_err();
+		      .log_if_err();
 
 		if self.iron_gauntlet_times_pressed >= easters_iron_gauntlet::MAX_PRESSES {
 			crash_game();
-			return;
+		} else {
+			let easter = easters_iron_gauntlet::get_easter(self.iron_gauntlet_times_pressed);
+			self.set_easter_egg_text(owner, easter);
 		}
-		
-		let easter = easters_iron_gauntlet::get_easter(self.iron_gauntlet_times_pressed);
-		self.set_easter_egg_text(easter);
 	}
 
 	#[method]
@@ -274,40 +305,42 @@ impl MainMenuController {
 	#[method]
 	fn _button_pressed_start_game(&mut self, #[base] owner: &Control) {
 		let save_name = self.typed_save_name();
-		if save_name.len() == 0 {
-			self.set_easter_egg_text("You need to enter a save name");
+		if save_name.is_empty() {
+			self.set_easter_egg_text(owner, "You need to enter a save name");
 			return;
 		}
-		
-		let save_already_exists = self.spawned_load_buttons
-			.iter()
-			.any(|button_ref|
-				Some(true) == button_ref
-					.map_assert_safe(|button, _|
-						button.save_name.as_ref() == Some(&save_name))
-			);
 
-		if save_already_exists {
-			self.panel_are_you_sure_overwrite_save
-				.touch_assert_safe(|panel, base| {
-					panel.set_text(format!("Are you sure you want to overwrite save: {}", save_name).as_str());
-					base.set_visible(true);
-				});
+		let save_already_exists =
+			self.spawned_load_buttons
+			    .iter()
+			    .any(|button_ref|
+				    Some(true) == button_ref.map_assert_safe(|button, _| {
+					    button.save_name.as_ref() == Some(&save_name)
+				    })
+			    );
 
-			self.line_edit_save_name
-				.unwrap_manual()
-				.release_focus();  // to make sure the player can't edit the save name while the are you sure panel is open
-		} else {
+		if !save_already_exists {
 			owner.emit_signal(SIGNAL_NEW_GAME, &[save_name.to_variant()]);
+		} else {
+			let refs = self.get_refs(owner);
+
+			refs.panel_are_you_sure_overwrite_save
+			    .touch_assert_safe(|panel, base| {
+				    panel.set_text(format!("Are you sure you want to overwrite save: {}", save_name).as_str());
+				    base.set_visible(true);
+			    });
+
+			refs.line_edit_save_name.touch_assert_sane(|line_edit| {
+				line_edit.release_focus(); // to make sure the player can't edit the save name while the `are you sure panel` is open
+			});
 		}
 	}
 
 	#[method]
-	fn _on_line_edit_changed_save_name(&mut self, new_text: GodotString) {
-		let cleaned_text = { 
+	fn _on_line_edit_changed_save_name(&mut self, #[base] owner: &Control, new_text: GodotString) {
+		let cleaned_text = {
 			let mut temp = new_text.to_string();
-			temp.retain(|char|
-				char.is_ascii_alphanumeric());
+			temp.retain(|char| char.is_ascii_alphanumeric());
 			temp.chars()
 			    .map(|char| char.to_ascii_lowercase())
 			    .collect::<String>()
@@ -316,17 +349,19 @@ impl MainMenuController {
 		if cleaned_text == "alexa" {
 			crash_game();
 		} else {
-			let easter_text = easters_save_name::get_name_easter(cleaned_text.as_str())
-				.unwrap_or_default();
-			self.set_easter_egg_text(easter_text);
+			let easter_text = 
+				easters_save_name::get_name_easter(cleaned_text.as_str()).unwrap_or_default();
+			self.set_easter_egg_text(owner, easter_text);
 		}
 	}
 
 	fn typed_save_name(&self) -> String {
-		return self.line_edit_save_name
-			.unwrap_manual()
-			.text()
-			.to_string();
+		self.references.as_ref().map(|refs| {
+			refs.line_edit_save_name
+			    .unwrap_manual()
+			    .text()
+			    .to_string()
+		}).unwrap()
 	}
 
 	#[method]
@@ -335,38 +370,37 @@ impl MainMenuController {
 		owner.emit_signal(SIGNAL_OVERWRITE_SAVE_AND_START, &[save_name.to_variant()]);
 	}
 
-	fn set_easter_egg_text(&mut self, text: &str) {
-		self.tween_easter_egg_text.kill_if_some();
+	fn set_easter_egg_text(&mut self, owner: &Control, text: &str) {
+		if let Some(tween) = self.tween_easter_egg_text.as_ref() { 
+			tween.kill().log_if_err();
+		}
 
-		let label = self.label_easter_egg.unwrap_manual();
+		let label = self.get_refs(owner).label_easter_egg.unwrap_manual();
 		label.set_text(text);
 		label.set_percent_visible(0.0);
-		match label.create_tween() {
-			Some(tween_ref) => {
-				let tween = unsafe { tween_ref.assume_safe() };
-				tween.tween_property(label, "percent_visible", 1.0, text.len() as f64 * 0.015);
-				self.tween_easter_egg_text = Some(tween_ref);
-			},
-			None => {
-				godot_error!("{}():\n\
-					Failed to create tween for easter egg text", 
-					fn_name(&Self::set_easter_egg_text));
-			}
-		}
+
+		self.tween_easter_egg_text =
+			label.do_percent_visible(1.0, text.len() as f64 * 0.015)
+			     .register()
+			     .map_err(|err| {
+				     godot_error!("{}():\n\
+					 Failed to tween easter egg text: {}", 
+					 fn_name(&Self::set_easter_egg_text), err);
+			     }).ok();
 	}
 
 	#[method]
-	fn _open_panel_new_game(&self) {
-		self.panel_new_game
-			.touch_assert_sane(|panel| 
-				panel.set_visible(!panel.is_visible()));
+	fn _toggle_panel_new_game(&mut self, #[base] owner: &Control) {
+		self.get_refs(owner).panel_new_game.touch_assert_sane(|panel| {
+			panel.set_visible(!panel.is_visible());
+		});
 	}
 
 	#[method]
-	fn _open_panel_load_game(&self) {
-		self.panel_load_game
-			.touch_assert_sane(|panel| 
-				panel.set_visible(!panel.is_visible()));
+	fn _toggle_panel_load_game(&mut self, #[base] owner: &Control) {
+		self.get_refs(owner).panel_load_game.touch_assert_sane(|panel| {
+			panel.set_visible(!panel.is_visible());
+		});
 	}
 
 	#[method]
@@ -375,18 +409,14 @@ impl MainMenuController {
 	}
 
 	#[method]
-	fn _open_panel_credits(&self) {
-		self.panel_credits
-			.touch_assert_sane(|panel| 
-				panel.set_visible(!panel.is_visible()));
+	fn _toggle_panel_credits(&mut self, #[base] owner: &Control) {
+		self.get_refs(owner).panel_credits.touch_assert_sane(|panel| {
+			panel.set_visible(!panel.is_visible());
+		});
 	}
 
 	#[method]
-	fn _exit_game(&self) {
-		self.background
-			.unwrap_manual()
-			.get_tree()
-			.unwrap_manual()
-			.quit(0);
+	fn _quit_game(&self, #[base] owner: &Control) {
+		owner.get_tree().unwrap_manual().quit(0);
 	}
 }

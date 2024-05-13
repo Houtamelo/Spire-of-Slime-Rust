@@ -1,7 +1,5 @@
 #[allow(unused_imports)]
 use crate::prelude::*;
-use crate::graphics::action_animation::skills::anim_utils::TryGetNode;
-
 use crate::graphics::stages::CombatBG;
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -58,7 +56,7 @@ fn deserialize_rng_mode(mode: SerializedRngMode, node: &Node2D) -> Result<()> {
 }
 
 fn deserialize_tree(name: String, tree: SerializedBGTree, parent: &Node2D) -> Result<()> {
-	let node = unsafe { parent.try_get_node::<Node2D>(&name)? };
+	let node = parent.try_get_node::<Node2D>(&name)?;
 	
 	if let Some(rng_mode) = tree.rng_mode {
 		deserialize_rng_mode(rng_mode, &node)?;

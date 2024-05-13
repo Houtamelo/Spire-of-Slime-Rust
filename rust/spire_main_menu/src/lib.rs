@@ -1,4 +1,5 @@
 #![feature(anonymous_lifetime_in_impl_trait)]
+#![feature(let_chains)]
 
 mod easters_save_name;
 mod easters_iron_gauntlet;

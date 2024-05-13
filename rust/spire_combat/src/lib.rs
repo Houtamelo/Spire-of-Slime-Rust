@@ -8,6 +8,7 @@
 #![feature(const_option)]
 #![feature(iterator_try_collect)]
 #![allow(non_camel_case_types)]
+#![allow(clippy::missing_safety_doc)]
 
 use prelude::*;
 
@@ -27,6 +28,7 @@ pub mod prelude {
 	pub use comfy_bounded_ints::prelude::*;
 	pub use shared::num::*;
 	pub use shared::rand_utils::*;
+	pub use shared::node_utils::*;
 	pub use serde::{Deserialize, Serialize};
 	pub use uuid::Uuid;
 	pub use std::num::{NonZeroI8, NonZeroU16, NonZeroU64, NonZeroU8};

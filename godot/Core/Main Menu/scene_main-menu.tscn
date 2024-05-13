@@ -1,4 +1,4 @@
-[gd_scene load_steps=24 format=2]
+[gd_scene load_steps=28 format=2]
 
 [ext_resource path="res://Core/Main Menu/theme_main-menu.tres" type="Theme" id=1]
 [ext_resource path="res://Core/Main Menu/background.png" type="Texture" id=2]
@@ -19,6 +19,10 @@
 [ext_resource path="res://Core/Shared/Audio/sfx_ui_click.tscn" type="PackedScene" id=17]
 [ext_resource path="res://Core/Shared/Audio/sfx_ui_hover.tscn" type="PackedScene" id=18]
 [ext_resource path="res://Core/Shared/disallow-click-focus_on-parent.tscn" type="PackedScene" id=19]
+[ext_resource path="res://Core/Shared/PanelAreYouSure.gdns" type="Script" id=20]
+[ext_resource path="res://Core/Main Menu/MainMenuController.gdns" type="Script" id=21]
+[ext_resource path="res://Core/Main Menu/UI/Subscribe Star Button/style-box_button_subscribe-star_hover.tres" type="StyleBox" id=22]
+[ext_resource path="res://Core/Main Menu/UI/Subscribe Star Button/style-box_button_subscribe-star_normal.tres" type="StyleBox" id=23]
 
 [sub_resource type="StyleBoxEmpty" id=1]
 
@@ -32,6 +36,7 @@
 anchor_right = 1.0
 anchor_bottom = 1.0
 theme = ExtResource( 1 )
+script = ExtResource( 21 )
 
 [node name="background" type="TextureRect" parent="."]
 margin_right = 40.0
@@ -40,13 +45,13 @@ focus_mode = 1
 mouse_filter = 0
 texture = ExtResource( 2 )
 
-[node name="buttons_main" type="VBoxContainer" parent="."]
+[node name="main-buttons" type="VBoxContainer" parent="."]
 margin_left = 13.0
 margin_top = 462.0
 margin_right = 202.0
 margin_bottom = 502.0
 
-[node name="new-game" type="Button" parent="buttons_main"]
+[node name="new-game" type="Button" parent="main-buttons"]
 margin_right = 281.0
 margin_bottom = 58.875
 custom_fonts/font = ExtResource( 3 )
@@ -54,13 +59,13 @@ action_mode = 0
 text = "New Game"
 align = 0
 
-[node name="disallow-click-focus_on-parent" parent="buttons_main/new-game" instance=ExtResource( 19 )]
+[node name="disallow-click-focus_on-parent" parent="main-buttons/new-game" instance=ExtResource( 19 )]
 
-[node name="sfx_ui_click" parent="buttons_main/new-game" instance=ExtResource( 17 )]
+[node name="sfx_ui_click" parent="main-buttons/new-game" instance=ExtResource( 17 )]
 
-[node name="sfx_ui_hover" parent="buttons_main/new-game" instance=ExtResource( 18 )]
+[node name="sfx_ui_hover" parent="main-buttons/new-game" instance=ExtResource( 18 )]
 
-[node name="load-game" type="Button" parent="buttons_main"]
+[node name="load-game" type="Button" parent="main-buttons"]
 margin_top = 62.0
 margin_right = 281.875
 margin_bottom = 120.875
@@ -69,28 +74,28 @@ action_mode = 0
 text = "Load Game"
 align = 0
 
-[node name="disallow-click-focus_on-parent" parent="buttons_main/load-game" instance=ExtResource( 19 )]
+[node name="disallow-click-focus_on-parent" parent="main-buttons/load-game" instance=ExtResource( 19 )]
 
-[node name="sfx_ui_click" parent="buttons_main/load-game" instance=ExtResource( 17 )]
+[node name="sfx_ui_click" parent="main-buttons/load-game" instance=ExtResource( 17 )]
 
-[node name="sfx_ui_hover" parent="buttons_main/load-game" instance=ExtResource( 18 )]
+[node name="sfx_ui_hover" parent="main-buttons/load-game" instance=ExtResource( 18 )]
 
-[node name="options" type="Button" parent="buttons_main"]
+[node name="settings" type="Button" parent="main-buttons"]
 margin_top = 124.0
 margin_right = 281.0
 margin_bottom = 182.875
 custom_fonts/font = ExtResource( 3 )
 action_mode = 0
-text = "Options"
+text = "Settings"
 align = 0
 
-[node name="disallow-click-focus_on-parent" parent="buttons_main/options" instance=ExtResource( 19 )]
+[node name="disallow-click-focus_on-parent" parent="main-buttons/settings" instance=ExtResource( 19 )]
 
-[node name="sfx_ui_click" parent="buttons_main/options" instance=ExtResource( 17 )]
+[node name="sfx_ui_click" parent="main-buttons/settings" instance=ExtResource( 17 )]
 
-[node name="sfx_ui_hover" parent="buttons_main/options" instance=ExtResource( 18 )]
+[node name="sfx_ui_hover" parent="main-buttons/settings" instance=ExtResource( 18 )]
 
-[node name="credits" type="Button" parent="buttons_main"]
+[node name="credits" type="Button" parent="main-buttons"]
 margin_top = 186.0
 margin_right = 281.0
 margin_bottom = 244.875
@@ -99,13 +104,13 @@ action_mode = 0
 text = "Credits"
 align = 0
 
-[node name="disallow-click-focus_on-parent" parent="buttons_main/credits" instance=ExtResource( 19 )]
+[node name="disallow-click-focus_on-parent" parent="main-buttons/credits" instance=ExtResource( 19 )]
 
-[node name="sfx_ui_click" parent="buttons_main/credits" instance=ExtResource( 17 )]
+[node name="sfx_ui_click" parent="main-buttons/credits" instance=ExtResource( 17 )]
 
-[node name="sfx_ui_hover" parent="buttons_main/credits" instance=ExtResource( 18 )]
+[node name="sfx_ui_hover" parent="main-buttons/credits" instance=ExtResource( 18 )]
 
-[node name="quit" type="Button" parent="buttons_main"]
+[node name="quit" type="Button" parent="main-buttons"]
 margin_top = 248.0
 margin_right = 281.0
 margin_bottom = 306.875
@@ -114,11 +119,11 @@ action_mode = 0
 text = "Quit"
 align = 0
 
-[node name="disallow-click-focus_on-parent" parent="buttons_main/quit" instance=ExtResource( 19 )]
+[node name="disallow-click-focus_on-parent" parent="main-buttons/quit" instance=ExtResource( 19 )]
 
-[node name="sfx_ui_click" parent="buttons_main/quit" instance=ExtResource( 17 )]
+[node name="sfx_ui_click" parent="main-buttons/quit" instance=ExtResource( 17 )]
 
-[node name="sfx_ui_hover" parent="buttons_main/quit" instance=ExtResource( 18 )]
+[node name="sfx_ui_hover" parent="main-buttons/quit" instance=ExtResource( 18 )]
 
 [node name="button_discord" type="Button" parent="."]
 margin_left = 4.0
@@ -137,6 +142,23 @@ action_mode = 0
 expand_icon = true
 
 [node name="disallow-click-focus_on-parent" parent="button_discord" instance=ExtResource( 19 )]
+
+[node name="button_subscribe-star" type="Button" parent="."]
+margin_left = 4.0
+margin_top = 944.0
+margin_right = 132.0
+margin_bottom = 1072.0
+rect_scale = Vector2( 0.5, 0.5 )
+custom_styles/hover = ExtResource( 22 )
+custom_styles/pressed = ExtResource( 22 )
+custom_styles/focus = ExtResource( 22 )
+custom_styles/disabled = ExtResource( 23 )
+custom_styles/normal = ExtResource( 23 )
+shortcut_in_tooltip = false
+action_mode = 0
+expand_icon = true
+
+[node name="disallow-click-focus_on-parent" parent="button_subscribe-star" instance=ExtResource( 19 )]
 
 [node name="panel_new-game" type="TextureRect" parent="."]
 visible = false
@@ -229,7 +251,7 @@ valign = 1
 autowrap = true
 clip_text = true
 
-[node name="panel_are_you_sure_overwrite_save" type="Panel" parent="panel_new-game"]
+[node name="panel_are-you-sure-overwrite-save" type="Panel" parent="panel_new-game"]
 visible = false
 anchor_right = 1.0
 anchor_bottom = 1.0
@@ -238,8 +260,12 @@ margin_top = -911.0
 margin_right = 1625.0
 margin_bottom = 780.0
 custom_styles/panel = SubResource( 4 )
+script = ExtResource( 20 )
+path_label = NodePath("background/label_warning")
+path_button_no = NodePath("background/button_cancel")
+path_button_yes = NodePath("background/button_yes")
 
-[node name="background" type="TextureRect" parent="panel_new-game/panel_are_you_sure_overwrite_save"]
+[node name="background" type="TextureRect" parent="panel_new-game/panel_are-you-sure-overwrite-save"]
 margin_left = 1612.0
 margin_top = 786.0
 margin_right = 2218.0
@@ -247,7 +273,7 @@ margin_bottom = 1127.0
 texture = ExtResource( 16 )
 expand = true
 
-[node name="label_warning" type="Label" parent="panel_new-game/panel_are_you_sure_overwrite_save/background"]
+[node name="label_warning" type="Label" parent="panel_new-game/panel_are-you-sure-overwrite-save/background"]
 anchor_left = 0.17
 anchor_top = 0.125
 anchor_right = 0.83
@@ -262,7 +288,7 @@ align = 1
 autowrap = true
 clip_text = true
 
-[node name="button_yes" type="Button" parent="panel_new-game/panel_are_you_sure_overwrite_save/background"]
+[node name="button_yes" type="Button" parent="panel_new-game/panel_are-you-sure-overwrite-save/background"]
 anchor_left = 0.25
 anchor_top = 0.72
 anchor_right = 0.35
@@ -271,13 +297,13 @@ text = "Yes"
 flat = true
 align = 0
 
-[node name="disallow-click-focus_on-parent" parent="panel_new-game/panel_are_you_sure_overwrite_save/background/button_yes" instance=ExtResource( 19 )]
+[node name="disallow-click-focus_on-parent" parent="panel_new-game/panel_are-you-sure-overwrite-save/background/button_yes" instance=ExtResource( 19 )]
 
-[node name="sfx_ui_click" parent="panel_new-game/panel_are_you_sure_overwrite_save/background/button_yes" instance=ExtResource( 17 )]
+[node name="sfx_ui_click" parent="panel_new-game/panel_are-you-sure-overwrite-save/background/button_yes" instance=ExtResource( 17 )]
 
-[node name="sfx_ui_hover" parent="panel_new-game/panel_are_you_sure_overwrite_save/background/button_yes" instance=ExtResource( 18 )]
+[node name="sfx_ui_hover" parent="panel_new-game/panel_are-you-sure-overwrite-save/background/button_yes" instance=ExtResource( 18 )]
 
-[node name="button_cancel" type="Button" parent="panel_new-game/panel_are_you_sure_overwrite_save/background"]
+[node name="button_cancel" type="Button" parent="panel_new-game/panel_are-you-sure-overwrite-save/background"]
 anchor_left = 0.54
 anchor_top = 0.72
 anchor_right = 0.75
@@ -286,13 +312,13 @@ text = "Cancel"
 flat = true
 align = 2
 
-[node name="disallow-click-focus_on-parent" parent="panel_new-game/panel_are_you_sure_overwrite_save/background/button_cancel" instance=ExtResource( 19 )]
+[node name="disallow-click-focus_on-parent" parent="panel_new-game/panel_are-you-sure-overwrite-save/background/button_cancel" instance=ExtResource( 19 )]
 
-[node name="sfx_ui_click" parent="panel_new-game/panel_are_you_sure_overwrite_save/background/button_cancel" instance=ExtResource( 17 )]
+[node name="sfx_ui_click" parent="panel_new-game/panel_are-you-sure-overwrite-save/background/button_cancel" instance=ExtResource( 17 )]
 
-[node name="sfx_ui_hover" parent="panel_new-game/panel_are_you_sure_overwrite_save/background/button_cancel" instance=ExtResource( 18 )]
+[node name="sfx_ui_hover" parent="panel_new-game/panel_are-you-sure-overwrite-save/background/button_cancel" instance=ExtResource( 18 )]
 
-[node name="background_load-game" type="TextureRect" parent="."]
+[node name="panel_load-game" type="TextureRect" parent="."]
 visible = false
 margin_left = 692.0
 margin_top = 305.0
@@ -300,7 +326,7 @@ margin_right = 1298.0
 margin_bottom = 961.0
 texture = ExtResource( 14 )
 
-[node name="scroll-container_load-game" type="ScrollContainer" parent="background_load-game"]
+[node name="scroll-container_load-game" type="ScrollContainer" parent="panel_load-game"]
 anchor_left = 0.261
 anchor_top = 0.2
 anchor_right = 0.85
@@ -310,27 +336,29 @@ margin_bottom = 12.0
 follow_focus = true
 scroll_horizontal_enabled = false
 
-[node name="v_box_container" type="VBoxContainer" parent="background_load-game/scroll-container_load-game"]
+[node name="v_box_container" type="VBoxContainer" parent="panel_load-game/scroll-container_load-game"]
 grow_horizontal = 2
 grow_vertical = 2
 
-[node name="background_credits" type="ColorRect" parent="."]
+[node name="panel_credits" type="ColorRect" parent="."]
 visible = false
 anchor_right = 1.0
 anchor_bottom = 1.0
 color = Color( 0, 0, 0, 1 )
 
-[node name="scroll_container" type="ScrollContainer" parent="background_credits"]
-anchor_left = 0.1
-anchor_right = 0.9
+[node name="scroll_container" type="ScrollContainer" parent="panel_credits"]
+anchor_right = 1.0
 anchor_bottom = 1.0
+margin_left = -20.0
+margin_right = 20.0
+grow_horizontal = 2
 follow_focus = true
 scroll_horizontal_enabled = false
 
-[node name="rich_text_label" type="RichTextLabel" parent="background_credits/scroll_container"]
-margin_right = 1600.0
+[node name="rich_text_label" type="RichTextLabel" parent="panel_credits/scroll_container"]
+margin_right = 1960.0
 margin_bottom = 1296.0
-rect_min_size = Vector2( 1600, 0 )
+rect_min_size = Vector2( 1960, 0 )
 custom_fonts/mono_font = ExtResource( 15 )
 custom_fonts/bold_italics_font = ExtResource( 15 )
 custom_fonts/italics_font = ExtResource( 15 )
@@ -484,17 +512,19 @@ Some sound Effects from \"https://pixabay.com/sound-effects/\""
 fit_content_height = true
 scroll_following = true
 
-[node name="button_close" type="Button" parent="background_credits"]
+[node name="button_return" type="Button" parent="panel_credits"]
 anchor_left = 0.94
 anchor_top = 0.96
 anchor_right = 0.996
 anchor_bottom = 1.0
-text = "Close"
+margin_left = -11.0
+margin_right = 4.2301
+text = "Return"
 flat = true
 align = 2
 
-[node name="disallow-click-focus_on-parent" parent="background_credits/button_close" instance=ExtResource( 19 )]
+[node name="disallow-click-focus_on-parent" parent="panel_credits/button_return" instance=ExtResource( 19 )]
 
-[node name="sfx_ui_click" parent="background_credits/button_close" instance=ExtResource( 17 )]
+[node name="sfx_ui_click" parent="panel_credits/button_return" instance=ExtResource( 17 )]
 
-[node name="sfx_ui_hover" parent="background_credits/button_close" instance=ExtResource( 18 )]
+[node name="sfx_ui_hover" parent="panel_credits/button_return" instance=ExtResource( 18 )]
