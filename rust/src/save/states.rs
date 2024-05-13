@@ -1,7 +1,7 @@
 #[allow(unused_imports)]
 use crate::*;
 use serde::{Deserialize, Serialize};
-use crate::combat::CombatState;
+use combat::state::CombatState;
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub(super) enum SaveState {

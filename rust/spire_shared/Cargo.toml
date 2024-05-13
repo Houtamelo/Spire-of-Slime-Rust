@@ -1,0 +1,14 @@
+[package]
+name = "spire_shared"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+gdnative = "0.11.3"
+util = { package = "houtamelo_utils", version = "2.0" }
+util_gdnative = { package = "houtamelo_utils_gdnative", version = "2.0" }
+gdnative_export_node_as_path = "0.1.2"
+float-cmp = "0.9.0"
+comfy-bounded-ints = { version = "0.2", features = ["serde", "div_assign_zero"] }
+rand = { version = "0.8.5", features = ["serde1"] }
+rand_xoshiro = { version = "0.6.0", features = ["serde1"] }

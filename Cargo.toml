@@ -1,4 +1,14 @@
 [workspace]
 exclude = ["godot"]
-members = ["rust"]
+members = [
+    "rust",
+    "rust/spire_audio",
+    "rust/spire_world_map",
+    "rust/spire_settings_menu",
+    "rust/spire_shared",
+    "rust/spire_main_menu",
+    "rust/spire_local_map"]
 resolver = "2"
+
+[profile.dev]
+incremental = true

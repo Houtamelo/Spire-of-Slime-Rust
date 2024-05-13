@@ -1,9 +1,6 @@
 #[allow(unused_imports)]
 use crate::*;
-
-use rand_xoshiro::Xoshiro256PlusPlus;
-
-use crate::combat::shared::*;
+use combat::prelude::*;
 use crate::save::upgrades::{PrimaryUpgrade, PrimaryUpgradeCount, SecondaryUpgrade, SecondaryUpgradeCount};
 
 #[derive(Debug, Serialize, Deserialize, Clone)]
@@ -37,16 +34,16 @@ pub struct GenericStats {
 	next_upgrade_options_primary: Option<Vec<PrimaryUpgrade>>,
 	next_upgrade_options_secondary: Option<Vec<SecondaryUpgrade>>,
 	available_points_perk: u8,
-	sexual_exp: HashMap<NPCName, u16>,
+	sexual_exp: HashMap<NPCVariant, u16>,
 }
 
 impl GenericStats {
-	pub fn from_data(rng: Xoshiro256PlusPlus, data: &(impl CharacterDataTrait + GirlTrait)) -> GenericStats {
+	pub fn from_data(rng: Xoshiro256PlusPlus, data: &(impl CharacterData + GirlData)) -> GenericStats {
 		return GenericStats {
 			rng,
 			total_exp: 0,
 			dmg: data.dmg(0),
-			stamina: data.max_stamina(0, None),
+			stamina: data.max_stamina(0),
 			toughness: data.toughness(0),
 			stun_def: data.stun_def(0),
 			debuff_res: data.debuff_res(0),

@@ -1,0 +1,25 @@
+[package]
+name = "spire_combat"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+shared = { path = "../spire_shared", package = "spire_shared" }
+proc_macros = { path = "../proc_macros", package = "proc_macros" }
+
+gdnative = "0.11.3"
+gdnative_export_node_as_path = "0.1.2"
+gdnative_tweener = "0.5"
+util = { package = "houtamelo_utils", version = "2.0" }
+util_gdnative = { package = "houtamelo_utils_gdnative", version = "2.0" }
+anyhow = "1.0.83"
+serde = { version = "1.0.201", features = ["derive"] }
+comfy-bounded-ints = "0.2"
+strum = "0.26.2"
+strum_macros = "0.26.2"
+rand = { version = "0.8.5", features = ["serde1"] }
+rand_xoshiro = { version = "0.6.0", features = ["serde1"] }
+uuid = { version = "1.8.0", features = ["serde"] }
+
+# should be replaced with 0.3 when it releases 
+enum_delegate = { package = "enum_delegate", branch = "main", git = "https://gitlab.com/dawn_app/enum_delegate" }

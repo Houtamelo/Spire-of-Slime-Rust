@@ -1,8 +1,15 @@
+#![feature(let_chains)]
+#![feature(extend_one)]
 #![allow(clippy::useless_format)]
+#![allow(unused_parens)]
 #![allow(clippy::needless_return)]
 
 extern crate proc_macro;
+
 use proc_macro::TokenStream;
+
+use quote::quote;
+use syn::{FnArg, Item, ItemEnum, TraitItem};
 
 #[proc_macro]
 pub fn insert_combat_character_fields(_item: TokenStream) -> TokenStream {
@@ -64,7 +71,94 @@ pub fn positions(_item: TokenStream) -> TokenStream {
 		_ => panic!("Invalid value for four: {}", four),
 	};
 
-	return format!("crate::combat::skill_types::PositionMatrix {{ positions: [{one_b}, {two_b}, {tree_b}, {four_b}] }}").parse().unwrap();
+	return format!("crate::skill_types::PositionMatrix {{ positions: [{one_b}, {two_b}, {tree_b}, {four_b}] }}").parse().unwrap();
+}
+
+#[proc_macro_attribute]
+pub fn enum_zst_impl(attr: TokenStream, mut item: TokenStream) -> TokenStream {
+	let macro_input = item.clone();
+	let enum_ :ItemEnum  = syn::parse_macro_input!(macro_input);
+	let enum_ident = enum_.ident;
+
+	let attr_str = attr.to_string();
+	let (trait_name, trait_path) =
+		attr_str.split_once(',').unwrap();
+
+	let path =
+		std::fs::canonicalize(&trait_path.trim()[1..(trait_path.len() - 1)])
+			.unwrap();
+	
+	let trait_item_str = 
+		std::fs::read_to_string(&path).expect(format!("Failed to read file at path: {path:?}").as_str());
+	
+	let trait_file = 
+		syn::parse_file(&trait_item_str).unwrap();
+	
+	let trait_item = 
+		trait_file
+			.items
+			.into_iter()
+			.find_map(|item| {
+				if let Item::Trait(trait_) = item 
+				&& trait_.ident.to_string() == trait_name {
+					Some(trait_)
+				} else {
+					None
+				}
+			}).unwrap();
+	
+	let trait_fns = 
+		trait_item
+			.items
+			.iter()
+			.filter_map(|item| {
+				if let TraitItem::Fn(fn_item) = item {
+					let sig = &fn_item.sig;
+					let fn_name = &sig.ident;
+					let fn_inputs = 
+						sig.inputs
+						   .iter()
+						   .filter_map(|input| {
+							   if let FnArg::Typed(input_ident) = input {
+								   Some(&input_ident.pat)
+							   } else {
+								   None
+							   }
+						   }).collect::<Vec<_>>();
+					
+					let variants = 
+						enum_.variants
+							 .iter()
+							 .map(|variant| {
+								 quote! {
+									 #enum_ident::#variant => #variant . #fn_name (#(#fn_inputs),*), 
+								 }
+							 });
+					
+					Some(quote! {
+						#sig {
+							match self {
+								#(#variants)*
+							}
+						}
+					})
+				} else {
+					None
+				}
+			});
+	
+	let trait_ident = syn::Ident::new(trait_name, proc_macro2::Span::call_site());
+	
+	let trait_impl: TokenStream =
+		(quote! {
+			impl #trait_ident for #enum_ident {
+				#(#trait_fns)*
+			}
+		}).into();
+	
+	item.extend_one(trait_impl);
+	
+	item
 }
 
 /*

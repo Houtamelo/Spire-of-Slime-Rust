@@ -1,0 +1,15 @@
+[package]
+name = "spire_world_map"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+shared = { path = "../spire_shared", package = "spire_shared" }
+
+gdnative = "0.11.3"
+serde = { version = "1.0.201", features = ["derive"] }
+util = { package = "houtamelo_utils", version = "2.0" }
+util_gdnative = { package = "houtamelo_utils_gdnative", version = "2.0" }
+gdnative_export_node_as_path = "0.1.2"
+strum = "0.26.2"
+strum_macros = "0.26.2"

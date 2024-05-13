@@ -1,6 +1,6 @@
 #[allow(unused_imports)]
 use crate::*;
-use crate::main_menu::{
+use main_menu::{
 	SIGNAL_DELETE_SAVE,
 	SIGNAL_LOAD_GAME,
 	SIGNAL_NEW_GAME,
@@ -48,15 +48,12 @@ impl GameManager {
 		let fade_screen = self.fade_screen.unwrap_manual();
 		fade_screen.set_modulate(Color { r: 1.0, g: 1.0, b: 1.0, a: 0.0 });
 		fade_screen.show();
-
-		let tween_ref = seek_tree_and_create_tween!(owner);
-		let tween = unsafe { tween_ref.assume_safe() };
-		tween.tween_property(fade_screen, "modulate",
-			Color { r: 1.0, g: 1.0, b: 1.0, a: 0.0 }, 2.0);
-
-		tween.connect("finished", owner_ref, fn_name(&Self::_main_menu_load_session_fade_completed),
-			VariantArray::new_shared(), Object::CONNECT_DEFERRED)
-		     .log_if_err();
+		
+		fade_screen
+			.do_fade(1.0, 2.0)
+			.method_when_finished(&owner_ref, fn_name(&Self::_main_menu_load_session_fade_completed), vec![])
+			.register()
+			.log_if_err();
 	}
 
 	#[method]
@@ -155,7 +152,7 @@ impl GameManager {
 		if let GameState::MainMenu(instance, MainMenuState::Idle) = &self.state {
 			self.save_files.delete_save(save_name.to_string().as_str());
 			instance.touch_assert_safe_mut(|main_menu, main_menu_owner| {
-				main_menu.create_and_assign_load_buttons(main_menu_owner, self.save_files.get_saves());
+				main_menu.create_and_assign_load_buttons(main_menu_owner, self.save_files.get_saves().keys().map(String::as_str));
 			});
 		} else {
 			godot_error!("{}():\n Cannot delete save with name `{save_name}` from MainMenu when state is: {:?}", 

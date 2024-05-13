@@ -2,9 +2,13 @@
 use crate::*;
 use crate::game_manager::{GameManager, GameState};
 use crate::save::file::SaveFile;
-use crate::world_map::{SIGNAL_LINE_CLICKED, SIGNAL_MARKER_CLICKED, SIGNAL_OPEN_CHARACTER_MENU, SIGNAL_OPEN_SETTINGS_MENU, WorldMapController, WorldPath};
+use world_map::{SIGNAL_LINE_CLICKED, SIGNAL_MARKER_CLICKED,
+                SIGNAL_OPEN_CHARACTER_MENU, SIGNAL_OPEN_SETTINGS_MENU, 
+                WorldLocation, WorldMapController, WorldPath};
 
-fn get_unlocked_paths(save_file: &SaveFile) -> HashSet<WorldPath> {
+fn get_unlocked_paths(_save_file: &SaveFile) -> HashSet<WorldPath> {
+	todo!()
+	/*
 	return save_file
 		.unlocked_locations()
 		.iter()
@@ -13,6 +17,7 @@ fn get_unlocked_paths(save_file: &SaveFile) -> HashSet<WorldPath> {
 			        .iter()
 			        .filter_map(|destination| WorldPath::new(*location, *destination)))
 		.collect();
+	*/
 }
 
 #[derive(Debug)]
@@ -50,7 +55,7 @@ impl GameManager {
 	#[method]
 	fn world_map_marker_clicked(&mut self, location: WorldLocation) {
 		let (world_map, save) =
-			match std::mem::take(&mut self.state) {
+			match mem::take(&mut self.state) {
 				GameState::WorldMap(world_map,
 					WorldMapState::Idle(save)) => (world_map, save),
 				other_state => {
@@ -75,7 +80,7 @@ impl GameManager {
 	#[method]
 	fn world_map_line_clicked(&mut self, path: WorldPath) {
 		let (world_map, save) =
-			match std::mem::take(&mut self.state) {
+			match mem::take(&mut self.state) {
 				GameState::WorldMap(world_map,
 					WorldMapState::Idle(save)) => (world_map, save),
 				other_state => {
@@ -97,7 +102,7 @@ impl GameManager {
 	#[method]
 	fn world_map_open_settings_menu(&mut self) {
 		let (world_map, save) =
-			match std::mem::take(&mut self.state) {
+			match mem::take(&mut self.state) {
 				GameState::WorldMap(world_map, 
 					WorldMapState::Idle(save) | WorldMapState::CharacterMenu(save)) => (world_map, save),
 				other_state => {
@@ -115,7 +120,7 @@ impl GameManager {
 	#[method]
 	fn world_map_open_character_menu(&mut self) {
 		let (world_map, save) =
-			match std::mem::take(&mut self.state) {
+			match mem::take(&mut self.state) {
 				GameState::WorldMap(world_map, 
 					WorldMapState::Idle(save) | WorldMapState::SettingsMenu(save)) => (world_map, save),
 				other_state => {

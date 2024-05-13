@@ -10,8 +10,7 @@ use state_world_map::WorldMapState;
 use world_map::WorldMapController;
 
 use crate::save::SaveFilesController;
-use crate::gdnative_macros::seek_tree_and_create_tween;
-use crate::settings_menu::SettingsMenuController;
+use settings_menu::SettingsMenuController;
 
 macro_rules! spawn_scene {
     ($input: ident, $output_base: ty, $output_ty: ty) => {{
@@ -76,7 +75,10 @@ impl GameManager {
 			let settings_menu_res_ref = ResourceLoader::godot_singleton()
 				.load(SCENE_PATH_SETTINGS_MENU, "PackedScene", false)
 				.unwrap();
-			let settings_menu_ref = spawn_scene!(settings_menu_res_ref, CanvasLayer, SettingsMenuController);
+			
+			let settings_menu_ref =
+				spawn_scene!(settings_menu_res_ref, CanvasLayer, SettingsMenuController);
+			
 			let settings_menu_base_ref = settings_menu_ref.base();
 			let settings_menu_base = unsafe { settings_menu_base_ref.assume_safe() };
 			settings_menu_base.hide();
@@ -84,15 +86,14 @@ impl GameManager {
 		}
 
 		{
-
 			let main_menu_res_ref = ResourceLoader::godot_singleton()
 				.load(SCENE_PATH_MAIN_MENU, "PackedScene", false)
 				.unwrap();
 			let main_menu_ref =
 				spawn_scene!(main_menu_res_ref, Control, MainMenuController);
 
-			main_menu_ref.touch_assert_safe_mut(|main_menu, main_menu_owner| {
-				main_menu.create_and_assign_load_buttons(main_menu_owner, self.save_files.get_saves());
+			main_menu_ref.touch_assert_safe_mut(|script, node| {
+				script.create_and_assign_load_buttons(node, self.save_files.get_saves().keys().map(String::as_str));
 			});
 			
 			let main_menu_base_ref = main_menu_ref.base();
@@ -101,20 +102,19 @@ impl GameManager {
 			self.state = GameState::MainMenu(main_menu_ref, MainMenuState::Idle);
 		}
 
-		{
-			let fade_screen_ref = self.fade_screen.unwrap();
-			let tween_ref = seek_tree_and_create_tween!(owner);
-			let tween = unsafe { tween_ref.assume_safe() };
-			tween.tween_property(fade_screen_ref, "modulate:a", 1., 2.);
-			tween.connect("finished", fade_screen_ref, "hide", 
-					VariantArray::new_shared(), 0)
+		self.fade_screen.map(|fade_screen| {
+			fade_screen
+				.do_fade(1., 2.)
+				.method_when_finished(&fade_screen, "hide", vec![])
+				.register()
 				.log_if_err();
-		}
+		});
 	}
 	
 	pub fn open_settings_menu(&self) {
-		self.settings_menu.touch_assert_safe_mut(|settings_menu, settings_menu_owner| {
-			settings_menu._open_panel(settings_menu_owner);
-		});
+		self.settings_menu
+		    .touch_assert_safe_mut(|script, node| {
+			    script._open_panel(node);
+		    });
 	}
 }

@@ -2,11 +2,11 @@
 use crate::*;
 
 use rand_xoshiro::rand_core::{RngCore, SeedableRng};
-use rand_xoshiro::Xoshiro256PlusPlus;
-use crate::combat::shared::*;
-use crate::combat::entity::data::girls;
-use crate::combat::entity::data::girls::ethel::skills::EthelSkill;
-use crate::combat::entity::data::girls::nema::skills::NemaSkill;
+use combat::prelude::*;
+use combat::entity::data::girls;
+use combat::entity::data::girls::ethel::skills::EthelSkill;
+use combat::entity::data::girls::nema::skills::NemaSkill;
+use world_map::WorldLocation;
 use crate::save::affairs::AffairMap;
 use crate::save::stats::GenericStats;
 
@@ -24,7 +24,7 @@ pub struct SaveFile {
 	pub(super) map_location: WorldLocation,
 	pub(super) ethel: EthelFile,
 	pub(super) nema: NemaFile,
-	pub(super) combat_order: IndexedSet<GirlName>,
+	pub(super) combat_order: IndexedSet<GirlVariant>,
 	pub(super) other_vars: OtherVariables,
 	pub(super) affairs: AffairMap,
 	pub(super) is_dirty: bool,
@@ -96,20 +96,20 @@ impl SaveFile {
 			map_location: WorldLocation::Chapel,
 			ethel,
 			nema,
-			combat_order: IndexedSet::from_iter([GirlName::Ethel, GirlName::Nema]),
+			combat_order: IndexedSet::from_iter([GirlVariant::Ethel, GirlVariant::Nema]),
 			other_vars: OtherVariables::default(),
 			affairs: AffairMap::default(),
 			is_dirty: true,
 		};
 	}
 
-	pub fn name(&self) -> &str { return &self.name; }
-	pub fn map_location(&self) -> WorldLocation { return self.map_location; }
-	pub fn ethel(&self) -> &EthelFile { return &self.ethel; }
-	pub fn nema(&self) -> &NemaFile { return &self.nema; }
-	pub fn combat_order(&self) -> &IndexedSet<GirlName> { return &self.combat_order; }
-	pub fn other_vars(&self) -> &OtherVariables { return &self.other_vars; }
-	pub fn affairs(&self) -> &AffairMap { return &self.affairs; }
+	pub fn name(&self) -> &str { &self.name }
+	pub fn map_location(&self) -> WorldLocation { self.map_location }
+	pub fn ethel(&self) -> &EthelFile { &self.ethel }
+	pub fn nema(&self) -> &NemaFile { &self.nema }
+	pub fn combat_order(&self) -> &IndexedSet<GirlVariant> { &self.combat_order }
+	pub fn other_vars(&self) -> &OtherVariables { &self.other_vars }
+	pub fn affairs(&self) -> &AffairMap { &self.affairs }
 }
 
 #[derive(Debug, Serialize, Deserialize, Clone, Default)] // maybe make keys &' static str?
