@@ -1,76 +1,86 @@
-use crate::internal_prelude::*;
+use super::*;
 
-use std::ops::{Add, AddAssign, Sub, SubAssign, Mul, MulAssign};
-use crate::coordinates::direction::HexagonDirection;
-use crate::coordinates::offset::Offset;
-use super::direction;
-
-//pub const ZERO: Axial = Axial { q: 0, r: 0 };
-
-#[derive(
-Serialize, Deserialize,
-PartialEq, Eq, Hash,
-Debug, Clone, Copy)]
+#[derive(Serialize, Deserialize, PartialEq, Eq, Hash, Debug, Clone, Copy)]
 pub struct Axial {
-	pub q: i16,
-	pub r: i16,
+	pub q: i32,
+	pub r: i32,
 }
 
 #[allow(unused)]
 impl Axial {
 	pub const ZERO: Axial = Axial { q: 0, r: 0 };
-	
-	pub fn s(&self) -> i16 { return -self.q - self.r; }
-	
-	pub fn abs(&self) -> i16 { return self.q.abs() + self.r.abs() + self.s().abs(); }
-	
-	pub fn are_neighbors(a: &Axial, b: &Axial) -> bool {
-		return a.manhattan_distance(b) == 1;
-	}
-	
+
+	pub fn s(&self) -> i32 { -self.q - self.r }
+
+	pub fn abs(&self) -> i32 { self.q.abs() + self.r.abs() + self.s().abs() }
+
+	pub fn are_neighbors(a: &Axial, b: &Axial) -> bool { a.manhattan_distance(b) == 1 }
+
 	pub fn manhattan_distance(&self, other: &Axial) -> u16 {
-		return (((self.q - other.q).abs() + (self.q - other.q + self.r - other.r).abs() + (self.r - other.r).abs()) / 2)
-			.squeeze_to_u16();
+		let distance = ((self.q - other.q).abs()
+			+ (self.q - other.q + self.r - other.r).abs()
+			+ (self.r - other.r).abs())
+			/ 2;
+
+		distance.cram_into()
 	}
 
 	pub fn neighbors(&self) -> [(HexagonDirection, Axial); 6] {
-		return [
-			(HexagonDirection::SouthEast, *self + HexagonDirection::SouthEast.to_axial_vector()),
-			(HexagonDirection::East     , *self + HexagonDirection::East     .to_axial_vector()),
-			(HexagonDirection::NorthEast, *self + HexagonDirection::NorthEast.to_axial_vector()),
-			(HexagonDirection::NorthWest, *self + HexagonDirection::NorthWest.to_axial_vector()),
-			(HexagonDirection::West     , *self + HexagonDirection::West     .to_axial_vector()),
-			(HexagonDirection::SouthWest, *self + HexagonDirection::SouthWest.to_axial_vector()),
-		];
+		[
+			(
+				HexagonDirection::SouthEast,
+				*self + HexagonDirection::SouthEast.to_axial_vector(),
+			),
+			(
+				HexagonDirection::East,
+				*self + HexagonDirection::East.to_axial_vector(),
+			),
+			(
+				HexagonDirection::NorthEast,
+				*self + HexagonDirection::NorthEast.to_axial_vector(),
+			),
+			(
+				HexagonDirection::NorthWest,
+				*self + HexagonDirection::NorthWest.to_axial_vector(),
+			),
+			(
+				HexagonDirection::West,
+				*self + HexagonDirection::West.to_axial_vector(),
+			),
+			(
+				HexagonDirection::SouthWest,
+				*self + HexagonDirection::SouthWest.to_axial_vector(),
+			),
+		]
 	}
-	
-	pub fn ring(&self, radius: i16) -> Vec<Axial> {
+
+	pub fn ring(&self, radius: i32) -> Vec<Axial> {
 		let mut results = Vec::with_capacity((radius * 6) as usize);
-		
+
 		let mut current = *self + (HexagonDirection::West.to_axial_vector() * radius);
-		for direction in direction::ALL {
+		for direction in HexagonDirection::ALL {
 			let dir_vector = direction.to_axial_vector();
 			for _ in 0..radius {
 				current += dir_vector;
 				results.push(current);
 			}
 		}
-		
-		return results;
+
+		results
 	}
 
-	const SQRT_3: f32 = 1.7320508075688772935274463415059;
+	const SQRT_3: f32 = 1.7320508;
 	const SQRT_3_DIV_3: f32 = Self::SQRT_3 / 3.;
 	const SQRT_3_DIV_2: f32 = Self::SQRT_3 / 2.;
 
-	pub fn to_cartesian(&self, radius: f32) -> (f32, f32) {
+	pub fn to_cartesian(self, radius: f32) -> (f32, f32) {
 		let (q, r) = (self.q as f32, self.r as f32);
-	
+
 		let x = radius * ((Self::SQRT_3 * q) + Self::SQRT_3_DIV_2 * r);
 		let y = radius * (1.5 * r);
-		return (x, y);
+		(x, y)
 	}
-	
+
 	pub fn round_from_cartesian(x: f32, y: f32, radius: f32) -> Axial {
 		let float_q = ((Self::SQRT_3_DIV_3 * x) - (y / 3.)) / radius;
 		let float_r = (2. * y) / (3. * radius);
@@ -85,11 +95,20 @@ impl Axial {
 		let s_diff = (round_s - float_s).abs();
 
 		if q_diff > r_diff && q_diff > s_diff {
-			return Self { q: (- round_r - round_s) as i16, r: round_r as i16 };
+			Self {
+				q: (-round_r - round_s) as i32,
+				r: round_r as i32,
+			}
 		} else if r_diff > s_diff {
-			return Self { q: round_q as i16, r: (- round_q - round_s) as i16 };
+			Self {
+				q: round_q as i32,
+				r: (-round_q - round_s) as i32,
+			}
 		} else {
-			return Self { q: round_q as i16, r: round_r as i16 };
+			Self {
+				q: round_q as i32,
+				r: round_r as i32,
+			}
 		}
 	}
 }
@@ -97,11 +116,11 @@ impl Axial {
 impl From<Offset> for Axial {
 	fn from(value: Offset) -> Self {
 		let (col, row) = (value.col(), value.row());
-		
+
 		let q = col - ((row - (row & 1)) / 2);
 		let r = row;
-		
-		return Axial { q, r };
+
+		Axial { q, r }
 	}
 }
 
@@ -109,7 +128,10 @@ impl Add for Axial {
 	type Output = Axial;
 
 	fn add(self, rhs: Axial) -> Axial {
-		return Axial { q: self.q + rhs.q, r: self.r + rhs.r };
+		Axial {
+			q: self.q + rhs.q,
+			r: self.r + rhs.r,
+		}
 	}
 }
 
@@ -124,7 +146,10 @@ impl Sub for Axial {
 	type Output = Axial;
 
 	fn sub(self, rhs: Axial) -> Axial {
-		return Axial { q: self.q - rhs.q, r: self.r - rhs.r };
+		Axial {
+			q: self.q - rhs.q,
+			r: self.r - rhs.r,
+		}
 	}
 }
 
@@ -135,16 +160,19 @@ impl SubAssign for Axial {
 	}
 }
 
-impl Mul<i16> for Axial {
+impl Mul<i32> for Axial {
 	type Output = Axial;
 
-	fn mul(self, rhs: i16) -> Self::Output {
-		return Axial { q: self.q * rhs, r: self.r * rhs };
+	fn mul(self, rhs: i32) -> Self::Output {
+		Axial {
+			q: self.q * rhs,
+			r: self.r * rhs,
+		}
 	}
 }
 
-impl MulAssign<i16> for Axial {
-	fn mul_assign(&mut self, rhs: i16) {
+impl MulAssign<i32> for Axial {
+	fn mul_assign(&mut self, rhs: i32) {
 		self.q *= rhs;
 		self.r *= rhs;
 	}

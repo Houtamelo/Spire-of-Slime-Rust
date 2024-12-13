@@ -1,6 +1,6 @@
-pub(super) const MAX_PRESSES: usize = 239;
+pub(super) const MAX_PRESSES: u64 = 239;
 
-pub(super) fn get_easter(index: usize) -> &'static str {
+pub(super) fn get_easter(index: u64) -> &'static str {
 	match index {
 		0 => "Why?",
 		1 => "Are you afraid of facing the consequences of your own actions?",
@@ -39,10 +39,14 @@ pub(super) fn get_easter(index: usize) -> &'static str {
 		34 => "Do you know how everything ends?",
 		35 => "Do you want to know?",
 		36 => "Why are you still clicking this button instead of just playing the game?",
-		37 => "Do you seriously think it's more entertaining to read this gibberish I wrote instead of actually playing?",
+		37 => {
+			"Do you seriously think it's more entertaining to read this gibberish I wrote instead of actually playing?"
+		}
 		38 => "*sighs*",
 		39 => "I failed as a developer, didn't I?",
-		40 => "Some idiot is actually pressing a useless button repeatedly instead of just playing the game",
+		40 => {
+			"Some idiot is actually pressing a useless button repeatedly instead of just playing the game"
+		}
 		41 => "Like seriously",
 		42 => "Iron gauntlet mode is not that bad",
 		43 => "It's just like real life",
@@ -54,7 +58,9 @@ pub(super) fn get_easter(index: usize) -> &'static str {
 		49 => "Wait a minute",
 		50 => "That actually would be pretty fun",
 		51 => "I could have done so much differently",
-		52 => "I could also have done the exact same thing and then end up here writing this garbage",
+		52 => {
+			"I could also have done the exact same thing and then end up here writing this garbage"
+		}
 		53 => "Could I've stopped covid?",
 		54 => "Probably not",
 		55 => "Neither could've you since you're standing here pressing this button",
@@ -69,7 +75,9 @@ pub(super) fn get_easter(index: usize) -> &'static str {
 		64 => "You click this button 5000 times",
 		65 => "If you do that",
 		66 => "I promise",
-		67 => "I built an entire separate saving system just for the people DETERMINED enough to press this thing 5001 times and ruining their mouse",
+		67 => {
+			"I built an entire separate saving system just for the people DETERMINED enough to press this thing 5001 times and ruining their mouse"
+		}
 		68 => "If you're somehow using a keyboard",
 		69 => "Or a macro to press this",
 		70 => "SHIT",
@@ -81,8 +89,12 @@ pub(super) fn get_easter(index: usize) -> &'static str {
 		76 => "And now",
 		77 => "Since, for some reason",
 		78 => "I'm loyal to this promise",
-		79 => "I'm gonna have to code a system to detect if you're using keyboards or macros to press the button",
-		80 => "And apparently I also have to write an entire save system just for the idiots that actually pressed this button this many fucking times",
+		79 => {
+			"I'm gonna have to code a system to detect if you're using keyboards or macros to press the button"
+		}
+		80 => {
+			"And apparently I also have to write an entire save system just for the idiots that actually pressed this button this many fucking times"
+		}
 		81 => "Please",
 		82 => "Stop",
 		83 => "I beg you",
@@ -98,7 +110,9 @@ pub(super) fn get_easter(index: usize) -> &'static str {
 		93 => "If something's not there just send me a message and I'll fix it",
 		94 => "But please",
 		95 => "Don't make me waste my time writing this",
-		96 => "There is no more text beyond, I will not write a single more line, you have to press this 5002k times if you want to disable Iron Gauntlet mode",
+		96 => {
+			"There is no more text beyond, I will not write a single more line, you have to press this 5002k times if you want to disable Iron Gauntlet mode"
+		}
 		97 => ".",
 		98 => "..",
 		99 => "....",
@@ -134,11 +148,15 @@ pub(super) fn get_easter(index: usize) -> &'static str {
 		129 => "Like I'm talking to a wall",
 		130 => "Though, I don't know why",
 		131 => "But this is really therapeutic for me",
-		132 => "For some reason I enjoy writing this, in hopes that someone will actually mind pressing the button this many times",
+		132 => {
+			"For some reason I enjoy writing this, in hopes that someone will actually mind pressing the button this many times"
+		}
 		133 => "And once again, I screwed over myself",
 		134 => "Cause now you know I like it you're just going to keep doing it",
 		135 => "Meaning I have to write even more lines",
-		136 => "I'm even gonna have to encrypt this script in case some funny guy decides to skip this process and deactivate Iron Gauntlet directly",
+		136 => {
+			"I'm even gonna have to encrypt this script in case some funny guy decides to skip this process and deactivate Iron Gauntlet directly"
+		}
 		137 => "Yeah, I wrote all this in a c# script",
 		138 => "I didn't even bother storing this elsewhere",
 		139 => "Now my script has already 5004 lines",
@@ -152,12 +170,16 @@ pub(super) fn get_easter(index: usize) -> &'static str {
 		147 => "Since you're this far",
 		148 => "I'm gonna give you a deal",
 		149 => "If you tell me why you kept pressing this goddamn button",
-		150 => "I will actually give you something in return instead of just lying to you about some 'non-iron gauntlet' save mode",
+		150 => {
+			"I will actually give you something in return instead of just lying to you about some 'non-iron gauntlet' save mode"
+		}
 		151 => "That's right",
 		152 => "I was lying the whole time",
 		153 => "You think, with all this power",
 		154 => "That I'm going to let you escape your own consequences?",
-		155 => "You think this is some justice world where the game rewards you for your DETERMINATION?",
+		155 => {
+			"You think this is some justice world where the game rewards you for your DETERMINATION?"
+		}
 		156 => "Nah",
 		157 => "This is reality",
 		158 => "I do what I want",
@@ -165,9 +187,13 @@ pub(super) fn get_easter(index: usize) -> &'static str {
 		160 => "So no, there is no way to disable this",
 		161 => "Simply because this is not a 'disable' case",
 		162 => "The save game system was never meant to allow time-travel",
-		163 => "It's a power too big to trust to the hands of people who FUCKING PRESS THE SAME USELESS BUTTON more than a 5005 times",
+		163 => {
+			"It's a power too big to trust to the hands of people who FUCKING PRESS THE SAME USELESS BUTTON more than a 5005 times"
+		}
 		164 => "So not only you won't get what you want",
-		165 => "By clicking this button more than 5006 times, you just activated some code that will take special care of your save files",
+		165 => {
+			"By clicking this button more than 5006 times, you just activated some code that will take special care of your save files"
+		}
 		166 => "What? You don't buy it?",
 		167 => "I'm dead serious",
 		168 => "So dead I'm feeling like stopping this whole writing shenanigans",
@@ -194,10 +220,14 @@ pub(super) fn get_easter(index: usize) -> &'static str {
 		189 => "You will only have the privilege of reading this once",
 		190 => "As if you're actually talking with another person",
 		191 => "So, welcome to reality, things only happen once and you can't do anything about it",
-		192 => "Unless, you're smart enough to delete your player preferences, or simply install the game on another OS",
+		192 => {
+			"Unless, you're smart enough to delete your player preferences, or simply install the game on another OS"
+		}
 		193 => "In that case, well done",
 		194 => "Congratulations, gamer",
-		195 => "You just spent even more time of your life just to read this nonsensical things I'm writing",
+		195 => {
+			"You just spent even more time of your life just to read this nonsensical things I'm writing"
+		}
 		196 => "There is no going back",
 		197 => "Your time is lost",
 		198 => "You can't travel to the past and get it back",
@@ -206,16 +236,22 @@ pub(super) fn get_easter(index: usize) -> &'static str {
 		201 => "Well, at least I'll tell you about my kinks",
 		202 => "I made this game thinking about stuff that I would like",
 		203 => "The main topic is BDSM, in case you haven't noticed",
-		204 => "So, do you want to read a horny old man talking about stuff that makes his pp go up?",
+		204 => {
+			"So, do you want to read a horny old man talking about stuff that makes his pp go up?"
+		}
 		205 => "Are you sure?",
 		206 => "Maybe you should seek some help",
-		207 => "I know I need it too, since I'm still here writing this even though I said I was going to stop",
+		207 => {
+			"I know I need it too, since I'm still here writing this even though I said I was going to stop"
+		}
 		208 => "But for real, I'm not going to keep going",
 		209 => "It's 5011:5012 AM here",
 		210 => "Enough is enough",
 		211 => "Now, last warning",
 		212 => "I'm going to copy paste those dots here again",
-		213 => "If you're still pressing the button at the end I WILL crash this application, and every time you press it again it will crash again",
+		213 => {
+			"If you're still pressing the button at the end I WILL crash this application, and every time you press it again it will crash again"
+		}
 		214 => "So give up",
 		215 => "Nothing more to see",
 		216 => "No grass to walk on",

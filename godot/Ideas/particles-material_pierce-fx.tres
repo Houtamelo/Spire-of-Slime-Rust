@@ -1,29 +1,25 @@
-[gd_resource type="ParticlesMaterial" load_steps=5 format=2]
+[gd_resource type="ParticleProcessMaterial" load_steps=5 format=3 uid="uid://bxn1ipvbo765t"]
 
-[sub_resource type="Gradient" id=4]
-colors = PoolColorArray( 1, 1, 1, 0.666667, 1, 1, 1, 0 )
+[sub_resource type="Gradient" id="4"]
+colors = PackedColorArray(1, 1, 1, 0.666667, 1, 1, 1, 0)
 
-[sub_resource type="GradientTexture" id=5]
-gradient = SubResource( 4 )
+[sub_resource type="GradientTexture1D" id="5"]
+gradient = SubResource("4")
 width = 128
 
-[sub_resource type="Curve" id=11]
+[sub_resource type="Curve" id="11"]
 min_value = 1.0
 max_value = 3.0
-_data = [ Vector2( 0, 1 ), 0.0, 2.0, 0, 1, Vector2( 1, 3 ), 2.0, 0.0, 1, 0 ]
+_data = [Vector2(0, 1), 0.0, 2.0, 0, 1, Vector2(1, 3), 2.0, 0.0, 1, 0]
+point_count = 2
 
-[sub_resource type="CurveTexture" id=12]
+[sub_resource type="CurveTexture" id="12"]
 width = 128
-curve = SubResource( 11 )
+curve = SubResource("11")
 
 [resource]
-trail_divisor = 3
-flag_disable_z = true
-direction = Vector3( -1, 0, 0 )
+direction = Vector3(-1, 0, 0)
 spread = 0.0
-gravity = Vector3( 0, 0, 0 )
-initial_velocity = 100.0
-orbit_velocity = 0.0
-orbit_velocity_random = 0.0
-scale_curve = SubResource( 12 )
-color_ramp = SubResource( 5 )
+gravity = Vector3(0, 0, 0)
+scale_curve = SubResource("12")
+color_ramp = SubResource("5")

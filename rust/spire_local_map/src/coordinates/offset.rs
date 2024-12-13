@@ -1,30 +1,26 @@
-use crate::internal_prelude::*;
-use crate::coordinates::axial::Axial;
-use std::ops::{Add, AddAssign, Sub, SubAssign};
-use serde::{Deserialize, Serialize};
-
-#[allow(unused)]
-pub const ZERO: Offset = Offset { col: 0, row: 0 };
+use super::*;
 
 #[derive(Debug, Copy, Clone, PartialEq, Eq, Hash, Serialize, Deserialize)]
 pub struct Offset {
-	pub col: i16,
-	pub row: i16,
+	pub col: i32,
+	pub row: i32,
 }
 
 impl Offset {
-	pub fn col(&self) -> i16 { return self.col; }
-	pub fn row(&self) -> i16 { return self.row; }
+	pub const ZERO: Offset = Offset { col: 0, row: 0 };
+
+	pub fn col(&self) -> i32 { self.col }
+	pub fn row(&self) -> i32 { self.row }
 }
 
 impl From<Axial> for Offset {
 	fn from(axial: Axial) -> Self {
 		let (q, r) = (axial.q, axial.r);
-		
+
 		let col = q + ((r - (r & 1)) / 2);
 		let row = r;
-		
-		return Offset { col, row };
+
+		Offset { col, row }
 	}
 }
 
@@ -32,7 +28,10 @@ impl Add for Offset {
 	type Output = Offset;
 
 	fn add(self, rhs: Self) -> Self::Output {
-		return Offset { col: self.col + rhs.col, row: self.row + rhs.row };
+		Offset {
+			col: self.col + rhs.col,
+			row: self.row + rhs.row,
+		}
 	}
 }
 
@@ -47,7 +46,10 @@ impl Sub for Offset {
 	type Output = Offset;
 
 	fn sub(self, rhs: Self) -> Self::Output {
-		return Offset { col: self.col - rhs.col, row: self.row - rhs.row };
+		Offset {
+			col: self.col - rhs.col,
+			row: self.row - rhs.row,
+		}
 	}
 }
 
@@ -57,4 +59,3 @@ impl SubAssign for Offset {
 		self.row -= rhs.row;
 	}
 }
-

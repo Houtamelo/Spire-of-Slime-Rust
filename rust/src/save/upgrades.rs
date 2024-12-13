@@ -1,39 +1,36 @@
-#[allow(unused_imports)]
-use crate::*;
-#[allow(unused_imports)]
-use serde::{Deserialize, Serialize};
+use crate::internal_prelude::*;
 
-#[derive(Debug, Serialize, Deserialize, Clone, Default)]
+#[derive(Serialize, Deserialize, Clone, Default)]
 pub struct PrimaryUpgradeCount {
-	acc: u8,
-	dodge: u8,
-	crit: u8,
-	toughness: u8,
+	acc: Int,
+	dodge: Int,
+	crit: Int,
+	toughness: Int,
 }
 
-#[derive(Debug, Serialize, Deserialize, Clone, Default)]
+#[derive(Serialize, Deserialize, Clone, Default)]
 pub struct SecondaryUpgradeCount {
-	stun_def: u8,
-	move_res: u8,
-	debuff_res: u8,
-	poison_res: u8,
-	move_rate: u8,
-	debuff_rate: u8,
-	poison_rate: u8,
-	composure: u8,
+	stun_def:    Int,
+	move_res:    Int,
+	debuff_res:  Int,
+	poison_res:  Int,
+	move_rate:   Int,
+	debuff_rate: Int,
+	poison_rate: Int,
+	composure:   Int,
 }
 
 #[repr(u8)]
-#[derive(Debug, Serialize, Deserialize, Clone, Copy, PartialEq, Eq, Hash)]
+#[derive(Serialize, Deserialize, Clone, Copy, PartialEq, Eq, Hash)]
 pub enum PrimaryUpgrade {
-	Acc = 0,
+	Acc  = 0,
 	Dodge = 1,
 	Crit = 2,
 	Toughness = 3,
 }
 
 #[repr(u8)]
-#[derive(Debug, Serialize, Deserialize, Clone, Copy, PartialEq, Eq, Hash)]
+#[derive(Serialize, Deserialize, Clone, Copy, PartialEq, Eq, Hash)]
 pub enum SecondaryUpgrade {
 	StunDef = 0,
 	MoveRes = 1,

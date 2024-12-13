@@ -1,27 +1,26 @@
-#![feature(anonymous_lifetime_in_impl_trait)]
 #![feature(let_chains)]
-
-mod easters_save_name;
-mod easters_iron_gauntlet;
-
-mod load_button;
-
-pub use load_button::LoadButton;
+#![feature(macro_metavar_expr)]
 
 mod controller;
+mod easters_iron_gauntlet;
+mod easters_save_name;
+mod load_button;
 
-pub use controller::MainMenuController;
-pub use controller::{
-	SIGNAL_NEW_GAME,
-	SIGNAL_LOAD_GAME,
-	SIGNAL_DELETE_SAVE,
-	SIGNAL_OVERWRITE_SAVE_AND_START,
-	SIGNAL_OPEN_SETTINGS_MENU,
-};
+#[allow(unused_imports)]
+pub mod prelude {
+	pub use crate::{controller::*, load_button::*};
+}
 
-pub(crate) mod internal_prelude {
-	pub use util_gdnative::prelude::*;
-	pub use util::prelude::*;
-	pub use shared::panel_are_you_sure::PanelAreYouSure;
-	pub use shared::panel_are_you_sure;
+use internal_prelude::*;
+
+#[allow(unused_imports)]
+mod internal_prelude {
+	pub use godot::{classes::*, global::Error, prelude::*};
+	pub use houtamelo_utils::prelude::*;
+	pub use houtamelo_utils_gdext::prelude::*;
+	pub use shared::prelude::*;
+	pub use spire_tween::prelude::*;
+
+	pub use crate::prelude::*;
+	pub(crate) use crate::{easters_iron_gauntlet, easters_save_name};
 }

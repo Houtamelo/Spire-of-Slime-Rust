@@ -1,88 +1,81 @@
-#[allow(unused_imports)]
-use crate::prelude::*;
-use crate::graphics::action_animation::skills::anim_utils::node_show;
+use super::*;
 
-pub mod character_node;
-pub mod default_position;
+mod character_node;
+mod default_position;
 
-#[enum_delegate::delegate(for(CharacterVariant))]
+pub use character_node::*;
+pub use default_position::*;
+
 pub trait EntityAnim {
 	fn prefab_path(&self) -> &'static str;
 	fn required_height(&self) -> f64;
 	fn required_width(&self) -> f64;
-	fn position_size(&self) -> Bound_u8<1, { u8::MAX }>;
-	
-	fn to_idle_anim(&self, character: CharacterNode) {
-		character.node().touch_assert_sane(|node| {
-			node_show(node, "anims/idle");
-		});
-	}
+	fn position_size(&self) -> Int;
+
+	fn to_idle_anim(&self, character: ActorNode) { node_show(&character.node(), "anims/idle"); }
 }
 
-impl EntityAnim for NPCVariant {
+impl EntityAnim for NpcName {
 	fn prefab_path(&self) -> &'static str {
 		match self {
-			NPCVariant::Crabdra => "res://Core/Combat/Characters/Crabdra/crabdra.tscn",
-			NPCVariant::Trent => "res://Core/Combat/Characters/Trent/trent.tscn",
-			NPCVariant::Wolfhydra => "res://Core/Combat/Characters/Wolfhydra/wolfhydra.tscn",
-			NPCVariant::BellPlant => "res://Core/Combat/Characters/BellPlant/bell-plant.tscn",
-		}
-	}
-	
-	fn required_height(&self) -> f64 {
-		match self {
-			NPCVariant::Crabdra => 360.,
-			NPCVariant::Trent => 360.,
-			NPCVariant::Wolfhydra => 360.,
-			NPCVariant::BellPlant => 360.,
-		}
-	}
-	
-	fn required_width(&self) -> f64 {
-		match self {
-			NPCVariant::Crabdra => 360.,
-			NPCVariant::Trent => 360.,
-			NPCVariant::Wolfhydra => 360.,
-			NPCVariant::BellPlant => 360.,
+			NpcName::Crabdra => "res://Core/Combat/Characters/Crabdra/crabdra.tscn",
+			NpcName::Trent => "res://Core/Combat/Characters/Trent/trent.tscn",
+			NpcName::Wolfhydra => "res://Core/Combat/Characters/Wolfhydra/wolfhydra.tscn",
+			NpcName::BellPlant => "res://Core/Combat/Characters/BellPlant/bell-plant.tscn",
 		}
 	}
 
-	fn position_size(&self) -> Bound_u8<1, { u8::MAX }> {
+	fn required_height(&self) -> f64 {
 		match self {
-			| NPCVariant::Crabdra
-			| NPCVariant::Trent
-			| NPCVariant::BellPlant => 1.into(),
-			| NPCVariant::Wolfhydra => 2.into(),
+			NpcName::Crabdra => 360.,
+			NpcName::Trent => 360.,
+			NpcName::Wolfhydra => 360.,
+			NpcName::BellPlant => 360.,
+		}
+	}
+
+	fn required_width(&self) -> f64 {
+		match self {
+			NpcName::Crabdra => 360.,
+			NpcName::Trent => 360.,
+			NpcName::Wolfhydra => 360.,
+			NpcName::BellPlant => 360.,
+		}
+	}
+
+	fn position_size(&self) -> Int {
+		match self {
+			| NpcName::Crabdra | NpcName::Trent | NpcName::BellPlant => 1.into(),
+			| NpcName::Wolfhydra => 2.into(),
 		}
 	}
 }
 
-impl EntityAnim for GirlVariant {
+impl EntityAnim for GirlName {
 	fn prefab_path(&self) -> &'static str {
 		match self {
-			GirlVariant::Ethel => "res://Core/Combat/Characters/Ethel/ethel.tscn",
-			GirlVariant::Nema => "res://Core/Combat/Characters/Nema/nema.tscn",
-		}
-	}
-	
-	fn required_height(&self) -> f64 {
-		match self {
-			GirlVariant::Ethel => 360.,
-			GirlVariant::Nema => 360.,
-		}
-	}
-	
-	fn required_width(&self) -> f64 {
-		match self {
-			GirlVariant::Ethel => 360.,
-			GirlVariant::Nema => 360.,
+			GirlName::Ethel => "res://Core/Combat/Characters/Ethel/ethel.tscn",
+			GirlName::Nema => "res://Core/Combat/Characters/Nema/nema.tscn",
 		}
 	}
 
-	fn position_size(&self) -> Bound_u8<1, { u8::MAX }> {
+	fn required_height(&self) -> f64 {
 		match self {
-			| GirlVariant::Ethel
-			| GirlVariant::Nema => 1.into(),
+			GirlName::Ethel => 360.,
+			GirlName::Nema => 360.,
+		}
+	}
+
+	fn required_width(&self) -> f64 {
+		match self {
+			GirlName::Ethel => 360.,
+			GirlName::Nema => 360.,
+		}
+	}
+
+	fn position_size(&self) -> Int {
+		match self {
+			| GirlName::Ethel | GirlName::Nema => 1.into(),
 		}
 	}
 }

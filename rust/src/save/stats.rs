@@ -1,13 +1,19 @@
-#[allow(unused_imports)]
-use crate::*;
 use combat::prelude::*;
-use crate::save::upgrades::{PrimaryUpgrade, PrimaryUpgradeCount, SecondaryUpgrade, SecondaryUpgradeCount};
 
-#[derive(Debug, Serialize, Deserialize, Clone)]
+#[allow(unused_imports)]
+use crate::internal_prelude::*;
+use crate::save::upgrades::{
+	PrimaryUpgrade,
+	PrimaryUpgradeCount,
+	SecondaryUpgrade,
+	SecondaryUpgradeCount,
+};
+
+#[derive(Serialize, Deserialize, Clone)]
 pub struct GenericStats {
 	rng: Xoshiro256PlusPlus,
 	total_exp: u64,
-	dmg: CheckedRange,
+	dmg: SaneRange,
 	stamina: MaxStamina,
 	toughness: Toughness,
 	stun_def: StunDef,
@@ -24,7 +30,7 @@ pub struct GenericStats {
 	lust: Lust,
 	temptation: Temptation,
 	composure: Composure,
-	corruption: Bound_u8<0, 100>,
+	corruption: Corruption,
 	orgasm_limit: OrgasmLimit,
 	orgasm_count: OrgasmCount,
 	primary_upgrades: PrimaryUpgradeCount,
@@ -34,12 +40,15 @@ pub struct GenericStats {
 	next_upgrade_options_primary: Option<Vec<PrimaryUpgrade>>,
 	next_upgrade_options_secondary: Option<Vec<SecondaryUpgrade>>,
 	available_points_perk: u8,
-	sexual_exp: HashMap<NPCVariant, u16>,
+	sexual_exp: HashMap<NpcName, u16>,
 }
 
 impl GenericStats {
-	pub fn from_data(rng: Xoshiro256PlusPlus, data: &(impl CharacterData + GirlData)) -> GenericStats {
-		return GenericStats {
+	pub fn from_data(
+		rng: Xoshiro256PlusPlus,
+		data: &(impl CharacterData + GirlData),
+	) -> GenericStats {
+		GenericStats {
 			rng,
 			total_exp: 0,
 			dmg: data.dmg(0),
@@ -56,12 +65,12 @@ impl GenericStats {
 			accuracy: data.acc(0),
 			crit: data.crit(0),
 			dodge: data.dodge(0),
-			lust: Lust::new(0),
-			temptation: Temptation::new(0),
+			lust: Lust::from(0),
+			temptation: Temptation::from(0),
 			composure: data.composure(),
 			corruption: 0.into(),
 			orgasm_limit: data.orgasm_limit(),
-			orgasm_count: OrgasmCount::new(0),
+			orgasm_count: OrgasmCount::from(0),
 			primary_upgrades: PrimaryUpgradeCount::default(),
 			secondary_upgrades: SecondaryUpgradeCount::default(),
 			available_points_primary: 0,
@@ -70,6 +79,6 @@ impl GenericStats {
 			next_upgrade_options_secondary: None,
 			available_points_perk: 0,
 			sexual_exp: HashMap::new(),
-		};
+		}
 	}
 }

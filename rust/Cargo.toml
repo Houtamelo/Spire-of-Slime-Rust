@@ -16,30 +16,17 @@ settings_menu = { package = "spire_settings_menu", path = "spire_settings_menu" 
 world_map = { package = "spire_world_map", path = "spire_world_map" }
 shared = { package = "spire_shared", path = "spire_shared" }
 
-gdnative = "0.11.3"
-rand = { version =  "0.8.5", features = ["serde1"] }
-rand_xoshiro = { version = "0.6.0", features = ["serde1"] }
-proc_macros = { path = "proc_macros" }
-serde = { version = "1.0.201", features = ["derive"] }
-ron = "0.8.1"
-util = { package = "houtamelo_utils", version = "2.0.0" }
-util_gdnative = { package = "houtamelo_utils_gdnative", version = "2.0.0" }
-gdnative_export_node_as_path = "0.1.2"
-getrandom = "0.2.15"
-float-cmp = "0.9.0"
-bracket-noise = "0.8.7"
-bracket-pathfinding = { version = "0.8.7", features = ["threaded"] }
-comfy-bounded-ints = { version = "0.2", features = ["serde", "div_assign_zero"] }
-parking_lot = "0.12.2"
-uuid = { version = "1.8.0", features = ["serde"] }
-strum = "0.26.2"
-strum_macros = "0.26.2"
-enum_variant_type = "0.3.1"
-anyhow = { version = "1.0.83", features = ["backtrace", "std"] }
-keyframe = { version = "1.1.1", features = ["alloc"] }
-keyframe_derive = "1.0.0"
-inline_format = "0.2.3"
-gdnative_tweener = "0.5"
-
-# should be replaced with 0.3 when it releases 
-enum_delegate = { package = "enum_delegate", branch = "main", git = "https://gitlab.com/dawn_app/enum_delegate" }
+godot = { workspace = true, features = ["experimental-godot-api", "experimental-threads"] }
+houtamelo_utils = { workspace = true }
+houtamelo_utils_gdext = { workspace = true }
+spire_tween = { workspace = true }
+declarative_type_state = { workspace = true }
+replace_with = { workspace = true }
+rand = { workspace = true }
+rand_xoshiro = { workspace = true }
+serde = { workspace = true }
+ron = { workspace = true }
+getrandom = { workspace = true }
+uuid = { workspace = true }
+anyhow = { workspace = true }
+comfy-bounded-ints = { workspace = true }

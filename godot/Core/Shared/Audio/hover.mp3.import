@@ -2,14 +2,18 @@
 
 importer="mp3"
 type="AudioStreamMP3"
-path="res://import/hover.mp3-e329f1801da8c7b87e77d75b2fe8ae1f.mp3str"
+uid="uid://nrd8hkgi2etc"
+path="res://godot/imported/hover.mp3-e329f1801da8c7b87e77d75b2fe8ae1f.mp3str"
 
 [deps]
 
 source_file="res://Core/Shared/Audio/hover.mp3"
-dest_files=[ "res://import/hover.mp3-e329f1801da8c7b87e77d75b2fe8ae1f.mp3str" ]
+dest_files=["res://godot/imported/hover.mp3-e329f1801da8c7b87e77d75b2fe8ae1f.mp3str"]
 
 [params]
 
 loop=false
 loop_offset=0
+bpm=0
+beat_count=0
+bar_beats=4

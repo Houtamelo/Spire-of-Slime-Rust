@@ -1,43 +1,87 @@
-//noinspection ALL,SpellCheckingInspection
+//noinspection ALL
 
-pub (super) fn get_name_easter(input: &str) -> Option<&'static str> {
+pub(super) fn get_name_easter(input: &str) -> Option<&'static str> {
 	match input {
-		"srup"               => Some("It's pronounced 'syrup'"),
-		"houtamelia"         => Some("The true name"),
-		"houtamelio"         => Some("Wrong gender"),
-		"houtamelo"          => Some("If you're not me, then who are you? If you are me, then nice tits"),
-		"akaonimir"          => Some("I'm not a real person, or am I? You won't know, cause I'm shy! (that was a inspiring one, it even rhymed :)"),
-		"cepakaonimir"       => Some("Either you know the joke or you are member of a very naughty society ;)"),
-		"katllarv"           => Some("She's the real deal, she's the one who made this game or... the women in this game (don't tell that to the other writers!)"),
-		"moises" | "moisesf" => Some("This guy can do anything, throw money at him and you'll get what you want, no jokes, just respect."),
-		"darkpilot"          => Some("Give him a call, he'll love it"),
-		"whoami"             => Some("Why are you asking me? I'm just code on a match keyword"),
-		"whoareyou"          => Some("Your computer, duh"),
-		"darkestdungeon"     => Some("I have nothing in common with that!"),
-		"darkestdungeonmod"  => Some("Hey! This is on a different engine! Or is it? I didn't bother checking"),
-		"thelastspell"       => Some("Hire me, please"),
-		"talesofmajeyal"     => Some("Don't worry, you won't get oneshot here"),
-		"superautopets"      => Some("That shit is addicting"),
-		"yue"                => Some("why did you disappear? I miss you"),
-		"svengali" | "svengaliproductions" => Some("they got some cool stuff if you're into vampires, check them out!"),
-		"thedevian"          => Some("The reason this game even exists, the coolest american you'll ever meet!"),
-		"sam"                => Some("Just some ass***** mod (why did I censor this? It's an adult game!)"),
-		"lettilustcraft"     => Some("Did you read The Brat Diaries yet? If not, you should, It was written by a very talented (and big boobed) writer"),
-		"legendoflegaia"     => Some("My favorite childhood game, though I never managed to finish it cause I was scared of the zombies in the tower, I did manage to catch all fish tho"),
-		"stardewvalley"      => Some("MOOOOONEEEYYYYY"),
-		"fasterthanlight" | "ftl"=> Some("I'm not sure if I should say this, but I'm pretty sure it's a game about space travel (copilot suggested this and I couldn't let it slide) \nSeriously though, that game is nuts, an absolute masterpiece"),
-		"intothebreach"      => Some("A gem, a game, a gem in a game, are you gonna save humanity on this timeline as well?"),
-		"crusaderkings"      => Some("I hate how long it takes to fabricate claims, but I love the way the game is set up"),
-		"deadcells"          => Some("I wonder if they would make a crossover with me..."),
-		"deadinvinland"      => Some("The rebel kid is amazing, so are the developers"),
-		"supermarioworld"    => Some("Optimization goes VRROOM VRROOM"),
-		"dontstarve"         => Some("HOW CAN FLAME DOGS BURN A CAMPFIRE FROM 1KM AWAY?"),
+		"srup" => Some("It's pronounced 'syrup'"),
+		"houtamelia" => Some("The true name"),
+		"houtamelio" => Some("Wrong gender"),
+		"houtamelo" => Some("If you're not me, then who are you? If you are me, then nice tits"),
+		"akaonimir" => {
+			Some(
+				"I'm not a real person, or am I? You won't know, cause I'm shy! (that was a inspiring one, it even rhymed :)",
+			)
+		}
+		"cepakaonimir" => {
+			Some("Either you know the joke or you are member of a very naughty society ;)")
+		}
+		"katllarv" => {
+			Some(
+				"She's the real deal, she's the one who made this game or... the women in this game (don't tell that to the other writers!)",
+			)
+		}
+		"moises" | "moisesf" => {
+			Some(
+				"This guy can do anything, throw money at him and you'll get what you want, no jokes, just respect.",
+			)
+		}
+		"darkpilot" => Some("Give him a call, he'll love it"),
+		"whoami" => Some("Why are you asking me? I'm just code on a match keyword"),
+		"whoareyou" => Some("Your computer, duh"),
+		"darkestdungeon" => Some("I have nothing in common with that!"),
+		"darkestdungeonmod" => {
+			Some("Hey! This is on a different engine! Or is it? I didn't bother checking")
+		}
+		"thelastspell" => Some("Hire me, please"),
+		"talesofmajeyal" => Some("Don't worry, you won't get oneshot here"),
+		"superautopets" => Some("That shit is addicting"),
+		"yue" => Some("why did you disappear? I miss you"),
+		"svengali" | "svengaliproductions" => {
+			Some("they got some cool stuff if you're into vampires, check them out!")
+		}
+		"thedevian" => {
+			Some("The reason this game even exists, the coolest american you'll ever meet!")
+		}
+		"sam" => Some("Just some ass***** mod (why did I censor this? It's an adult game!)"),
+		"lettilustcraft" => {
+			Some(
+				"Did you read The Brat Diaries yet? If not, you should, It was written by a very talented (and big boobed) writer",
+			)
+		}
+		"legendoflegaia" => {
+			Some(
+				"My favorite childhood game, though I never managed to finish it cause I was scared of the zombies in the tower, I did manage to catch all fish tho",
+			)
+		}
+		"stardewvalley" => Some("MOOOOONEEEYYYYY"),
+		"fasterthanlight" | "ftl" => {
+			Some(
+				"I'm not sure if I should say this, but I'm pretty sure it's a game about space travel (copilot suggested this and I couldn't let it slide) \nSeriously though, that game is nuts, an absolute masterpiece",
+			)
+		}
+		"intothebreach" => {
+			Some(
+				"A gem, a game, a gem in a game, are you gonna save humanity on this timeline as well?",
+			)
+		}
+		"crusaderkings" => {
+			Some(
+				"I hate how long it takes to fabricate claims, but I love the way the game is set up",
+			)
+		}
+		"deadcells" => Some("I wonder if they would make a crossover with me..."),
+		"deadinvinland" => Some("The rebel kid is amazing, so are the developers"),
+		"supermarioworld" => Some("Optimization goes VRROOM VRROOM"),
+		"dontstarve" => Some("HOW CAN FLAME DOGS BURN A CAMPFIRE FROM 1KM AWAY?"),
 		"dontstarvetogether" => Some("Cool idea that ended up just being boring"),
-		"enterthegungeon"    => Some("Is it even possible to finish that game? I never managed to get past the second stage!"),
-		"monstertrain"       => Some("LAST, STOP!"),
-		"ratropolis"         => Some("Brain goes BOOOOMMMMM"),
-		"robocraft"          => Some("I wish we could go back to 2014"),
-		"ayzunote"           => Some("Ambassador"),
+		"enterthegungeon" => {
+			Some(
+				"Is it even possible to finish that game? I never managed to get past the second stage!",
+			)
+		}
+		"monstertrain" => Some("LAST, STOP!"),
+		"ratropolis" => Some("Brain goes BOOOOMMMMM"),
+		"robocraft" => Some("I wish we could go back to 2014"),
+		"ayzunote" => Some("Ambassador"),
 		_ => None,
 	}
 }

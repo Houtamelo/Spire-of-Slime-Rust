@@ -4,10 +4,12 @@ version = "0.1.0"
 edition = "2021"
 
 [dependencies]
-gdnative = "0.11.3"
-serde = { version = "1.0.201", features = ["derive"] }
-util = { package = "houtamelo_utils", version = "2.0" }
-util_gdnative = { package = "houtamelo_utils_gdnative", version = "2.0" }
-gdnative_export_node_as_path = "0.1.2"
 shared = { path = "../spire_shared", package = "spire_shared" }
 audio = { path = "../spire_audio", package = "spire_audio" }
+
+godot = { workspace = true }
+houtamelo_utils = { workspace = true }
+houtamelo_utils_gdext = { workspace = true }
+declarative_type_state = { workspace = true }
+strum = "0.26"
+strum_macros = "0.26"

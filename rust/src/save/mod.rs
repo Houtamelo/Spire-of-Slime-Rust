@@ -1,19 +1,16 @@
-#[allow(unused_imports)]
-use crate::*;
-use crate::save::file::SaveFile;
-use world_map::WorldLocation;
+use super::*;
 
-pub mod file;
-pub mod affairs;
-mod states;
-mod upgrades;
-mod stats;
-
+mod affairs;
 mod controller;
-pub use controller::SaveFilesController;
+mod file;
+mod states;
+mod stats;
+mod upgrades;
 
-impl SaveFile {
-	pub fn unlocked_locations(&self) -> HashSet<WorldLocation> {
-		todo!();
-	}
-}
+pub use affairs::*;
+pub use controller::*;
+pub use file::*;
+pub use states::*;
+pub use stats::*;
+#[allow(unused)] //todo!
+pub use upgrades::*;

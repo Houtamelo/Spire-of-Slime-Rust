@@ -1,87 +1,97 @@
-[gd_scene load_steps=16 format=2]
+[gd_scene load_steps=8 format=3 uid="uid://davxisao48bpd"]
 
-[ext_resource path="res://Fonts/font_treasure-map-dead-hand_24.tres" type="DynamicFont" id=1]
-[ext_resource path="res://Fonts/font_treasure-map-dead-hand_16.tres" type="DynamicFont" id=2]
-[ext_resource path="res://Core/Main Menu/UI/Load Game Panel/style-box_load-button_focus.tres" type="StyleBox" id=3]
-[ext_resource path="res://Core/Main Menu/UI/Load Game Panel/style-box_delete-save-button_focus.tres" type="StyleBox" id=4]
-[ext_resource path="res://Core/Main Menu/UI/Load Game Panel/style-box_delete-save-button_hover.tres" type="StyleBox" id=5]
-[ext_resource path="res://Core/Main Menu/UI/Load Game Panel/style-box_load-button_hover.tres" type="StyleBox" id=6]
-[ext_resource path="res://Core/Main Menu/UI/Load Game Panel/style-box_load-button_normal.tres" type="StyleBox" id=7]
-[ext_resource path="res://Core/Main Menu/UI/Load Game Panel/style-box_delete-save-button_normal.tres" type="StyleBox" id=8]
-[ext_resource path="res://Core/Main Menu/UI/Load Game Panel/style-box_confirm-delete-save_focus.tres" type="StyleBox" id=9]
-[ext_resource path="res://Core/Main Menu/UI/Load Game Panel/style-box_confirm-delete-save_hover.tres" type="StyleBox" id=10]
-[ext_resource path="res://Core/Main Menu/UI/Load Game Panel/style-box_confirm-delete-save_normal.tres" type="StyleBox" id=11]
-[ext_resource path="res://Core/Shared/Audio/sfx_ui_hover.tscn" type="PackedScene" id=12]
-[ext_resource path="res://Core/Shared/Audio/sfx_ui_click.tscn" type="PackedScene" id=13]
-[ext_resource path="res://Core/Shared/Audio/sfx_ui_confirm.tscn" type="PackedScene" id=14]
-[ext_resource path="res://Core/Shared/disallow-click-focus_on-parent.tscn" type="PackedScene" id=15]
+[ext_resource type="Texture2D" uid="uid://cekpofecs5kw8" path="res://Core/Main Menu/UI/Load Game Panel/button_load-game.png" id="1_u0hab"]
+[ext_resource type="Texture2D" uid="uid://w7ia3ona2wvb" path="res://Core/Main Menu/UI/Load Game Panel/button_x.png" id="4_pfkt3"]
+[ext_resource type="Texture2D" uid="uid://dhtjxdxwflgfi" path="res://Core/Main Menu/UI/Load Game Panel/button_trash.png" id="7_11vw8"]
+[ext_resource type="PackedScene" path="res://Core/Shared/Audio/sfx_ui_hover.tscn" id="12"]
+[ext_resource type="PackedScene" path="res://Core/Shared/Audio/sfx_ui_click.tscn" id="13"]
+[ext_resource type="PackedScene" path="res://Core/Shared/Audio/sfx_ui_confirm.tscn" id="14"]
+[ext_resource type="PackedScene" path="res://Core/Shared/disallow-click-focus_on-parent.tscn" id="15"]
 
 [node name="button_save-slot" type="Button"]
-margin_right = 300.0
-margin_bottom = 24.125
-rect_min_size = Vector2( 300, 24 )
-custom_fonts/font = ExtResource( 1 )
-custom_styles/hover = ExtResource( 6 )
-custom_styles/pressed = ExtResource( 6 )
-custom_styles/focus = ExtResource( 3 )
-custom_styles/disabled = ExtResource( 7 )
-custom_styles/normal = ExtResource( 7 )
-shortcut_in_tooltip = false
+custom_minimum_size = Vector2(128, 32)
+offset_left = 3.0
+offset_top = 5.0
+offset_right = 387.0
+offset_bottom = 68.0
+size_flags_horizontal = 3
 action_mode = 0
+shortcut_in_tooltip = false
+icon = ExtResource("1_u0hab")
 clip_text = true
-icon_align = 1
 
-[node name="disallow-click-focus_on-parent" parent="." instance=ExtResource( 15 )]
+[node name="disallow-click-focus_on-parent" parent="." instance=ExtResource("15")]
+script = null
 
-[node name="sfx_ui_confirm" parent="." instance=ExtResource( 14 )]
+[node name="sfx_ui_confirm" parent="." instance=ExtResource("14")]
+bus = &"Master"
+script = null
 
-[node name="sfx_ui_hover" parent="." instance=ExtResource( 12 )]
+[node name="sfx_ui_hover" parent="." instance=ExtResource("12")]
+bus = &"Master"
+script = null
 
 [node name="label_save-name" type="Label" parent="."]
+layout_mode = 1
+anchors_preset = -1
 anchor_left = 0.02
 anchor_top = 0.085
-anchor_right = 0.98
+anchor_right = 1.0
 anchor_bottom = 1.0
-custom_fonts/font = ExtResource( 2 )
+offset_left = -4.14
+offset_top = -3.06
+theme_override_font_sizes/font_size = 24
 text = "Save name here"
-align = 1
-valign = 1
+horizontal_alignment = 1
+vertical_alignment = 1
 clip_text = true
 
 [node name="button_delete" type="Button" parent="."]
-margin_left = 305.0
-margin_right = 338.0
-margin_bottom = 39.25
-rect_scale = Vector2( 0.6, 0.6 )
-custom_styles/hover = ExtResource( 5 )
-custom_styles/pressed = ExtResource( 5 )
-custom_styles/focus = ExtResource( 4 )
-custom_styles/disabled = ExtResource( 8 )
-custom_styles/normal = ExtResource( 8 )
+custom_minimum_size = Vector2(42, 42)
+layout_mode = 1
+anchors_preset = -1
+anchor_left = 1.0
+anchor_top = 0.5
+anchor_right = 1.0
+anchor_bottom = 0.5
+offset_top = -30.5
+offset_right = 42.0
+offset_bottom = 31.5
+grow_vertical = 2
+icon = ExtResource("4_pfkt3")
 clip_text = true
 
-[node name="disallow-click-focus_on-parent" parent="button_delete" instance=ExtResource( 15 )]
+[node name="disallow-click-focus_on-parent" parent="button_delete" instance=ExtResource("15")]
+script = null
 
-[node name="sfx_ui_click" parent="button_delete" instance=ExtResource( 13 )]
+[node name="sfx_ui_click" parent="button_delete" instance=ExtResource("13")]
+bus = &"Master"
+script = null
 
-[node name="sfx_ui_hover" parent="button_delete" instance=ExtResource( 12 )]
+[node name="sfx_ui_hover" parent="button_delete" instance=ExtResource("12")]
+bus = &"Master"
+script = null
 
 [node name="button_delete_confirm" type="Button" parent="."]
-visible = false
-margin_left = 328.834
-margin_top = -1.20001
-margin_right = 387.834
-margin_bottom = 54.8
-rect_scale = Vector2( 0.45, 0.45 )
-custom_styles/hover = ExtResource( 10 )
-custom_styles/pressed = ExtResource( 10 )
-custom_styles/focus = ExtResource( 9 )
-custom_styles/disabled = ExtResource( 11 )
-custom_styles/normal = ExtResource( 11 )
+custom_minimum_size = Vector2(32, 32)
+layout_mode = 1
+anchors_preset = -1
+anchor_left = 1.0
+anchor_right = 1.0
+offset_left = 34.0
+offset_top = -5.0
+offset_right = 101.0
+offset_bottom = 59.0
+icon = ExtResource("7_11vw8")
 clip_text = true
 
-[node name="disallow-click-focus_on-parent" parent="button_delete_confirm" instance=ExtResource( 15 )]
+[node name="disallow-click-focus_on-parent" parent="button_delete_confirm" instance=ExtResource("15")]
+script = null
 
-[node name="sfx_ui_confirm" parent="button_delete_confirm" instance=ExtResource( 14 )]
+[node name="sfx_ui_confirm" parent="button_delete_confirm" instance=ExtResource("14")]
+bus = &"Master"
+script = null
 
-[node name="sfx_ui_hover" parent="button_delete_confirm" instance=ExtResource( 12 )]
+[node name="sfx_ui_hover" parent="button_delete_confirm" instance=ExtResource("12")]
+bus = &"Master"
+script = null

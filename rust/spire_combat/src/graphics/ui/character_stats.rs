@@ -1,311 +1,216 @@
-#[allow(unused_imports)]
-use crate::prelude::*;
-use anyhow::bail;
-use super::get_ref_or_bail;
+use super::*;
 
-pub struct CharacterStatsUI {
-	root: Ref<Control>,
-	
-	name_label: Ref<Label>,
-	portrait: Ref<TextureRect>,
-	
-	stamina_fill: Ref<Range>,
-	stamina_label: Ref<Label>,
-	
-	dmg_label: Ref<Label>,
+#[derive(GodotClass)]
+#[class(init, base = Control)]
+pub struct ActorStatsUI {
+	base: Base<Control>,
 
-	power_label: Ref<Label>,
-	acc_label: Ref<Label>,
-	crit_rate_label: Ref<Label>,
-	speed_label: Ref<Label>,
-	dodge_label: Ref<Label>,
+	#[init(node = "name")]
+	name_label: OnReady<Gd<Label>>,
+	#[init(node = "portrait")]
+	portrait:   OnReady<Gd<TextureRect>>,
 
-	toughness_label: Ref<Label>,
-	stun_def_label: Ref<Label>,
-	
-	debuff_res_label: Ref<Label>,
-	debuff_rate_label: Ref<Label>,
-	
-	move_res_label: Ref<Label>,
-	move_rate_label: Ref<Label>,
-	
-	poison_res_label: Ref<Label>,
-	poison_rate_label: Ref<Label>,
-	
-	temptation_fill: Ref<Range>,
-	temptation_label: Ref<Label>,
-	lust_low_fill: Ref<Range>,
-	lust_high_fill: Ref<Range>,
-	lust_label: Ref<Label>,
-	composure_label: Ref<Label>,
+	#[init(node = "stamina/fill")]
+	stamina_fill:  OnReady<Gd<Range>>,
+	#[init(node = "stamina/value")]
+	stamina_label: OnReady<Gd<Label>>,
 
-	orgasm_parent: Ref<Control>,
-	orgasm_toggles: [Ref<TextureRect>; 8],
-	orgasm_texture_off: Ref<Texture>,
-	orgasm_texture_on: Ref<Texture>,
+	#[init(node = "grid-stats/damage/value")]
+	dmg_label: OnReady<Gd<Label>>,
+	#[init(node = "grid-stats/power/value")]
+	power_label: OnReady<Gd<Label>>,
+	#[init(node = "grid-stats/accuracy/value")]
+	acc_label: OnReady<Gd<Label>>,
+	#[init(node = "grid-stats/crit-rate/value")]
+	crit_rate_label: OnReady<Gd<Label>>,
+	#[init(node = "grid-stats/speed/value")]
+	speed_label: OnReady<Gd<Label>>,
+	#[init(node = "grid-stats/dodge/value")]
+	dodge_label: OnReady<Gd<Label>>,
+
+	#[init(node = "grid-stats/toughness/value")]
+	toughness_label: OnReady<Gd<Label>>,
+	#[init(node = "grid-stats/stun-mitigation/value")]
+	stun_def_label:  OnReady<Gd<Label>>,
+
+	#[init(node = "grid-stats/debuff-resistance/value")]
+	debuff_res_label:  OnReady<Gd<Label>>,
+	#[init(node = "grid-stats/debuff-rate/value")]
+	debuff_rate_label: OnReady<Gd<Label>>,
+
+	#[init(node = "grid-stats/move-resistance/value")]
+	move_res_label:  OnReady<Gd<Label>>,
+	#[init(node = "grid-stats/move-rate/value")]
+	move_rate_label: OnReady<Gd<Label>>,
+
+	#[init(node = "grid-stats/poison-resistance/value")]
+	poison_res_label:  OnReady<Gd<Label>>,
+	#[init(node = "grid-stats/poison-rate/value")]
+	poison_rate_label: OnReady<Gd<Label>>,
+
+	#[init(node = "temptation/fill")]
+	temptation_fill: OnReady<Gd<Range>>,
+	#[init(node = "temptation/value")]
+	temptation_label: OnReady<Gd<Label>>,
+	#[init(node = "lust/low_fill")]
+	lust_low_fill: OnReady<Gd<Range>>,
+	#[init(node = "lust/high_fill")]
+	lust_high_fill: OnReady<Gd<Range>>,
+	#[init(node = "lust/value")]
+	lust_label: OnReady<Gd<Label>>,
+	#[init(node = "grid-stats/composure/value")]
+	composure_label: OnReady<Gd<Label>>,
+
+	#[init(node = "orgasm-counter")]
+	orgasm_parent:  OnReady<Gd<Control>>,
+	#[export]
+	orgasm_toggles: Array<Gd<TextureRect>>,
+
+	#[init(default = OnReady::new(|| load_resource_as::<Texture2D>(
+		"res://Core/Combat/UI/Character Stats/Orgasm Counter/orgasm_off.png"
+	).unwrap()))]
+	orgasm_texture_off: OnReady<Gd<Texture2D>>,
+	#[init(default = OnReady::new(|| load_resource_as::<Texture2D>(
+		"res://Core/Combat/UI/Character Stats/Orgasm Counter/orgasm_on.png"
+	).unwrap()))]
+	orgasm_texture_on:  OnReady<Gd<Texture2D>>,
 }
 
-impl CharacterStatsUI {
-	pub fn new(root: &Control) -> Result<Self> {
-		let name_label = get_ref_or_bail!(root, "name", Label)?;
-		let portrait = get_ref_or_bail!(root, "portrait", TextureRect)?;
-		
-		let stamina_fill = get_ref_or_bail!(root, "stamina/fill", Range)?;
-		let stamina_label = get_ref_or_bail!(root, "stamina/value", Label)?;
-		
-		let temptation_fill = get_ref_or_bail!(root, "temptation/fill", Range)?;
-		let temptation_label = get_ref_or_bail!(root, "temptation/value", Label)?;
-		
-		let lust_low_fill = get_ref_or_bail!(root, "lust/low_fill", Range)?;
-		let lust_high_fill = get_ref_or_bail!(root, "lust/high_fill", Range)?;
-		let lust_label = get_ref_or_bail!(root, "lust/value", Label)?;
-		
-		let dmg_label = get_ref_or_bail!(root, "grid-stats/damage/value", Label)?;
-		let power_label = get_ref_or_bail!(root, "grid-stats/power/value", Label)?;
-		let acc_label = get_ref_or_bail!(root, "grid-stats/accuracy/value", Label)?;
-		let crit_rate_label = get_ref_or_bail!(root, "grid-stats/crit-rate/value", Label)?;
-		let speed_label = get_ref_or_bail!(root, "grid-stats/speed/value", Label)?;
-		let dodge_label = get_ref_or_bail!(root, "grid-stats/dodge/value", Label)?;
-		
-		let toughness_label = get_ref_or_bail!(root, "grid-stats/toughness/value", Label)?;
-		let composure_label = get_ref_or_bail!(root, "grid-stats/composure/value", Label)?;
-		let stun_def_label = get_ref_or_bail!(root, "grid-stats/stun-mitigation/value", Label)?;
-		
-		let debuff_res_label = get_ref_or_bail!(root, "grid-stats/debuff-resistance/value", Label)?;
-		let debuff_rate_label = get_ref_or_bail!(root, "grid-stats/debuff-rate/value", Label)?;
-		
-		let move_res_label = get_ref_or_bail!(root, "grid-stats/move-resistance/value", Label)?;
-		let move_rate_label = get_ref_or_bail!(root, "grid-stats/move-rate/value", Label)?;
-		
-		let poison_res_label = get_ref_or_bail!(root, "grid-stats/poison-resistance/value", Label)?;
-		let poison_rate_label = get_ref_or_bail!(root, "grid-stats/poison-rate/value", Label)?;
+impl ActorStatsUI {
+	pub fn set_actor<T>(&mut self, actor: &Ptr<Actor>, ctx: &ActorContext) {
+		self.name_label.set_text(actor.name.display_name());
+		self.portrait.set_texture(
+			&actor
+				.name
+				.combat_portrait()
+				.map_err(|e| godot_warn!("{e:?}"))
+				.unwrap_or_default(),
+		);
 
-		let orgasm_parent_tref = unsafe {
-			root.get_node_as::<Control>("orgasm-counter")
-			    .ok_or_else(|| anyhow!("Failed to orgasm-counter from {}", root.name()))
-		}?;
-		
-		let orgasm_parent = unsafe { orgasm_parent_tref.assume_shared() };
+		let stamina_cur = actor.raw_stat::<CurrentStamina>();
+		let stamina_max = actor.eval_dyn_stat::<MaxStamina>(ctx);
+		let stamina_percent = (*stamina_cur as f64 / *stamina_max as f64) * 100.0;
+		self.stamina_fill.set_value(stamina_percent);
+		self.stamina_label
+			.set_text(&format!("{} / {}", stamina_cur, stamina_max));
 
-		let orgasm_toggles = {
-			let children = orgasm_parent_tref.get_children();
-			if children.len() != 8 {
-				bail!("Expected 8 children in orgasm-counter, found {}", children.len());
-			}
-			
-			[
-				children.get(0).try_to_object()?,
-				children.get(1).try_to_object()?,
-				children.get(2).try_to_object()?,
-				children.get(3).try_to_object()?,
-				children.get(4).try_to_object()?,
-				children.get(5).try_to_object()?,
-				children.get(6).try_to_object()?,
-				children.get(7).try_to_object()?,
-			]
-		};
-		
-		let orgasm_texture_off = load_resource_as::<Texture>(
-			"res://Core/Combat/UI/Character Stats/Orgasm Counter/orgasm_off.png")?;
-		
-		let orgasm_texture_on = load_resource_as::<Texture>(
-			"res://Core/Combat/UI/Character Stats/Orgasm Counter/orgasm_on.png")?;
-		
-		let root = unsafe { root.assume_shared() };
-		
-		let _self = Self {
-			root,
-			
-			name_label,
-			portrait,
-			
-			stamina_fill,
-			stamina_label,
-			
-			temptation_fill,
-			temptation_label,
-			
-			lust_low_fill,
-			lust_high_fill,
-			lust_label,
+		let dmg_range = actor.base_stat::<Damage>();
+		self.dmg_label
+			.set_text(&format!("{}~{}", dmg_range.lower(), dmg_range.upper()));
 
-			dmg_label,
-			power_label,
-			acc_label,
-			crit_rate_label,
-			speed_label,
-			dodge_label,
-			
-			toughness_label,
-			composure_label,
-			stun_def_label,
-			
-			debuff_res_label,
-			debuff_rate_label,
-			
-			move_res_label,
-			move_rate_label,
-			
-			poison_res_label,
-			poison_rate_label,
+		self.power_label
+			.set_text(&format!("{}", actor.eval_dyn_stat::<Power>(ctx)));
 
-			orgasm_parent,
-			orgasm_toggles,
-			orgasm_texture_off,
-			orgasm_texture_on,
-		};
-		
-		return Ok(_self);
-	}
-	
-	pub fn set_character(&self, character: &CombatCharacter) {
-		macro_rules! set_fill {
-		    ($var: ident, $fill_expr: expr) => {
-			    self.$var.touch_assert_sane(|fill| 
-			        fill.set_value($fill_expr));
-		    };
-		}
+		self.acc_label
+			.set_text(&actor.eval_dyn_stat::<Accuracy>(ctx).display_sign());
+		self.crit_rate_label
+			.set_text(&actor.eval_dyn_stat::<CritRate>(ctx).display_sign());
 
-		macro_rules! set_label {
-		    ($var: ident, $label_expr: expr) => {
-			    self.$var.touch_assert_sane(|label| 
-			        label.set_text($label_expr));
-		    };
-		}
+		self.speed_label
+			.set_text(&format!("{}", actor.eval_dyn_stat::<Speed>(ctx)));
+		self.dodge_label
+			.set_text(&format!("{}", actor.eval_dyn_stat::<Dodge>(ctx)));
+		self.toughness_label
+			.set_text(&format!("{}", actor.eval_dyn_stat::<Toughness>(ctx)));
+		self.stun_def_label
+			.set_text(&format!("{}", actor.eval_dyn_stat::<StunDef>(ctx)));
+		self.debuff_res_label
+			.set_text(&format!("{}", actor.eval_dyn_stat::<DebuffRes>(ctx)));
+		self.debuff_rate_label
+			.set_text(&format!("{}", actor.eval_dyn_stat::<DebuffRate>(ctx)));
+		self.move_res_label
+			.set_text(&format!("{}", actor.eval_dyn_stat::<MoveRes>(ctx)));
+		self.move_rate_label
+			.set_text(&format!("{}", actor.eval_dyn_stat::<MoveRate>(ctx)));
+		self.poison_res_label
+			.set_text(&format!("{}", actor.eval_dyn_stat::<PoisonRes>(ctx)));
+		self.poison_rate_label
+			.set_text(&format!("{}", actor.eval_dyn_stat::<PoisonRate>(ctx)));
 
-		macro_rules! set_parent_visible {
-		    ($var: ident, $is_visible: ident) => {
-			    self.$var
-					.touch_assert_sane(|label|
-						label.get_parent_control()
-						     .touch_assert_sane(|parent|
-							     parent.set_visible($is_visible)));
-		    };
-		}
-		
-		self.name_label.touch_assert_sane(|label| {
-			label.set_text(character.data.variant().display_name());
-		});
-		
-		self.portrait.touch_assert_sane(|portrait| {
-			if let Ok(texture) = character.data.variant().combat_portrait() {
-				portrait.set_texture(texture);
-			}
-		});
-		
-		//todo! set_name, set_portrait
+		if let Some(girl) = &actor.girl {
+			let temptation = girl.raw_stat::<Temptation>();
+			let temptation_percent = (temptation / 100.0) * 100.0;
+			self.temptation_fill.set_value(temptation_percent);
+			self.temptation_label
+				.set_text(&format!("{} / 100", temptation));
 
-		let stamina_cur = character.stamina_cur;
-		let stamina_max = character.max_stamina();
-		let stamina_percent = (stamina_cur.get() as f64 / stamina_max.get() as f64) * 100.0;
-
-		set_fill!(stamina_fill, stamina_percent);
-		set_label!(stamina_label, format!("{} / {}", stamina_cur.get(), stamina_max.get()));
-		
-		let dmg = character.dmg;
-		set_label!(dmg_label, format!("{}~{}", dmg.bound_lower(), dmg.bound_upper()));
-		
-		set_label!(power_label, format!("{}", character.dyn_stat::<Power>().get()));
-		
-		let acc = character.dyn_stat::<Accuracy>().get();
-		if acc > 0 {
-			set_label!(acc_label, format!("+{}", acc));
-		} else {
-			set_label!(acc_label, format!("{}", acc));
-		}
-		
-		let crit = character.dyn_stat::<CritRate>().get();
-		if crit > 0 {
-			set_label!(crit_rate_label, format!("+{}", crit));
-		} else {
-			set_label!(crit_rate_label, format!("{}", crit));
-		}
-		
-		set_label!(speed_label, format!("{}", character.dyn_stat::<Speed>().get()));
-		
-		let dodge = character.dyn_stat::<Dodge>().get();
-		if dodge > 0 {
-			set_label!(dodge_label, format!("+{}", dodge));
-		} else {
-			set_label!(dodge_label, format!("{}", dodge));
-		}
-		
-		set_label!(toughness_label, format!("{}", character.dyn_stat::<Toughness>().get()));
-		set_label!(stun_def_label, format!("{}", character.dyn_stat::<StunDef>().get()));
-		
-		set_label!(debuff_res_label, format!("{}", character.dyn_stat::<DebuffRes>().get()));
-		set_label!(debuff_rate_label, format!("{}", character.dyn_stat::<DebuffRate>().get()));
-		
-		set_label!(move_res_label, format!("{}", character.dyn_stat::<MoveRes>().get()));
-		set_label!(move_rate_label, format!("{}", character.dyn_stat::<MoveRate>().get()));
-		
-		set_label!(poison_res_label, format!("{}", character.dyn_stat::<PoisonRes>().get()));
-		set_label!(poison_rate_label, format!("{}", character.dyn_stat::<PoisonRate>().get()));
-
-		if let Some(girl_stats) = &character.girl_stats {
-			let temptation = girl_stats.temptation;
-			let temptation_percent = (temptation.get() as f64 / 100.0) * 100.0;
-
-			set_fill!(temptation_fill, temptation_percent);
-			set_label!(temptation_label, format!("{} / 100", temptation.get()));
-
-			let lust_cur = girl_stats.lust;
-			match lust_cur.get() {
-				0..=100 => {
-					let low_fill_percent = (lust_cur.get() as f64 / 100.0) * 100.0;
-					set_fill!(lust_low_fill, low_fill_percent);
-					set_fill!(lust_high_fill, 0.0);
-					set_label!(lust_label, format!("{} / 100", lust_cur.get()));
+			let lust_cur = girl.raw_stat::<Lust>();
+			match *lust_cur {
+				..=100 => {
+					let low_fill_percent = (lust_cur / 100.0) * 100.0;
+					self.lust_low_fill.set_value(low_fill_percent);
+					self.lust_high_fill.set_value(0.0);
+					self.lust_label.set_text(&format!("{} / 100", lust_cur));
 				}
 				101.. => {
-					let high_fill_percent = ((lust_cur.get() - 100) as f64 / 100.0) * 100.0;
-					set_fill!(lust_low_fill, 100.0);
-					set_fill!(lust_high_fill, high_fill_percent);
-					set_label!(lust_label, format!("{} / 100", lust_cur.get()));
+					let high_fill_percent = ((lust_cur - 100.0) / 100.0) * 100.0;
+					self.lust_low_fill.set_value(100.0);
+					self.lust_high_fill.set_value(high_fill_percent);
+					self.lust_label.set_text(&format!("{} / 100", lust_cur));
 				}
 			}
 
-			let composure = character.dyn_stat::<Composure>();
-			set_label!(composure_label, format!("{}", composure.get()));
+			let composure = actor.eval_dyn_girl_stat::<Composure>(girl, ctx);
+			self.composure_label.set_text(&format!("{}", composure));
 
-			let orgasm_limit = girl_stats.orgasm_limit.get() as usize;
-			let orgasm_count = girl_stats.orgasm_count.get() as usize;
-			
+			let orgasm_count = *girl.raw_stat::<OrgasmCount>();
+
 			for i in 0..orgasm_count {
-				self.orgasm_toggles[i]
-					.touch_assert_sane(|toggle| {
-						toggle.set_texture(&self.orgasm_texture_on);
-						toggle.set_visible(true);
-					});
+				let idx = cram::<usize>(i);
+
+				if let Some(mut toggle) = self.orgasm_toggles.get(idx) {
+					toggle.set_texture(&*self.orgasm_texture_on);
+					toggle.set_visible(true);
+				} else {
+					godot_warn!("Insufficient orgasm toggles! Expected at least {idx}");
+				}
 			}
-			
+
+			let orgasm_limit = *actor.eval_dyn_girl_stat::<OrgasmLimit>(girl, ctx);
 			for i in orgasm_count..orgasm_limit {
-				self.orgasm_toggles[i]
-					.touch_assert_sane(|toggle| {
-						toggle.set_texture(&self.orgasm_texture_off);
-						toggle.set_visible(true);
-					});
+				let idx = cram::<usize>(i);
+
+				if let Some(mut toggle) = self.orgasm_toggles.get(idx) {
+					toggle.set_texture(&*self.orgasm_texture_off);
+					toggle.set_visible(true);
+				} else {
+					godot_warn!("Insufficient orgasm toggles! Expected at least {idx}");
+				}
 			}
-			
-			for i in orgasm_limit..8 {
-				self.orgasm_toggles[i]
-					.touch_assert_sane(|toggle|
-						toggle.set_visible(false));
+
+			for i in orgasm_limit..self.orgasm_toggles.len() as i64 {
+				let idx = cram::<usize>(i);
+
+				if let Some(mut toggle) = self.orgasm_toggles.get(idx) {
+					toggle.set_visible(false);
+				} else {
+					godot_warn!(
+						"Array::get(i) returned none despite index being lower than `len`. Index: {idx}"
+					);
+				}
 			}
 		}
-		let is_girl = character.girl_stats.is_some();
-		set_parent_visible!(temptation_label, is_girl);
-		set_parent_visible!(lust_low_fill, is_girl);
-		set_parent_visible!(composure_label, is_girl);
-		self.orgasm_parent
-		    .touch_assert_sane(|parent|
-			    parent.set_visible(is_girl));
-	}
-	
-	pub fn hide(&self) {
-		self.root
-			.touch_assert_sane(|node| {
-				node.hide();
-			});
+
+		let is_girl = actor.girl.is_some();
+
+		macro_rules! set_parent_visible {
+			($var:ident) => {
+				self.$var
+					.get_parent()
+					.ok_or_else(|| anyhow!("{} has no parent", stringify!($var)))
+					.and_then(|node| {
+						node.try_cast::<CanvasItem>().map_err(|_| {
+							anyhow!("{}'s parent does not inherit CanvasItem.", stringify!($var))
+						})
+					})
+					.map(|mut node| node.set_visible(is_girl))
+					.log_if_err();
+			};
+		}
+
+		set_parent_visible!(temptation_label);
+		set_parent_visible!(lust_low_fill);
+		set_parent_visible!(composure_label);
+		set_parent_visible!(orgasm_parent);
 	}
 }

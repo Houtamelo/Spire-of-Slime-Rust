@@ -1,0 +1,8 @@
+[gd_resource type="StyleBoxTexture" load_steps=2 format=3 uid="uid://cckh67tbad8s0"]
+
+[ext_resource type="Texture2D" uid="uid://bp1u5i2tieb7c" path="res://Core/Settings Menu/UI/Toggle/toggle_off.png" id="1"]
+
+[resource]
+texture = ExtResource("1")
+region_rect = Rect2(0, 0, 94, 126)
+modulate_color = Color(0.5, 0.5, 0.5, 1)

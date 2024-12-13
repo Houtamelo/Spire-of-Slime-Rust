@@ -1,20 +1,14 @@
-[gd_resource type="ParticlesMaterial" load_steps=4 format=2]
+[gd_resource type="ParticleProcessMaterial" load_steps=3 format=3 uid="uid://cajhox5pqh2kh"]
 
-[ext_resource path="res://Ideas/shader-material_canvas-item_motion-blur.tres" type="Material" id=1]
+[sub_resource type="Gradient" id="4"]
+colors = PackedColorArray(1, 1, 1, 0.666667, 1, 1, 1, 0)
 
-[sub_resource type="Gradient" id=4]
-colors = PoolColorArray( 1, 1, 1, 0.666667, 1, 1, 1, 0 )
-
-[sub_resource type="GradientTexture" id=5]
-gradient = SubResource( 4 )
+[sub_resource type="GradientTexture1D" id="5"]
+gradient = SubResource("4")
 width = 128
 
 [resource]
-next_pass = ExtResource( 1 )
-flag_disable_z = true
-direction = Vector3( 0, 0, 0 )
+direction = Vector3(0, 0, 0)
 spread = 0.0
-gravity = Vector3( 0, 0, 0 )
-orbit_velocity = 0.0
-orbit_velocity_random = 0.0
-color_ramp = SubResource( 5 )
+gravity = Vector3(0, 0, 0)
+color_ramp = SubResource("5")

@@ -1,46 +1,22 @@
-#[allow(unused_imports)]
-use crate::*;
-use serde::{Deserialize, Serialize};
+use super::*;
 
-pub trait Affair { 
-	type State;
-	fn get(map: &AffairMap) -> Self::State;
-}
+declarative_type_state::type_table! {
+	ENUM_OUT: {
+		#[vars(derive(Default, Clone, Serialize, Deserialize, PartialEq, Eq))]
+		pub enum Affair {
+			RescuedByMistressTender(bool),
+		}
+	}
 
-#[derive(Debug, Clone, Default, Serialize, Deserialize)]
-pub struct AffairMap {
-	RescuedByMistressTender: RescuedByMistressTender,
-}
-
-impl AffairMap {
-	pub fn get<T: Affair>(&self) -> T::State {
-		return T::get(self);
+	TABLE: {
+		#[derive(Default, Clone, Serialize, Deserialize)]
+		pub struct AffairMap;
 	}
 }
 
-#[derive(Debug, Default, Clone, Copy, Serialize, Deserialize, PartialEq, Eq)]
-pub enum Happened {
-	#[default] No,
-	Yes,
+impl AffairMap {
+	#[allow(unused)] //todo!
+	pub fn is_fulfilled<T: GetInTable + PartialEq + Eq>(&self, condition: &T) -> bool {
+		self.get::<T>() == condition
+	}
 }
-
-macro_rules! affair_type {
-    (struct $name: ident, $state: ty) => {
-	    #[derive(Debug, Clone, Default, Serialize, Deserialize)]
-		pub struct $name {
-			state: $state,
-		}
-	    
-	    impl $name {
-		    pub fn state(&self) -> &$state { return &self.state; }
-	    }
-
-		impl Affair for $name {
-			type State = $state;
-
-			fn get(map: &AffairMap) -> Self::State { return map.$name.state; }
-		}
-    };
-}
-
-affair_type!(struct RescuedByMistressTender, Happened);

@@ -1,0 +1,53 @@
+[gd_resource type="Theme" load_steps=17 format=3 uid="uid://d2xekyb4egrkp"]
+
+[ext_resource type="Texture2D" uid="uid://csvk8qr0sn4we" path="res://Core/Settings Menu/UI/Toggle/toggle_fill_colored.png" id="2"]
+[ext_resource type="Texture2D" uid="uid://cayvkuii6y1i2" path="res://Core/Settings Menu/UI/Toggle/toggle_bg_dummy.png" id="3"]
+[ext_resource type="StyleBox" path="res://Core/Settings Menu/UI/Toggle/style-box_toggle_hover.tres" id="4"]
+[ext_resource type="Texture2D" uid="uid://d4cs4wnfatc4e" path="res://Core/Settings Menu/UI/Spin Box/spin-box_arrows.png" id="5"]
+[ext_resource type="FontFile" path="res://Core/Settings Menu/UI/font_audimat-mono_36.tres" id="6"]
+[ext_resource type="StyleBox" path="res://Core/Settings Menu/UI/Slider/style-box_slider_fill.tres" id="7"]
+[ext_resource type="StyleBox" path="res://Core/Settings Menu/UI/Slider/style-box_slider_background.tres" id="8"]
+[ext_resource type="FontFile" uid="uid://6quh3ix1m3xl" path="res://Fonts/sources/MrDarcy-Regular.otf" id="8_5rear"]
+
+[sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_4q58c"]
+
+[sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_tcyf3"]
+
+[sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_ov4ct"]
+
+[sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_skx56"]
+
+[sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_eogm6"]
+
+[sub_resource type="StyleBoxEmpty" id="1"]
+
+[sub_resource type="StyleBoxEmpty" id="2"]
+
+[sub_resource type="StyleBoxEmpty" id="3"]
+
+[resource]
+default_font = ExtResource("8_5rear")
+default_font_size = 32
+Button/styles/disabled = SubResource("StyleBoxEmpty_4q58c")
+Button/styles/focus = SubResource("StyleBoxEmpty_tcyf3")
+Button/styles/hover = SubResource("StyleBoxEmpty_ov4ct")
+Button/styles/normal = SubResource("StyleBoxEmpty_skx56")
+Button/styles/pressed = SubResource("StyleBoxEmpty_eogm6")
+CheckBox/icons/checked = ExtResource("2")
+CheckBox/icons/checked_disabled = ExtResource("2")
+CheckBox/icons/radio_checked = ExtResource("3")
+CheckBox/icons/radio_checked_disabled = ExtResource("3")
+CheckBox/icons/radio_unchecked = ExtResource("3")
+CheckBox/icons/radio_unchecked_disabled = ExtResource("3")
+CheckBox/icons/unchecked = ExtResource("3")
+CheckBox/icons/unchecked_disabled = ExtResource("3")
+CheckBox/styles/focus = ExtResource("4")
+LineEdit/constants/minimum_spaces = 3
+LineEdit/fonts/font = ExtResource("6")
+LineEdit/icons/clear = null
+LineEdit/styles/focus = SubResource("1")
+LineEdit/styles/normal = SubResource("2")
+LineEdit/styles/read_only = SubResource("3")
+ProgressBar/styles/bg = ExtResource("8")
+ProgressBar/styles/fg = ExtResource("7")
+SpinBox/icons/updown = ExtResource("5")

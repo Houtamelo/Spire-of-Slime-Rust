@@ -1,72 +1,61 @@
-#![allow(unused_imports)]
-use crate::prelude::*;
-use crate::graphics::action_animation::character_movement::CharacterMovement;
-use crate::graphics::action_animation::character_position::OffensivePadding;
-use crate::graphics::action_animation::skills::anim_utils::*;
-use crate::graphics::action_animation::skills::offensive::{AttackResult, OffensiveAnim, play_attackeds_anim};
+use super::*;
 
-/*
-impl OffensiveAnim for Pierce {
-	fn offensive_anim(
-		&self, 
-		caster: CharacterNode, 
-		enemies: Vec<(CharacterNode, AttackResult)>
-	) -> Sequence {
-		let mut sequence = Sequence::new().bound_to(&caster.node());
+pub fn offensive_anim(
+	caster: ActorNode,
+	enemies: Vec<(ActorNode, OffensiveResult)>,
+) -> SpireSequence {
+	let mut sequence = SpireSequence::new().bound_to(&caster.node());
 
-		sequence.append_call(move || {
-			caster.node().touch_assert_sane(|node| {
-				hide_idle_anim(node);
-				node_show(node, "anims/pierce");
-				node_emit_particles(node, "anims/pierce/trail");
-				node_fade_show(node, "anims/pierce/slash_sprite", 0.1);
-			});
-		});
+	sequence.append_call({
+		let caster = caster.clone();
+		move || {
+			let node = &caster.node();
+			hide_idle_anim(node);
+			node_show(node, "anims/pierce");
+			node_emit_particles(node, "anims/pierce/trail");
+			node_fade_show(node, "anims/pierce/slash_sprite", 0.1);
+		}
+	});
 
-		sequence.append_interval(0.1);
+	sequence.append_interval(0.1);
 
-		sequence.append_call(move || {
-			caster.node().touch_assert_sane(|node| {
-				node_emit_particles(node, "anims/pierce/slash_particles");
-			});
-		});
+	sequence.append_call({
+		let caster = caster.clone();
+		move || {
+			node_emit_particles(&caster.node(), "anims/pierce/slash_particles");
+		}
+	});
 
-		sequence.append_interval(0.05);
+	sequence.append_interval(0.05);
 
-		sequence.append_call(move || {
-			caster.node().touch_assert_sane(|node| {
-				node_stop_emit_particles(node, "anims/pierce/trail");
-				node_fade_hide(node, "anims/pierce/slash_sprite", 0.4);
-			});
-			
-			play_attackeds_anim(caster, &enemies);
-		});
-
-		sequence
-	}
-
-	fn reset(&self, caster: CharacterNode) {
-		caster.node().touch_assert_sane(|node| unsafe {
-			node_hide(node, "anims/pierce");
+	sequence.append_call({
+		let caster = caster.clone();
+		move || {
+			let node = &caster.node();
 			node_stop_emit_particles(node, "anims/pierce/trail");
-			node_stop_emit_particles(node, "anims/pierce/slash_particles");
-			node.inspect_node("anims/pierce/slash_sprite", |slash: &Node2D| {
-				slash.hide();
-				slash.set_indexed("modulate:a", 0.);
-			});
-		});
-	}
+			node_fade_hide(node, "anims/pierce/slash_sprite", 0.4);
 
-	fn padding(&self) -> OffensivePadding {
-		todo!()
-	}
+			play_attackeds_anim(&caster, &enemies);
+		}
+	});
 
-	fn caster_movement(&self) -> CharacterMovement {
-		todo!()
-	}
-
-	fn enemies_movement(&self) -> CharacterMovement {
-		todo!()
-	}
+	sequence
 }
-*/
+
+fn reset(caster: ActorNode) {
+	let node = &caster.node();
+	node_hide(node, "anims/pierce");
+	node_stop_emit_particles(node, "anims/pierce/trail");
+	node_stop_emit_particles(node, "anims/pierce/slash_particles");
+	node.map_node::<Node2D, _>("anims/pierce/slash_sprite", |slash| {
+		slash.hide();
+		slash.set_indexed("modulate:a", &0.0.to_variant());
+	})
+	.log_if_err();
+}
+
+fn padding() -> OffensivePadding { todo!() }
+
+fn caster_movement() -> CharacterMovement { todo!() }
+
+fn enemies_movement() -> CharacterMovement { todo!() }

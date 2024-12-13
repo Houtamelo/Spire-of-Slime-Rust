@@ -5,6 +5,7 @@
 *_archive
 *_flymake.*
 *~
+.idea/
 .\#*
 .cargo-ok
 .cask/
@@ -27,6 +28,7 @@ flycheck_*.el
 godot/*.translation
 godot/.import/
 godot/.mono/
+godot/godot/
 godot/data_*/
 godot/export.cfg
 rust/**/*.rs.bk
@@ -36,3 +38,5 @@ target/
 test.sh
 tramp
 .history/*
+/.history/
+/rust/.idea/

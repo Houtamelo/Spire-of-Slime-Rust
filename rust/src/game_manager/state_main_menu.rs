@@ -1,180 +1,200 @@
 #[allow(unused_imports)]
-use crate::*;
-use main_menu::{
-	SIGNAL_DELETE_SAVE,
-	SIGNAL_LOAD_GAME,
-	SIGNAL_NEW_GAME,
-	SIGNAL_OPEN_SETTINGS_MENU,
-	SIGNAL_OVERWRITE_SAVE_AND_START,
-};
-use crate::save::file::SaveFile;
+use main_menu::prelude::MainMenuController;
 
 use super::*;
 
-#[derive(Debug)]
+#[allow(clippy::large_enum_variant)]
 pub enum MainMenuState {
 	Idle,
-	LoadingSession { save: SaveFile },
+	LoadingSession(SaveFile),
 	SettingsMenu,
 }
 
-#[methods(mixin = "GM", pub)]
+impl Debug for MainMenuState {
+	fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+		match self {
+			MainMenuState::Idle => write!(f, "Idle"),
+			MainMenuState::LoadingSession(SaveFile { name, .. }) => {
+				write!(f, "LoadingSession(save: {name})")
+			}
+			MainMenuState::SettingsMenu => write!(f, "SettingsMenu"),
+		}
+	}
+}
+
 impl GameManager {
-	pub fn main_menu_register_signals(gm_owner_ref: Ref<Node>, main_menu_owner: TRef<Control>) {
-		main_menu_owner.connect(SIGNAL_NEW_GAME, gm_owner_ref, fn_name(&Self::_main_menu_new_game), 
-				VariantArray::new_shared(), Object::CONNECT_DEFERRED)
-			.log_if_err();
-		main_menu_owner.connect(SIGNAL_LOAD_GAME, gm_owner_ref, fn_name(&Self::_main_menu_load_game), 
-				VariantArray::new_shared(), Object::CONNECT_DEFERRED)
-			.log_if_err();
-		main_menu_owner.connect(SIGNAL_DELETE_SAVE, gm_owner_ref, fn_name(&Self::_main_menu_delete_save), 
-				VariantArray::new_shared(), Object::CONNECT_DEFERRED)
-			.log_if_err();
-		main_menu_owner.connect(SIGNAL_OVERWRITE_SAVE_AND_START, gm_owner_ref, fn_name(&Self::_main_menu_overwrite_save_and_start), 
-				VariantArray::new_shared(), Object::CONNECT_DEFERRED)
-			.log_if_err();
-		main_menu_owner.connect(SIGNAL_OPEN_SETTINGS_MENU, gm_owner_ref, fn_name(&Self::_main_menu_open_settings_menu), 
-				VariantArray::new_shared(), Object::CONNECT_DEFERRED)
-			.log_if_err();
+	pub(super) fn load_main_menu(&mut self) {
+		let resource = ResourceLoader::singleton()
+			.load_ex("res://Core/Main Menu/scene_main-menu.tscn")
+			.type_hint("PackedScene")
+			.cache_mode(CacheMode::REUSE)
+			.done()
+			.expect("Failed to load scene_main-menu.tscn")
+			.cast::<PackedScene>();
+
+		let mut main_menu = resource.instantiate_as::<MainMenuController>();
+		self.base_mut().add_child(&main_menu);
+
+		main_menu
+			.bind_mut()
+			.create_and_assign_load_buttons(self.save_files.get_saves().keys().cloned());
+
+		self.connect_with_deferred(
+			&main_menu,
+			MainMenuController::SIGNAL_NEW_GAME,
+			|this, args| {
+				let Some(save_name) = args.first().and_then(|arg| arg.try_to::<String>().ok())
+				else {
+					return godot_error!("`NEW_GAME` signal did not provide save name argument")
+				};
+
+				let GameState::MainMenu(main_menu, MainMenuState::Idle) = &this.state
+				else {
+					godot_warn!("Cannot start new game when state is: {:?}.", this.state);
+					return;
+				};
+
+				let save = SaveFile::new(save_name);
+				this.save_files.add_save(save.clone());
+				this.state =
+					GameState::MainMenu(main_menu.clone(), MainMenuState::LoadingSession(save));
+				this.fade_then_load_session();
+			},
+		);
+
+		self.connect_with_deferred(
+			&main_menu,
+			MainMenuController::SIGNAL_LOAD_GAME,
+			|this, args| {
+				let Some(save_name) = args.first().and_then(|arg| arg.try_to::<String>().ok())
+				else {
+					return godot_error!("`LOAD_GAME` signal did not provide save name argument")
+				};
+
+				let GameState::MainMenu(main_menu, MainMenuState::Idle) = &this.state
+				else {
+					godot_warn!(
+						"Cannot load save with name `{save_name}` when state is: {:?}.",
+						this.state
+					);
+					return;
+				};
+
+				if let Some(save) = this.save_files.get_save(&save_name) {
+					this.state = GameState::MainMenu(
+						main_menu.clone(),
+						MainMenuState::LoadingSession(save.clone()),
+					);
+					this.fade_then_load_session();
+				} else {
+					godot_warn!(
+						"Cannot load save with name `{save_name}` because it does not exist."
+					);
+					this.state = GameState::MainMenu(main_menu.clone(), MainMenuState::Idle);
+				}
+			},
+		);
+
+		self.connect_with_deferred(
+			&main_menu,
+			MainMenuController::SIGNAL_DELETE_SAVE,
+			|this, args| {
+				let Some(save_name) = args.first().and_then(|arg| arg.try_to::<String>().ok())
+				else {
+					return godot_error!("`DELETE_SAVE` signal did not provide save name argument")
+				};
+
+				match &mut this.state {
+					GameState::MainMenu(main_menu, MainMenuState::Idle) => {
+						this.save_files.delete_save(&save_name);
+						main_menu.bind_mut().create_and_assign_load_buttons(
+							this.save_files.get_saves().keys().cloned(),
+						);
+					}
+					invalid => {
+						godot_error!(
+							"Cannot delete save with name `{save_name}` when state is: {invalid:?}"
+						);
+					}
+				}
+			},
+		);
+
+		self.connect_with_deferred(
+			&main_menu,
+			MainMenuController::SIGNAL_OVERWRITE_SAVE_AND_START,
+			|this, args| {
+				let Some(save_name) = args.first().and_then(|arg| arg.try_to::<String>().ok())
+				else {
+					return godot_error!(
+						"`OVERWRITE_SAVE_AND_START` signal did not provide save name argument"
+					)
+				};
+
+				let GameState::MainMenu(main_menu, MainMenuState::Idle) = &this.state
+				else {
+					godot_warn!(
+						"Cannot overwrite save with name `{save_name}` when state is: {:?}.",
+						this.state
+					);
+					return;
+				};
+
+				let save = SaveFile::new(save_name.to_string());
+				this.save_files.overwrite_save(save.clone());
+				this.state =
+					GameState::MainMenu(main_menu.clone(), MainMenuState::LoadingSession(save));
+				this.fade_then_load_session();
+			},
+		);
+
+		self.connect_with_deferred(
+			&main_menu,
+			MainMenuController::SIGNAL_OPEN_SETTINGS_MENU,
+			|this, _| {
+				let GameState::MainMenu(main_menu, MainMenuState::Idle) = &this.state
+				else {
+					godot_warn!("Cannot open Settings Menu when state is: {:?}.", this.state);
+					return;
+				};
+
+				this.state = GameState::MainMenu(main_menu.clone(), MainMenuState::SettingsMenu);
+				this.open_settings_menu();
+			},
+		);
+
+		self.state = GameState::MainMenu(main_menu, MainMenuState::Idle);
 	}
 
-	fn fade_then_load_session(&mut self, owner: &Node) {
-		let owner_ref = unsafe { owner.assume_shared() };
+	fn fade_then_load_session(&mut self) {
+		self.session_load_sound.play();
 
-		self.session_load_sound
-		    .unwrap_manual()
-		    .play(0.0);
-
-		let fade_screen = self.fade_screen.unwrap_manual();
-		fade_screen.set_modulate(Color { r: 1.0, g: 1.0, b: 1.0, a: 0.0 });
+		let mut fade_screen = self.fade_screen.clone();
 		fade_screen.show();
-		
+
 		fade_screen
 			.do_fade(1.0, 2.0)
-			.method_when_finished(&owner_ref, fn_name(&Self::_main_menu_load_session_fade_completed), vec![])
-			.register()
-			.log_if_err();
-	}
+			.starting_at(0.0)
+			.on_finish(
+				|| todo!(), /*
+							{
+							let mut self_gd = self.to_gd();
+							move || {
 
-	#[method]
-	fn _main_menu_load_session_fade_completed(&mut self) {
-		let (main_menu, _save) =
-			match std::mem::take(&mut self.state) {
-				GameState::MainMenu(main_menu,
-					MainMenuState::LoadingSession { save }) => (main_menu, save),
-				other_state => {
-					godot_error!("{}():\n Error: Load session fade completed, but MainMenu state is: {other_state:?}.",
-						fn_name(&Self::_main_menu_overwrite_save_and_start));
-					self.state = other_state;
-					return;
-				}
-			};
 
-		let main_menu_inst = main_menu.unwrap_inst();
-		let main_menu_base = main_menu_inst.base();
-		let main_menu_parent_option = main_menu_base.get_parent();
-		main_menu_parent_option
-			.unwrap_manual()
-			.remove_child(main_menu_base);
+								let this = &mut *self_gd.bind_mut();
+								let GameState::MainMenu(mut main_menu, MainMenuState::LoadingSession(save)) = this.state
+								else {
+									godot_error!("Load session fade completed but MainMenu state is: {:?}.", this.state);
+									return;
+								};
 
-		main_menu_base.queue_free();
-		drop(main_menu_inst);
-		// todo! set new state, start session
-	}
-
-	#[method]
-	fn _main_menu_new_game(&mut self, #[base] owner: &Node, save_name: GodotString) {
-		let main_menu =
-			match std::mem::take(&mut self.state) {
-				GameState::MainMenu(inner_main_menu, MainMenuState::Idle) => inner_main_menu,
-				other_state => {
-					godot_warn!("{}():\n Cannot start new game from MainMenu when state is: {other_state:?}.",
-						fn_name(&Self::_main_menu_new_game));
-					self.state = other_state;
-					return;
-				}
-			};
-		
-		let save = SaveFile::new(save_name.to_string());
-		self.save_files.add_save(save.clone());
-		
-		self.state = GameState::MainMenu(main_menu, MainMenuState::LoadingSession { save });
-		self.fade_then_load_session(owner);
-	}
-
-	#[method]
-	fn _main_menu_overwrite_save_and_start(&mut self, #[base] owner: &Node, save_name: GodotString) {
-		let main_menu =
-			match std::mem::take(&mut self.state) {
-				GameState::MainMenu(inner_main_menu, MainMenuState::Idle) => inner_main_menu,
-				other_state => {
-					godot_warn!("{}():\n Cannot overwrite save with name `{save_name}` from MainMenu when state is: {other_state:?}.",
-						fn_name(&Self::_main_menu_overwrite_save_and_start));
-					self.state = other_state;
-					return;
-				}
-			};
-
-		let save = SaveFile::new(save_name.to_string());
-		self.save_files.overwrite_save(save.clone());
-		
-		self.state = GameState::MainMenu(main_menu, MainMenuState::LoadingSession { save });
-		self.fade_then_load_session(owner);
-	}
-
-	#[method]
-	fn _main_menu_load_game(&mut self, #[base] owner: &Node, save_name: GodotString) {
-		let main_menu =
-			match std::mem::take(&mut self.state) {
-				GameState::MainMenu(inner_main_menu, MainMenuState::Idle) => inner_main_menu,
-				other_state => {
-					godot_warn!("{}():\n Cannot load save with name `{save_name}` from MainMenu when state is: {other_state:?}.",
-						fn_name(&Self::_main_menu_overwrite_save_and_start));
-					self.state = other_state;
-					return;
-				}
-			};
-		
-		let Some(save) = self.save_files.get_save(save_name.to_string().as_str()).cloned()
-			else {
-				godot_warn!("{}():\n Cannot load save with name `{save_name}` from MainMenu because it does not exist.",
-					full_fn_name(&Self::_main_menu_load_game));
-				self.state = GameState::MainMenu(main_menu, MainMenuState::Idle);
-				return;
-			};
-		
-		self.state = GameState::MainMenu(main_menu, MainMenuState::LoadingSession { save });
-		self.fade_then_load_session(owner);
-	}
-
-	#[method]
-	fn _main_menu_delete_save(&mut self, save_name: GodotString) {
-		if let GameState::MainMenu(instance, MainMenuState::Idle) = &self.state {
-			self.save_files.delete_save(save_name.to_string().as_str());
-			instance.touch_assert_safe_mut(|main_menu, main_menu_owner| {
-				main_menu.create_and_assign_load_buttons(main_menu_owner, self.save_files.get_saves().keys().map(String::as_str));
-			});
-		} else {
-			godot_error!("{}():\n Cannot delete save with name `{save_name}` from MainMenu when state is: {:?}", 
-				fn_name(&Self::_main_menu_delete_save), self.state);
-		};
-	}
-
-	#[method]
-	fn _main_menu_open_settings_menu(&mut self) {
-		let main_menu =
-			match std::mem::take(&mut self.state) {
-				GameState::MainMenu(inner_main_menu, MainMenuState::Idle) => inner_main_menu,
-				other_state => {
-					godot_warn!("{}():\n\
-					Cannot open Settings Menu from MainMenu when state is: {other_state:?}.", 
-					fn_name(&Self::_main_menu_open_settings_menu));
-					self.state = other_state;
-					return;
-				}
-			};
-		
-		self.state = GameState::MainMenu(main_menu, MainMenuState::SettingsMenu);
-		self.open_settings_menu();
+								this.base_mut().remove_child(&main_menu);
+								main_menu.queue_free();
+							}
+							}
+							*/
+			)
+			.register();
 	}
 }

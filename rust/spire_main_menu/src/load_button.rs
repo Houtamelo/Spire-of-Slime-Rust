@@ -1,77 +1,60 @@
 use crate::internal_prelude::*;
 
-pub(super) const SIGNAL_LOAD: &str = "load_save";
-pub(super) const SIGNAL_DELETE: &str = "delete_save_confirmed";
-
-#[extends(Control)]
-#[register_with(Self::register)]
-#[derive(Debug)]
+#[derive(GodotClass)]
+#[class(init, base = Control)]
 pub struct LoadButton {
-	#[export_path] button_load  : Option<Ref<Button>>,
-	#[export_path] button_delete: Option<Ref<Button>>,
-	#[export_path] button_confirm_delete: Option<Ref<Button>>,
-	#[export_path] label: Option<Ref<Label>>,
-	pub(super) save_name: Option<String>,
+	base: Base<Control>,
+	#[init(node = "button_confirm_delete")]
+	button_confirm_delete: OnReady<Gd<Button>>,
+	#[init(node = "label")]
+	label: OnReady<Gd<Label>>,
+	save_name: String,
 }
 
-#[methods]
 impl LoadButton {
-	fn register(builder: &ClassBuilder<Self>) {
-		builder.signal(SIGNAL_LOAD)
-			.with_param("save_name", VariantType::GodotString)
-			.done();
-		builder.signal(SIGNAL_DELETE)
-			.with_param("save_name", VariantType::GodotString)
-			.done();
-	}
+	pub fn get_save_name(&self) -> &str { &self.save_name }
 
-	#[method]
-	fn _ready(&mut self, #[base] owner: &Control) {
-		self.grab_nodes_by_path(owner);
-		
-		let owner_ref = unsafe { owner.assume_shared() };
-		self.button_load.unwrap_manual()
-			.connect("pressed", owner_ref, fn_name(&Self::_button_pressed_load), 
-				VariantArray::new_shared(), Object::CONNECT_DEFERRED)
-			.log_if_err();
-		self.button_delete.unwrap_manual()
-			.connect("pressed", owner_ref, fn_name(&Self::_button_pressed_delete), 
-				VariantArray::new_shared(), Object::CONNECT_DEFERRED)
-			.log_if_err();
-		self.button_confirm_delete.unwrap_manual()
-			.connect("pressed", owner_ref, fn_name(&Self::_button_pressed_confirm_delete), 
-				VariantArray::new_shared(), Object::CONNECT_DEFERRED)
-			.log_if_err();
+	pub fn set_save_name(&mut self, save_name: impl Into<String>) {
+		self.save_name = save_name.into();
+		self.label.set_text(&self.save_name);
 	}
+}
 
-	#[method]
-	fn _button_pressed_load(&self, #[base] owner: &Control) {
-		if let Some(save_name) = &self.save_name {
-			owner.emit_signal(SIGNAL_LOAD, &[save_name.to_variant()]);
-		} else {
-			godot_warn!("{}():\n\
-			 LoadButton `{}` was pressed, but no save was assigned to it.", 
-				fn_name(&Self::_button_pressed_load), owner.name());
-		};
-	}
+#[godot_api]
+impl IControl for LoadButton {
+	fn ready(&mut self) {
+		self.connect_child("button_load", "pressed", |this, _| {
+			let save = this.save_name.to_variant();
+			this.base_mut()
+				.emit_signal(Self::SIGNAL_LOAD, &[save])
+				.log_if_err();
+		})
+		.log_if_err();
 
-	#[method]
-	fn _button_pressed_delete(&self) {
-		self.button_confirm_delete
-			.unwrap_manual()
-			.show();
-	}
+		self.connect_child("button_delete", "pressed", |this, _| {
+			this.button_confirm_delete.show();
+		})
+		.log_if_err();
 
-	#[method]
-	fn _button_pressed_confirm_delete(&self, #[base] owner: &Control) {
-		owner.hide();
-		
-		if let Some(save_name) = &self.save_name {
-			owner.emit_signal(SIGNAL_DELETE, &[save_name.to_variant()]);
-		} else {
-			godot_warn!("{}():\n\
-				DeleteSaveButton `{}` was pressed, but no save was assigned to it.", 
-				fn_name(&Self::_button_pressed_confirm_delete), owner.name());
-		}
+		self.connect_child("button_confirm_delete", "pressed", |this, _| {
+			this.button_confirm_delete.hide();
+			let save = this.save_name.to_variant();
+			this.base_mut()
+				.emit_signal(Self::SIGNAL_DELETE, &[save])
+				.log_if_err();
+		})
+		.log_if_err();
 	}
+}
+
+#[godot_api]
+impl LoadButton {
+	pub const SIGNAL_LOAD: &'static str = "load_save";
+	pub const SIGNAL_DELETE: &'static str = "delete_save_confirmed";
+
+	#[signal]
+	fn load(save_name: GString) {}
+
+	#[signal]
+	fn delete(save_name: GString) {}
 }

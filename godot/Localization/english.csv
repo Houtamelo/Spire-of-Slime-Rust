@@ -133,50 +133,50 @@ startscreen_pressanybutton,Press any button to continue.
 startscreen_thankyousupporters,Thank you to all the supporters who have helped making this game a reality!
 startscreen_warning,WARNING
 stat_accuracy,Accuracy
-stat_tooltip_accuracy,Chance for skills cast by this character to succesfully hit enemies.\nFinal chance to hit is calculated by the formula: caster_accuracy + skill_accuracy - target_dodge.
+stat_tooltip_accuracy,Chance for skills cast by this actors to succesfully hit enemies.\nFinal chance to hit is calculated by the formula: caster_accuracy + skill_accuracy - target_dodge.
 stat_basedamage,Base Damage
 stat_tooltip_basedamage,"Base value for calculating damage dealt with skills that <b>can</b> deal damage.\nMin: 0; Max: 2^31\nA skill's damage is calculated by the formula: Damage = base_damage * caster_power * skill_power * (1 - target_resilience)."
 stat_criticalchance,Critical Chance
-stat_tooltip_criticalchance,"Chance to score critical hits, which applies the following modifiers to the skill cast:\n<line-indent=10%>Damage dealt is set to 1.5x of the character's upper damage threshold.\nEffects have a +50 chance to be applied.\nEffects are stronger or last longer.</line-indent>\n\nFinal chance to crit is calculated by the formula: caster_critical.chance + skill_critical.chance."
+stat_tooltip_criticalchance,"Chance to score critical hits, which applies the following modifiers to the skill cast:\n<line-indent=10%>Damage dealt is set to 1.5x of the actors's upper damage threshold.\nEffects have a +50 chance to be applied.\nEffects are stronger or last longer.</line-indent>\n\nFinal chance to crit is calculated by the formula: caster_critical.chance + skill_critical.chance."
 stat_damagelower,Damage Lower
 stat_damageupper,Damage Upper
 stat_dodge,Dodge
 stat_tooltip_dodge,"Flat reduction(or increase, if negative) to the chance of being hit by skills that enemies cast.\nThere are exceptions, some skills cannot be dodged.\nFinal chance to hit is calculated by the formula: caster_accuracy + skill_accuracy - target_dodge."
 stat_debuffresistance,Debuff Resistance
-stat_tooltip_debuffresistance,"Flat reduction(or increase, if negative) to the chance of enemies applying Debuffs to this character.\nCannot resist Debuffs applied by allies or self.\nFinal chance for a Debuff to be applied is calculated by the formula: caster_debuff.apply.chance + skill_debuff.apply.chance - target_debuff.resistance."
-stat_tooltip_debuffapplychance,"Flat increase(or decrease, if negative) to the chance of this character applying Debuffs on enemies.\nApplying Debuffs on allies or self always has 100 chance.\nFinal chance for a Debuff to be applied is calculated by the formula: caster_debuff.apply.chance + skill_debuff.apply.chance - target_debuff.resistance."
+stat_tooltip_debuffresistance,"Flat reduction(or increase, if negative) to the chance of enemies applying Debuffs to this actors.\nCannot resist Debuffs applied by allies or self.\nFinal chance for a Debuff to be applied is calculated by the formula: caster_debuff.apply.chance + skill_debuff.apply.chance - target_debuff.resistance."
+stat_tooltip_debuffapplychance,"Flat increase(or decrease, if negative) to the chance of this actors applying Debuffs on enemies.\nApplying Debuffs on allies or self always has 100 chance.\nFinal chance for a Debuff to be applied is calculated by the formula: caster_debuff.apply.chance + skill_debuff.apply.chance - target_debuff.resistance."
 stat_moveresistance,Move Resistance
-stat_tooltip_moveresistance,"Flat reduction(or increase, if negative) to the chance of enemies changing the Position of this character.\nCannot resist moving through skills cast by allies or self.\nFinal chance for success is calculated by the formula: caster_move.apply.chance + skill_move.apply.chance - target_move.resistance."
-stat_tooltip_moveapplychance,"Flat increase(or decrease, if negative) to the chance of this character changing the Position of enemies.\Moving through skills cast by allies or self always has 100 chance.\nFinal chance for success is calculated by the formula: caster_move.apply.chance + skill_move.apply.chance - target_move.resistance."
+stat_tooltip_moveresistance,"Flat reduction(or increase, if negative) to the chance of enemies changing the Position of this actors.\nCannot resist moving through skills cast by allies or self.\nFinal chance for success is calculated by the formula: caster_move.apply.chance + skill_move.apply.chance - target_move.resistance."
+stat_tooltip_moveapplychance,"Flat increase(or decrease, if negative) to the chance of this actors changing the Position of enemies.\Moving through skills cast by allies or self always has 100 chance.\nFinal chance for success is calculated by the formula: caster_move.apply.chance + skill_move.apply.chance - target_move.resistance."
 stat_poisonresistance,Poison Resistance
-stat_tooltip_poisonresistance,"Flat reduction(or increase, if negative) to the chance of enemies applying Poison on this character.\nCannot resist Poison applied by allies or self.\nFinal chance for a Poison to be applied is calculated by the formula: caster_poison.apply.chance + skill_poison.apply.chance - target_poison.resistance."
+stat_tooltip_poisonresistance,"Flat reduction(or increase, if negative) to the chance of enemies applying Poison on this actors.\nCannot resist Poison applied by allies or self.\nFinal chance for a Poison to be applied is calculated by the formula: caster_poison.apply.chance + skill_poison.apply.chance - target_poison.resistance."
 stat_poisonapplychance,Poison Apply Chance
-stat_tooltip_poisonapplychance,"Flat increase(or decrease, if negative) to the chance of this character applying Poison on enemies.\nApplying Poison on allies or self always has 100 chance.\nFinal chance for a Poison to be applied is calculated by the formula: caster_poison.apply.chance + skill_poison.apply.chance - target_poison.resistance."
+stat_tooltip_poisonapplychance,"Flat increase(or decrease, if negative) to the chance of this actors applying Poison on enemies.\nApplying Poison on allies or self always has 100 chance.\nFinal chance for a Poison to be applied is calculated by the formula: caster_poison.apply.chance + skill_poison.apply.chance - target_poison.resistance."
 stat_arousalapplychance,Arousal Apply Chance
-stat_tooltip_arousalapplychance,"Flat increase(or decrease, if negative) to the chance of this character applying Arousal on enemies.\nApplying Arousal on allies or self always has 100 chance.\nFinal chance for Arousal to be applied is calculated by the formula: caster_arousal.apply.chance + skill_arousal.apply.chance."
+stat_tooltip_arousalapplychance,"Flat increase(or decrease, if negative) to the chance of this actors applying Arousal on enemies.\nApplying Arousal on allies or self always has 100 chance.\nFinal chance for Arousal to be applied is calculated by the formula: caster_arousal.apply.chance + skill_arousal.apply.chance."
 stat_orgasmlimit,Orgasm Limit
-stat_tooltip_orgasmlimit,"The maximum number of times the character can orgasm before being unable to continue fighting.\nCan be restored by resting at campfires.\nIf the party wins despite a character reaching their limit, that character's orgasm count will be reduced by 1. (Thus always allowing them to participate on the next fight.)"
+stat_tooltip_orgasmlimit,"The maximum number of times the actors can orgasm before being unable to continue fighting.\nCan be restored by resting at campfires.\nIf the party wins despite a actors reaching their limit, that actors's orgasm count will be reduced by 1. (Thus always allowing them to participate on the next fight.)"
 stat_orgasmcount,Orgasm count
-stat_tooltip_orgasmcount,"How many times the character has orgasmed, reaching the limit will render the character unable to fight.\nCan be reduced by resting at campfires.\nIf the party wins despite a character reaching their limit, that character's orgasm count will be reduced by 1. (Thus allowing them to always participate on the next fight)"
+stat_tooltip_orgasmcount,"How many times the actors has orgasmed, reaching the limit will render the actors unable to fight.\nCan be reduced by resting at campfires.\nIf the party wins despite a actors reaching their limit, that actors's orgasm count will be reduced by 1. (Thus allowing them to always participate on the next fight)"
 stat_composure,Composure
-stat_tooltip_composure,"Defense against Temptation effects, reduces Temptation received from enemies, will completely deny Temptations with Power less than this character's Composure. An enemy skill's Temptation Power increases based on this character's lust. \nMin: -100; Max: 300"
+stat_tooltip_composure,"Defense against Temptation effects, reduces Temptation received from enemies, will completely deny Temptations with Power less than this actors's Composure. An enemy skill's Temptation Power increases based on this actors's lust. \nMin: -100; Max: 300"
 stat_experience,Experience
 stat_tooltip_experience,"Knowledge, Wisdom, anything that can be remembered."
 stat_lust,Lust
-stat_tooltip_lust,"How horny the character is, affects Temptation received by skills that increase Temptation.\nA character will orgasm if they reach 200 lust while having sex."
+stat_tooltip_lust,"How horny the actors is, affects Temptation received by skills that increase Temptation.\nA actors will orgasm if they reach 200 lust while having sex."
 stat_perkpoints,Perk points
 stat_primarypoints,Primary points
 stat_secondarypoints,Secondary points
 stat_speed,Speed
-stat_tooltip_speed,How fast this character can Charge and Recover from skills. The Charge and Recovery times displayed on the skill's tooltip assumes a normal speed of 100.\nMin: 20; Max: 300
+stat_tooltip_speed,How fast this actors can Charge and Recover from skills. The Charge and Recovery times displayed on the skill's tooltip assumes a normal speed of 100.\nMin: 20; Max: 300
 stat_stamina,Stamina
-stat_tooltip_stamina,"How much damage this character can receive before being downed. This amount is restored after each combat.\nWhen a character is Downed they will be vulnerable, receiving a -40 debuff to Composure and being unable to cast skills. Downed characters will get back up after a while."
+stat_tooltip_stamina,"How much damage this actors can receive before being downed. This amount is restored after each combat.\nWhen a actors is Downed they will be vulnerable, receiving a -40 debuff to Composure and being unable to cast skills. Downed characters will get back up after a while."
 stat_resilience,Resilience
 stat_tooltip_resilience,"Percentage reduction(or increase, if negative) to Stamina damage received from skills cast by enemies.\nMin: -100; Max: 100"
 stat_stunmitigation,Stun Mitigation
-stat_tooltip_stunmitigation,"Defense against Stun effects, reduces the duration and will completely deny Stuns with Power less than this character's mitigation.\nMin: -100; Max: 300\n A Stun with Power 100 against a character with 0 Mitigation will result in 1 second of Stun. The formula is not linear and it favors Mitigation, 100 Power vs 50 Mitigation ~= 0.4s of Stun."
+stat_tooltip_stunmitigation,"Defense against Stun effects, reduces the duration and will completely deny Stuns with Power less than this actors's mitigation.\nMin: -100; Max: 300\n A Stun with Power 100 against a actors with 0 Mitigation will result in 1 second of Stun. The formula is not linear and it favors Mitigation, 100 Power vs 50 Mitigation ~= 0.4s of Stun."
 stat_temptation,Temptation
-stat_tooltip_temptation,How close this character is of <b>succumbing</b> to Desire.\nBeing Tempted at 100 will lead to [REDACTED].
+stat_tooltip_temptation,How close this actors is of <b>succumbing</b> to Desire.\nBeing Tempted at 100 will lead to [REDACTED].
 stat_corruption,Corruption
 stat_tooltip_corruption,[REDACTED]
 visualnovel_auto,Auto

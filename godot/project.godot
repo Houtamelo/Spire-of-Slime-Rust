@@ -6,13 +6,14 @@
 ;   [section] ; section goes between []
 ;   param=value ; assign values to parameters
 
-config_version=4
+config_version=5
 
 [application]
 
 config/name="Spire of Slime"
 run/main_scene="res://Core/Combat/scene_combat.tscn"
 config/use_hidden_project_data_directory=false
+config/features=PackedStringArray("4.3")
 
 [audio]
 
@@ -25,17 +26,20 @@ tweens_controller="*res://Core/Shared/TweensController.gdns"
 
 [debug]
 
-settings/fps/force_fps=144
 settings/stdout/verbose_stdout=true
+settings/fps/force_fps=144
 
 [display]
 
+window/stretch/mode="viewport"
 window/size/width=1920
 window/size/height=1080
 window/size/test_width=1280
 window/size/test_height=720
-window/stretch/mode="viewport"
-window/stretch/aspect="keep"
+
+[dotnet]
+
+project/assembly_name="Spire of Slime"
 
 [editor]
 
@@ -49,14 +53,14 @@ common/drop_mouse_on_gui_input_disabled=true
 
 open_settings-menu={
 "deadzone": 0.5,
-"events": [ Object(InputEventKey,"resource_local_to_scene":false,"resource_name":"","device":0,"alt":false,"shift":false,"control":false,"meta":false,"command":false,"pressed":false,"scancode":16777217,"physical_scancode":0,"unicode":0,"echo":false,"script":null)
-, Object(InputEventKey,"resource_local_to_scene":false,"resource_name":"","device":0,"alt":false,"shift":false,"control":false,"meta":false,"command":false,"pressed":false,"scancode":16777220,"physical_scancode":0,"unicode":0,"echo":false,"script":null)
- ]
+"events": [Object(InputEventKey,"resource_local_to_scene":false,"resource_name":"","device":0,"window_id":0,"alt_pressed":false,"shift_pressed":false,"ctrl_pressed":false,"meta_pressed":false,"pressed":false,"keycode":0,"physical_keycode":0,"key_label":0,"unicode":0,"location":0,"echo":false,"script":null)
+, Object(InputEventKey,"resource_local_to_scene":false,"resource_name":"","device":0,"window_id":0,"alt_pressed":false,"shift_pressed":false,"ctrl_pressed":false,"meta_pressed":false,"pressed":false,"keycode":0,"physical_keycode":0,"key_label":0,"unicode":0,"location":0,"echo":false,"script":null)
+]
 }
 
 [locale]
 
-translations=PoolStringArray(  )
+translations=PackedStringArray()
 
 [node]
 

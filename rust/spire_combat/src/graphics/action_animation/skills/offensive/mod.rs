@@ -1,56 +1,65 @@
-#[allow(unused_imports)]
-use crate::prelude::*;
-use crate::graphics::action_animation::character_movement::CharacterMovement;
-use crate::graphics::action_animation::character_position::OffensivePadding;
-use crate::graphics::action_animation::skills::anim_utils::*;
+use super::*;
 
-#[enum_delegate::delegate(for(CharacterVariant))]
-pub trait AttackedAnim { // DO NOT RENAME `_target` TO `target`, IT BREAKS THE ENUM_DELEGATE MACRO
-	fn anim_hitted(&self, _target: CharacterNode, _attacker: CharacterNode) -> Sequence {
-		anim_std_hitted(_target)
+pub trait AttackedAnim {
+	fn anim_hitted(&self, target: &ActorNode, _attacker: &ActorNode) -> SpireTween<Sequence> {
+		anim_std_hitted(target)
 	}
 
-	fn anim_killed(&self, _target: CharacterNode, _attacker: CharacterNode) -> Sequence {
-		anim_std_killed(_target)
+	fn anim_killed(&self, target: &ActorNode, _attacker: &ActorNode) -> SpireTween<Sequence> {
+		anim_std_killed(target)
 	}
 
-	fn anim_dodged(&self, _target: CharacterNode, _attacker: CharacterNode) -> Sequence {
-		anim_std_dodged(_target)
+	fn anim_dodged(&self, target: &ActorNode, _attacker: &ActorNode) -> SpireTween<Sequence> {
+		anim_std_dodged(target)
 	}
 
 	fn anim_std_full_counter(
-		&self, 
-		_target: CharacterNode, 
-		attacker: CharacterNode, 
-		before_counter: BeforeCounter, 
-		counter_result: CounterResult
-	) -> Sequence {
-		anim_std_full_counter(_target, attacker, before_counter, counter_result)
+		&self,
+		target: &ActorNode,
+		attacker: &ActorNode,
+		attack: AttackResult,
+		counter: AttackResult,
+	) -> SpireTween<Sequence> {
+		anim_std_full_counter(target, attacker, attack, counter)
 	}
 
 	fn anim_counter_only(
 		&self,
-		_target: CharacterNode, 
-		attacker: CharacterNode, 
-		result: CounterResult
-	) -> Sequence {
-		anim_std_counter_only(_target, attacker, result)
+		target: &ActorNode,
+		attacker: &ActorNode,
+		counter: AttackResult,
+	) -> SpireTween<Sequence> {
+		anim_std_counter_only(target, attacker, counter)
 	}
 
-	fn anim_by_result(&self, _target: CharacterNode, attacker: CharacterNode, result: AttackResult) -> Sequence {
-		match result {
-			AttackResult::Hitted => self.anim_hitted(_target, attacker),
-			AttackResult::Killed => self.anim_killed(_target, attacker),
-			AttackResult::Dodged => self.anim_dodged(_target, attacker),
-			AttackResult::Counter(before_counter, counter_result) =>
-				self.anim_std_full_counter(_target, attacker, before_counter, counter_result),
+	fn anim_by_result(
+		&self,
+		target: &ActorNode,
+		attacker: &ActorNode,
+		result: OffensiveResult,
+	) -> SpireTween<Sequence> {
+		use AttackResult::*;
+		match (result.attack, result.counter) {
+			(Hit { lethal: true }, None) => self.anim_killed(target, attacker),
+			(Hit { lethal: false }, None) => self.anim_hitted(target, attacker),
+			(Miss, None) => self.anim_dodged(target, attacker),
+			(HitGrappler { .. }, _) => todo!(),
+			(attack @ Hit { .. }, Some(counter)) => {
+				self.anim_std_full_counter(target, attacker, attack, counter)
+			}
+			(Miss, Some(counter)) => self.anim_counter_only(target, attacker, counter),
 		}
 	}
 }
 
 pub trait OffensiveAnim {
-	fn offensive_anim(&self, caster: CharacterNode, enemies: Vec<(CharacterNode, AttackResult)>) -> Sequence;
-	fn reset(&self, caster: CharacterNode);
+	fn offensive_anim(
+		&self,
+		caster: &mut ActorNode,
+		enemies: &mut [(ActorNode, OffensiveResult)],
+	) -> SpireTween<Sequence>;
+
+	fn reset(&self, caster: &mut ActorNode);
 	fn padding(&self) -> OffensivePadding;
 	fn caster_movement(&self) -> CharacterMovement;
 	fn enemies_movement(&self) -> CharacterMovement;
@@ -58,158 +67,158 @@ pub trait OffensiveAnim {
 
 #[allow(unused)]
 pub struct OffensiveStruct {
-	anim: fn(CharacterNode, Vec<(CharacterNode, AttackResult)>) -> Sequence,
-	reset: fn(CharacterNode),
+	anim: fn(ActorNode, Vec<(ActorNode, OffensiveResult)>) -> Sequence,
+	reset: fn(ActorNode),
 	padding: OffensivePadding,
 	caster_movement: CharacterMovement,
 	enemies_movement: CharacterMovement,
 }
 
+impl AttackedAnim for NpcName {}
+impl AttackedAnim for GirlName {}
 
-impl AttackedAnim for NPCVariant {}
-impl AttackedAnim for GirlVariant {}
-
-pub fn play_attackeds_anim(attacker: CharacterNode, targets: &[(CharacterNode, AttackResult)]) {
-	for (target, result) in targets {
-		target.name()
-		      .anim_by_result(*target, attacker, *result)
-		      .register()
-		      .log_if_err();
+pub fn play_attackeds_anim(attacker: &ActorNode, targets: &[(ActorNode, OffensiveResult)]) {
+	for (actr, result) in targets {
+		actr.ident()
+			.anim_by_result(actr, attacker, *result)
+			.register();
 	}
 }
 
-#[derive(Debug, Copy, Clone)]
-pub enum AttackResult {
-	Hitted,
-	Killed,
-	Dodged,
-	Counter(BeforeCounter, CounterResult),
-}
+pub fn anim_std_hitted(target: &ActorNode) -> SpireTween<Sequence> {
+	let mut seq = SpireSequence::new().bound_to(&target.node());
 
-#[derive(Debug, Copy, Clone)]
-pub enum BeforeCounter {
-	Hitted,
-	Dodged,
-}
-
-#[derive(Debug, Copy, Clone)]
-pub enum CounterResult {
-	Hitted,
-	Dodged,
-	Killed,
-}
-
-impl CounterResult {
-	pub fn as_attack_result(&self) -> AttackResult {
-		match self {
-			CounterResult::Hitted => AttackResult::Hitted,
-			CounterResult::Dodged => AttackResult::Dodged,
-			CounterResult::Killed => AttackResult::Killed,
-		}
-	}
-}
-
-pub fn anim_std_hitted(target: CharacterNode) -> Sequence {
-	let mut seq = Sequence::new().bound_to(&target.node());
-	
-	seq.append_call(move || {
-		target.node().touch_assert_sane(|node| {
+	seq.append_call({
+		let targ = target.clone();
+		move || {
+			let node = &mut targ.node();
 			node_hide(node, "anims/idle");
 			node_show(node, "anims/hitted");
 			node_play_sound(node, "anims/hitted/sound");
-			node_maybe_emit_particles(node, "anims/hitted/particles");
-		});
+			node_maybe_particles(node, "anims/hitted/particles");
+		}
 	});
-	
+
 	seq
 }
 
-pub fn anim_std_killed(target: CharacterNode) -> Sequence {
-	let mut seq = Sequence::new().bound_to(&target.node());
-	
-	seq.append_call(move || {
-		target.node().touch_assert_sane(|node| {
+pub fn anim_std_killed(target: &ActorNode) -> SpireTween<Sequence> {
+	let mut seq = SpireSequence::new().bound_to(&target.node());
+
+	seq.append_call({
+		let targ = target.clone();
+		move || {
+			let node = &mut targ.node();
 			node_hide(node, "anims/idle");
 			node_show(node, "anims/killed");
 			node_play_sound(node, "anims/killed/sound");
-			node_maybe_emit_particles(node, "anims/killed/particles");
-		});
+			node_maybe_particles(node, "anims/killed/particles");
+		}
 	});
-	
-	seq.join(target.node().do_color(Color::from_rgba(0., 0., 0., 0.), 0.).as_speed_based(0.1));
+
+	seq.join(
+		target
+			.node()
+			.do_color(Color::from_rgba(0., 0., 0., 0.), 0.)
+			.as_speed_based(0.1),
+	);
 
 	seq
 }
 
-pub fn anim_std_dodged(target: CharacterNode) -> Sequence {
-	let mut seq = Sequence::new().bound_to(&target.node());
-	
-	seq.append_call(move || {
-		target.node().touch_assert_sane(|node| {
+pub fn anim_std_dodged(target: &ActorNode) -> SpireTween<Sequence> {
+	let mut seq = SpireSequence::new().bound_to(&target.node());
+
+	seq.append_call({
+		let targ = target.clone();
+		move || {
+			let node = &mut targ.node();
 			node_hide(node, "anims/idle");
 			node_show(node, "anims/dodged");
 			node_play_sound(node, "anims/dodged/sound");
-			node_maybe_emit_particles(node, "anims/dodged/particles");
-		});
+			node_maybe_particles(node, "anims/dodged/particles");
+		}
 	});
 
 	seq
 }
 
-pub fn anim_std_full_counter(target: CharacterNode,
-                             attacker: CharacterNode,
-                             before_counter: BeforeCounter,
-                             counter_result: CounterResult)
-                             -> Sequence {
-	let mut seq = Sequence::new().bound_to(&target.node());
-	
-	seq.append_call(move || {
-		target.node().touch_assert_sane(|node| {
-			node_hide(node, "anims/idle");
-			
-			match before_counter {
-				BeforeCounter::Hitted => {
-					node_show(node, "anims/hitted");
-					node_play_sound(node, "anims/hitted/sound");
-					node_maybe_emit_particles(node, "anims/hitted/particles");
+pub fn anim_std_full_counter(
+	target: &ActorNode,
+	attacker: &ActorNode,
+	attack: AttackResult,
+	counter: AttackResult,
+) -> SpireTween<Sequence> {
+	use AttackResult::*;
+
+	let mut seq = SpireSequence::new().bound_to(&target.node());
+
+	seq.append_call({
+		let targ = target.clone();
+		move || {
+			let targ_node = &mut targ.node();
+			node_hide(targ_node, "anims/idle");
+
+			match attack {
+				Hit { lethal: true } => {
+					node_show(targ_node, "anims/killed");
+					node_play_sound(targ_node, "anims/killed/sound");
+					node_maybe_particles(targ_node, "anims/killed/particles");
 				}
-				BeforeCounter::Dodged => {
-					node_show(node, "anims/dodged");
-					node_play_sound(node, "anims/dodged/sound");
-					node_maybe_emit_particles(node, "anims/dodged/particles");
+				Hit { lethal: false } => {
+					node_show(targ_node, "anims/hitted");
+					node_play_sound(targ_node, "anims/hitted/sound");
+					node_maybe_particles(targ_node, "anims/hitted/particles");
 				}
+				Miss => {
+					node_show(targ_node, "anims/dodged");
+					node_play_sound(targ_node, "anims/dodged/sound");
+					node_maybe_particles(targ_node, "anims/dodged/particles");
+				}
+				HitGrappler { .. } => todo!(),
 			}
-		});
+		}
 	});
 
 	seq.append_interval(0.5);
-	
-	seq.append_call(move || {
-		target.name()
-			  .anim_counter_only(target.clone(), attacker.clone(), counter_result)
-			  .register()
-			  .log_if_err();
+
+	seq.append_call({
+		let targ = target.clone();
+		let atta = attacker.clone();
+		move || {
+			targ.ident()
+				.anim_counter_only(&targ, &atta, counter)
+				.register();
+		}
 	});
 
 	seq
 }
 
-pub fn anim_std_counter_only(target: CharacterNode, attacker: CharacterNode, result: CounterResult) -> Sequence {
-	let mut seq = Sequence::new();
-	
-	seq.append_call(move || {
-		target.node().touch_assert_sane(|node| {
-			node_hide(node, "anims/idle");
-			node_show(node, "anims/counter");
-			node_play_sound(node, "anims/counter/sound");
-			node_maybe_emit_particles(node, "anims/counter/particles");
-		});
-		
-		attacker.name()
-				.anim_by_result(attacker.clone(), target.clone(), result.as_attack_result())
-				.register()
-				.log_if_err();
+pub fn anim_std_counter_only(
+	target: &ActorNode,
+	attacker: &ActorNode,
+	counter: AttackResult,
+) -> SpireTween<Sequence> {
+	let mut seq = SpireSequence::new();
+
+	seq.append_call({
+		let targ = target.clone();
+		let atta = attacker.clone();
+		move || {
+			let targ_node = &mut targ.node();
+			node_hide(targ_node, "anims/idle");
+			node_show(targ_node, "anims/counter");
+			node_play_sound(targ_node, "anims/counter/sound");
+			node_maybe_particles(targ_node, "anims/counter/particles");
+
+			let result = OffensiveResult {
+				attack:  counter,
+				counter: None,
+			};
+			atta.ident().anim_by_result(&atta, &targ, result).register();
+		}
 	});
-	
+
 	seq
 }

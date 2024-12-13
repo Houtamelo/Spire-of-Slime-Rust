@@ -2,14 +2,18 @@
 
 importer="mp3"
 type="AudioStreamMP3"
-path="res://import/click.mp3-3f11c6174e06c3f9cdcaa386ea767ca1.mp3str"
+uid="uid://dcqoej8sate2k"
+path="res://godot/imported/click.mp3-3f11c6174e06c3f9cdcaa386ea767ca1.mp3str"
 
 [deps]
 
 source_file="res://Core/Shared/Audio/click.mp3"
-dest_files=[ "res://import/click.mp3-3f11c6174e06c3f9cdcaa386ea767ca1.mp3str" ]
+dest_files=["res://godot/imported/click.mp3-3f11c6174e06c3f9cdcaa386ea767ca1.mp3str"]
 
 [params]
 
 loop=false
 loop_offset=0
+bpm=0
+beat_count=0
+bar_beats=4

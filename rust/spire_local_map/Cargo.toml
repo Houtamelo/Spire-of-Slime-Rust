@@ -7,13 +7,13 @@ edition = "2021"
 combat = { path = "../spire_combat", package = "spire_combat" }
 shared = { path = "../spire_shared", package = "spire_shared" }
 
-gdnative = "0.11.3"
-gdnative_export_node_as_path = "0.1.2"
-util = { package = "houtamelo_utils", version = "2.0" }
-util_gdnative = { package = "houtamelo_utils_gdnative", version = "2.0" }
-serde = { version = "1.0.201", features = ["derive"] }
-comfy-bounded-ints = "0.2"
-rand = "0.8.5"
-rand_xoshiro = "0.6.0"
-bracket-noise = "0.8.7"
-bracket-pathfinding = "0.8.7"
+godot = { workspace = true }
+houtamelo_utils = { workspace = true }
+houtamelo_utils_gdext = { workspace = true }
+serde = { workspace = true }
+rand = { workspace = true }
+rand_xoshiro = { workspace = true }
+comfy-bounded-ints = { workspace = true }
+
+bracket-noise = "0.8"
+bracket-pathfinding = "0.8"

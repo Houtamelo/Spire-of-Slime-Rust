@@ -1,54 +1,43 @@
-use util::prelude::*;
-use util_gdnative::prelude::*;
+use super::*;
 
-#[allow(unused_imports)]
-use crate::*;
-
-pub static SIGNAL_YES: &str = "_on_yes";
-
-#[derive(Debug)]
-#[extends(Control)]
-#[register_with(Self::register)]
+#[derive(GodotClass)]
+#[class(base = Control)]
 pub struct PanelAreYouSure {
-	#[export_path] button_yes: Option<Ref<Button>>,
-	#[export_path] button_no: Option<Ref<Button>>,
-	#[export_path] label: Option<Ref<Label>>,
+	base:  Base<Control>,
+	label: Gd<Label>,
 }
 
-#[methods]
+#[godot_api]
+impl IControl for PanelAreYouSure {
+	fn init(base: Base<Self::Base>) -> Self {
+		let gd = base.to_gd();
+		let label = gd.get_node_as::<Label>("label");
+		PanelAreYouSure { base, label }
+	}
+
+	fn ready(&mut self) {
+		self.connect_child("button_no", "pressed", |this, _| {
+			this.base_mut().hide();
+		})
+		.log_if_err();
+
+		self.connect_child("button_yes", "pressed", |this, _| {
+			let mut base = this.base_mut();
+			base.hide();
+			base.emit_signal(Self::SIGNAL_YES, &[]);
+		})
+		.log_if_err();
+	}
+}
+
+#[godot_api]
 impl PanelAreYouSure {
-	fn register(builder: &ClassBuilder<Self>) {
-		builder.signal(SIGNAL_YES).done();
-	}
+	pub const SIGNAL_YES: &'static str = "on_yes";
 
-	#[method]
-	fn _ready(&mut self, #[base] owner: &Control) {
-		self.grab_nodes_by_path(owner);
-		
-		let owner_ref = unsafe { owner.assume_shared() };
+	#[signal]
+	fn on_yes() {}
 
-		self.button_no.unwrap_manual()
-			.connect("pressed", owner_ref, fn_name(&Self::_button_pressed_no), 
-				VariantArray::new_shared(), Object::CONNECT_DEFERRED)
-			.log_if_err();
-		self.button_yes.unwrap_manual()
-			.connect("pressed", owner_ref, fn_name(&Self::_button_pressed_yes), 
-				VariantArray::new_shared(), Object::CONNECT_DEFERRED)
-			.log_if_err();
-	}
+	pub fn set_text(&mut self, text: &str) { self.label.set_text(text); }
 
-	#[method]
-	fn _button_pressed_yes(&self, #[base] owner: &Control) {
-		owner.hide();
-		owner.emit_signal(SIGNAL_YES, &[]);
-	}
-
-	#[method]
-	fn _button_pressed_no(&self, #[base] owner: &Control) {
-		owner.hide();
-	}
-
-	pub fn set_text(&self, text: &str) {
-		self.label.unwrap_manual().set_text(text);
-	}
+	pub fn show(&mut self) { self.base_mut().show(); }
 }

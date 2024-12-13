@@ -1,11 +1,14 @@
-use crate::graphics::action_animation::skills::offensive::OffensiveAnim;
-#[allow(unused_imports)]
-use crate::prelude::*;
+use super::*;
 
-pub mod anim_utils;
-pub mod offensive;
-pub mod girls;
-pub mod npcs;
+mod anim_utils;
+mod girls;
+mod npcs;
+mod offensive;
+
+pub use anim_utils::*;
+pub use girls::*;
+pub use npcs::*;
+pub use offensive::*;
 
 pub enum SkillAnimation {
 	Offensive(Box<dyn OffensiveAnim>),

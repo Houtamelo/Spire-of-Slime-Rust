@@ -1,645 +1,620 @@
-use shared::panel_are_you_sure::PanelAreYouSure;
-use shared::panel_are_you_sure;
-use util_gdnative::prelude::*;
-use util::prelude::*;
-use crate::settings;
-use crate::settings::{DEFAULT_SETTINGS, GameSetting, SkillOverlayMode};
+use super::*;
 
-pub const SIGNAL_LANGUAGE_CHANGED: &str = "language_changed";
-pub const SIGNAL_PANEL_CLOSED: &str = "panel_closed";
-pub const CALL_OPEN_PANEL: &str = "_open_panel";
-
-#[extends(CanvasLayer)]
-#[register_with(Self::register)]
-#[derive(Debug)]
+#[derive(GodotClass)]
+#[class(init, base = CanvasLayer)]
 pub struct SettingsMenuController {
-    #[export_path] check_box_window_maximized: Option<Ref<CheckBox>>,
-    #[export_path] spin_box_window_size_x    : Option<Ref<SpinBox>>,
-    #[export_path] spin_box_window_size_y    : Option<Ref<SpinBox>>,
-    #[export_path] option_button_skill_overlay_mode: Option<Ref<OptionButton>>,
-    #[export_path] spin_box_skill_overlay_mode_auto_delay: Option<Ref<SpinBox>>,
-    #[export_path] option_button_language      : Option<Ref<OptionButton>>,
-    #[export_path] spin_box_target_framerate   : Option<Ref<SpinBox>>,
-    #[export_path] h_slider_dialogue_text_speed: Option<Ref<HSlider>>,
-    #[export_path] check_box_vsync: Option<Ref<CheckBox>>,
-    #[export_path] h_slider_main_volume : Option<Ref<HSlider>>,
-    #[export_path] h_slider_music_volume: Option<Ref<HSlider>>,
-    #[export_path] h_slider_sfx_volume  : Option<Ref<HSlider>>,
-    #[export_path] h_slider_voice_volume: Option<Ref<HSlider>>,
+	base: Base<CanvasLayer>,
 
-    #[export_path] button_confirm_changes: Option<Ref<Button>>,
-    #[export_path] button_undo_changes: Option<Ref<Button>>,
+	#[init(node = "")]
+	check_box_window_maximized: OnReady<Gd<CheckBox>>,
+	#[init(node = "")]
+	spin_box_window_size_x: OnReady<Gd<SpinBox>>,
+	#[init(node = "")]
+	spin_box_window_size_y: OnReady<Gd<SpinBox>>,
+	#[init(node = "")]
+	option_button_skill_overlay_mode: OnReady<Gd<OptionButton>>,
+	#[init(node = "")]
+	spin_box_skill_overlay_mode_auto_delay: OnReady<Gd<SpinBox>>,
+	#[init(node = "")]
+	option_button_language: OnReady<Gd<OptionButton>>,
+	#[init(node = "")]
+	spin_box_target_framerate: OnReady<Gd<SpinBox>>,
+	#[init(node = "")]
+	h_slider_dialogue_text_speed: OnReady<Gd<HSlider>>,
+	#[init(node = "")]
+	check_box_vsync: OnReady<Gd<CheckBox>>,
+	#[init(node = "")]
+	h_slider_main_volume: OnReady<Gd<HSlider>>,
+	#[init(node = "")]
+	h_slider_music_volume: OnReady<Gd<HSlider>>,
+	#[init(node = "")]
+	h_slider_sfx_volume: OnReady<Gd<HSlider>>,
+	#[init(node = "")]
+	h_slider_voice_volume: OnReady<Gd<HSlider>>,
 
-    #[export_path] button_close_panel: Option<Ref<Button>>,
-    #[export_path] panel_on_close_confirm_or_undo: Option<Ref<Control>>,
-    #[export_path] button_on_close_confirm: Option<Ref<Button>>,
-    #[export_path] button_on_close_undo: Option<Ref<Button>>,
+	#[init(node = "")]
+	button_confirm_changes: OnReady<Gd<Button>>,
+	#[init(node = "")]
+	button_undo_changes: OnReady<Gd<Button>>,
 
-    #[export_path] button_reset_settings : Option<Ref<Button>>,
-    #[export_path] panel_are_you_sure_reset: Option<Instance<PanelAreYouSure>>,
+	#[init(node = "")]
+	button_close_panel: OnReady<Gd<Button>>,
+	#[init(node = "")]
+	panel_on_close_confirm_or_undo: OnReady<Gd<Control>>,
+	#[init(node = "")]
+	button_on_close_confirm: OnReady<Gd<Button>>,
+	#[init(node = "")]
+	button_on_close_undo: OnReady<Gd<Button>>,
 
-    saved_settings  : HashMap<&'static str, GameSetting>,
-    unsaved_settings: HashMap<&'static str, GameSetting>,
+	#[init(node = "")]
+	button_reset_settings: OnReady<Gd<Button>>,
+	#[init(node = "")]
+	panel_are_you_sure_reset: OnReady<Gd<PanelAreYouSure>>,
+
+	saved_settings:   HashMap<GString, SettingsEnum>,
+	unsaved_settings: HashMap<GString, SettingsEnum>,
 }
 
-#[methods]
-impl SettingsMenuController {
-	fn register(builder: &ClassBuilder<Self>) {
-        builder.signal(SIGNAL_LANGUAGE_CHANGED).with_param("language", VariantType::Object).done();
-        builder.signal(SIGNAL_PANEL_CLOSED).done();
-    }
-
-	#[method]
-	fn _ready(&mut self, #[base] _owner: &CanvasLayer) {
-		self.grab_nodes_by_path(_owner);
-        let owner_ref = unsafe { _owner.assume_shared() };
-
-		for setting in DEFAULT_SETTINGS {
-            let key = setting.key();
+#[godot_api]
+impl ICanvasLayer for SettingsMenuController {
+	fn ready(&mut self) {
+		for setting in SettingsTable::default() {
+			let key = setting.key();
 
 			match setting {
-				GameSetting::WindowMaximized(_) => {
-                    let GameSetting::WindowMaximized(default) = GameSetting::default_value(setting) else { unreachable!() };
-                    let saved_maximized = GameSetting::get_saved(key, default);
-                    self.saved_settings.insert(key, GameSetting::WindowMaximized(saved_maximized));
+				SettingsEnum::WindowMaximized(default) => {
+					let saved = SettingsEnum::get_saved(&key, default);
+					self.saved_settings.insert(key, saved.into());
+					saved.apply();
 
-                    let check_box = self.check_box_window_maximized.unwrap_manual();
-                    check_box.set_pressed(saved_maximized);
-                    check_box.connect("toggled", owner_ref, "_on_check_box_window_maximized", VariantArray::new_shared(), Object::CONNECT_DEFERRED).log_if_err();
+					let mut check_box = self.check_box_window_maximized.clone();
+					check_box.set_pressed_no_signal(saved.0);
 
-                    let os = OS::godot_singleton();
-                    os.set_window_maximized(saved_maximized);
-                },
-				GameSetting::WindowSize(_, _) => {
-                    let GameSetting::WindowSize(default_x, default_y) = GameSetting::default_value(setting) else { unreachable!() };
-                    let (mut saved_size_x, mut saved_size_y) = GameSetting::get_saved(key, (default_x, default_y));
-                    saved_size_x = i32::max(saved_size_x, 480);
-                    saved_size_y = i32::max(saved_size_y, 270);
-                    self.saved_settings.insert(key, GameSetting::WindowSize(saved_size_x, saved_size_y));
+					self.connect_with_deferred(&check_box, "toggled", |this, args| {
+						let Some(pressed) = args.first().and_then(|arg| arg.try_to().ok())
+						else {
+							return godot_error!("Toggled signal did not provide bool argument")
+						};
 
-                    let spin_box_x = self.spin_box_window_size_x.unwrap_manual();
-                    spin_box_x.set_value(saved_size_x as f64);
-                    spin_box_x.connect("value_changed", owner_ref, "_on_spin_box_window_size_x", VariantArray::new_shared(), Object::CONNECT_DEFERRED).log_if_err();
-                    let spin_box_y = self.spin_box_window_size_y.unwrap_manual();
-                    spin_box_y.set_value(saved_size_y as f64);
-                    spin_box_y.connect("value_changed", owner_ref, "_on_spin_box_window_size_y", VariantArray::new_shared(), Object::CONNECT_DEFERRED).log_if_err();
+						let new_setting = WindowMaximized(pressed);
+						replace_setting(&mut this.unsaved_settings, new_setting);
+						this.enable_dirty_changes_buttons(true);
 
-                    let os = OS::godot_singleton();
-                    os.set_window_size(Vector2 { x: saved_size_x as f32, y: saved_size_y as f32 });
-                },
-				GameSetting::SkillOverlayMode(_) => {
-                    let GameSetting::SkillOverlayMode(default) = GameSetting::default_value(setting) else { unreachable!() };
-                    let saved_mode = GameSetting::get_saved(key, default);
-                    self.saved_settings.insert(key, GameSetting::SkillOverlayMode(saved_mode.clone()));
+						new_setting.apply();
+					});
+				}
+				SettingsEnum::WindowSize(default_size) => {
+					let saved = {
+						let mut temp = SettingsEnum::get_saved(&key, default_size);
+						temp.0.x = i32::max(temp.0.x, 480);
+						temp.0.y = i32::max(temp.0.y, 270);
+						temp
+					};
 
-                    let option_button = self.option_button_skill_overlay_mode.unwrap_manual();
-                    for overlay_mode in settings::ALL_OVERLAY_MODES {
-                        option_button.add_item(overlay_mode.display_name(), overlay_mode.index());
-                    }
+					self.saved_settings.insert(key, saved.into());
+					saved.apply();
 
-                    option_button.select(saved_mode.index());
-                    option_button.connect("item_selected", owner_ref, "_on_option_button_skill_overlay_mode", VariantArray::new_shared(), Object::CONNECT_DEFERRED).log_if_err();
+					let mut spin_box_x = self.spin_box_window_size_x.clone();
+					spin_box_x.set_value_no_signal(saved.0.x as f64);
 
-                    let spin_box = self.spin_box_skill_overlay_mode_auto_delay.unwrap_manual();
-                    match saved_mode {
-                        SkillOverlayMode::Auto { delay_ms } => {
-                            spin_box.set_visible(true);
-                            spin_box.set_value(delay_ms as f64);
-                        },
-                        SkillOverlayMode::WaitForInput => {
-                            spin_box.set_visible(false);
-                        },
-                    }
-                    spin_box.connect("value_changed", owner_ref, "_on_spin_box_skill_overlay_mode_auto_delay", VariantArray::new_shared(), Object::CONNECT_DEFERRED).log_if_err();
-                },
-				GameSetting::Language(_) => {
-                    let GameSetting::Language(default) = GameSetting::default_value(setting) else { unreachable!() };
-                    let saved_language = GameSetting::get_saved(key, default);
-                    self.saved_settings.insert(key, GameSetting::Language(saved_language));
+					self.connect_with_deferred(&spin_box_x, "value_changed", |this, args| {
+						let Some(new_x) = args.first().and_then(|arg| arg.try_to().ok())
+						else {
+							return godot_error!("Spin box signal did not provide float argument")
+						};
 
-                    let option_button = self.option_button_language.unwrap_manual();
-                    for language in settings::ALL_LANGUAGES {
-                        option_button.add_item(language.display_name(), language.index());
-                    }
+						let same_y = this.spin_box_window_size_y.get_value().round() as i32;
+						let new_size = Vector2i::new(new_x, same_y);
+						let new_setting = WindowSize(new_size);
+						replace_setting(&mut this.unsaved_settings, new_setting);
+						this.enable_dirty_changes_buttons(true);
 
-                    option_button.select(saved_language.index());
-                    option_button.connect("item_selected", owner_ref, "_on_option_button_language", VariantArray::new_shared(), Object::CONNECT_DEFERRED).log_if_err();
-                },
-				GameSetting::TargetFramerate(_) => {
-                    let GameSetting::TargetFramerate(default) = GameSetting::default_value(setting) else { unreachable!() };
-                    let saved_framerate = GameSetting::get_saved(key, default);
-                    self.saved_settings.insert(key, GameSetting::TargetFramerate(saved_framerate));
+						new_setting.apply();
+					});
 
-                    let spin_box = self.spin_box_target_framerate.unwrap_manual();
-                    spin_box.set_value(saved_framerate as f64);
-                    spin_box.connect("value_changed", owner_ref, "_on_spin_box_target_framerate", VariantArray::new_shared(), Object::CONNECT_DEFERRED).log_if_err();
-                },
-				GameSetting::DialogueTextSpeed(_) => {
-                    let GameSetting::DialogueTextSpeed(default) = GameSetting::default_value(setting) else { unreachable!() };
-                    let saved_speed = GameSetting::get_saved(key, default);
-                    self.saved_settings.insert(key, GameSetting::DialogueTextSpeed(saved_speed));
+					let mut spin_box_y = self.spin_box_window_size_y.clone();
+					spin_box_y.set_value_no_signal(saved.0.y as f64);
 
-                    let h_slider = self.h_slider_dialogue_text_speed.unwrap_manual();
-                    h_slider.set_value(saved_speed as f64);
-                    h_slider.connect("value_changed", owner_ref, "_on_h_slider_dialogue_text_speed", VariantArray::new_shared(), Object::CONNECT_DEFERRED).log_if_err();
-                },
-				GameSetting::Vsync(_) => {
-                    let GameSetting::Vsync(default) = GameSetting::default_value(setting) else { unreachable!() };
-                    let saved_vsync = GameSetting::get_saved(key, default);
-                    self.saved_settings.insert(key, GameSetting::Vsync(saved_vsync));
+					self.connect_with_deferred(&spin_box_y, "value_changed", |this, args| {
+						let Some(new_y) = args.first().and_then(|arg| arg.try_to().ok())
+						else {
+							return godot_error!("Spin box signal did not provide float argument")
+						};
 
-                    let check_box = self.check_box_vsync.unwrap_manual();
-                    check_box.set_pressed(saved_vsync);
-                    check_box.connect("toggled", owner_ref, "_on_check_box_vsync", VariantArray::new_shared(), Object::CONNECT_DEFERRED).log_if_err();
+						let same_x = this.spin_box_window_size_x.get_value().round() as i32;
+						let new_size = Vector2i::new(same_x, new_y);
+						let new_setting = WindowSize(new_size);
 
-                    let os = OS::godot_singleton();
-                    os.set_use_vsync(saved_vsync);
-                },
-				GameSetting::MainVolume(_) => {
-                    let GameSetting::MainVolume(default) = GameSetting::default_value(setting) else { unreachable!() };
-                    let saved_volume = GameSetting::get_saved(key, default);
-                    self.saved_settings.insert(key, GameSetting::MainVolume(saved_volume));
+						replace_setting(&mut this.unsaved_settings, new_setting);
+						this.enable_dirty_changes_buttons(true);
 
-                    let h_slider = self.h_slider_main_volume.unwrap_manual();
-                    h_slider.set_value(saved_volume as f64);
-                    h_slider.connect("value_changed", owner_ref, "_on_h_slider_main_volume", VariantArray::new_shared(), Object::CONNECT_DEFERRED).log_if_err();
-                },
-				GameSetting::MusicVolume(_) => {
-                    let GameSetting::MusicVolume(default) = GameSetting::default_value(setting) else { unreachable!() };
-                    let saved_volume = GameSetting::get_saved(key, default);
-                    self.saved_settings.insert(key, GameSetting::MusicVolume(saved_volume));
+						new_setting.apply();
+					});
+				}
+				SettingsEnum::SkillOverlayModeSetting(default) => {
+					let saved = SettingsEnum::get_saved(&key, default);
+					self.saved_settings.insert(key, saved.into());
+					saved.apply();
 
-                    let h_slider = self.h_slider_music_volume.unwrap_manual();
-                    h_slider.set_value(saved_volume as f64);
-                    h_slider.connect("value_changed", owner_ref, "_on_h_slider_music_volume", VariantArray::new_shared(), Object::CONNECT_DEFERRED).log_if_err();
-                },
-				GameSetting::SfxVolume(_) => {
-                    let GameSetting::SfxVolume(default) = GameSetting::default_value(setting) else { unreachable!() };
-                    let saved_volume = GameSetting::get_saved(key, default);
-                    self.saved_settings.insert(key, GameSetting::SfxVolume(saved_volume));
+					let mut options = self.option_button_skill_overlay_mode.clone();
+					for overlay_mode in ALL_OVERLAY_MODES {
+						options.add_item(overlay_mode.display_name());
+					}
 
-                    let h_slider = self.h_slider_sfx_volume.unwrap_manual();
-                    h_slider.set_value(saved_volume as f64);
-                    h_slider.connect("value_changed", owner_ref, "_on_h_slider_sfx_volume", VariantArray::new_shared(), Object::CONNECT_DEFERRED).log_if_err();
-                },
-				GameSetting::VoiceVolume(_) => {
-                    let GameSetting::VoiceVolume(default) = GameSetting::default_value(setting) else { unreachable!() };
-                    let saved_volume = GameSetting::get_saved(key, default);
-                    self.saved_settings.insert(key, GameSetting::VoiceVolume(saved_volume));
+					options.select(saved.0.index());
 
-                    let h_slider = self.h_slider_voice_volume.unwrap_manual();
-                    h_slider.set_value(saved_volume as f64);
-                    h_slider.connect("value_changed", owner_ref, "_on_h_slider_voice_volume", VariantArray::new_shared(), Object::CONNECT_DEFERRED).log_if_err();
-                },
+					self.connect_with_deferred(&options, "item_selected", |this, args| {
+						let Some(idx) = args.first().and_then(|arg| arg.try_to().ok())
+						else {
+							return godot_error!("Option button signal did not provide int argument")
+						};
+
+						let overlay_mode = match idx {
+							0 => {
+								let delay_f64 =
+									this.spin_box_skill_overlay_mode_auto_delay.get_value();
+								let delay_ms = i64::clamp(delay_f64.round() as i64, 0, 10000);
+								SkillOverlayMode::Auto { delay_ms }
+							}
+							1 => {
+								this.spin_box_skill_overlay_mode_auto_delay
+									.set_visible(false);
+								SkillOverlayMode::WaitForInput
+							}
+							_ => {
+								godot_error!("Invalid index for skill overlay mode: {idx}");
+								return;
+							}
+						};
+
+						let new_setting = SkillOverlayModeSetting(overlay_mode);
+
+						replace_setting(&mut this.unsaved_settings, new_setting);
+						this.enable_dirty_changes_buttons(true);
+
+						new_setting.apply();
+					});
+
+					let mut spin_box = self.spin_box_skill_overlay_mode_auto_delay.clone();
+					match saved.0 {
+						SkillOverlayMode::Auto { delay_ms } => {
+							spin_box.set_visible(true);
+							spin_box.set_value_no_signal(delay_ms as f64);
+						}
+						SkillOverlayMode::WaitForInput => {
+							spin_box.set_visible(false);
+						}
+					}
+
+					self.connect_with_deferred(&spin_box, "value_changed", |this, args| {
+						let Some(delay_ms) = args.first().and_then(|arg| arg.try_to().ok())
+						else {
+							return godot_error!("Spin box signal did not provide float argument")
+						};
+
+						let overlay_mode = SkillOverlayMode::Auto { delay_ms };
+						let new_setting = SkillOverlayModeSetting(overlay_mode);
+
+						replace_setting(&mut this.unsaved_settings, new_setting);
+						this.enable_dirty_changes_buttons(true);
+
+						new_setting.apply();
+					});
+				}
+				SettingsEnum::LanguageSetting(default) => {
+					let saved = SettingsEnum::get_saved(&key, default);
+					self.saved_settings.insert(key, saved.into());
+					saved.apply();
+					self.apply_language(saved.0);
+
+					let mut options = self.option_button_language.clone();
+					for language in Language::iter() {
+						options.add_item(&language.display_name());
+					}
+
+					options.set_block_signals(true);
+					options.select(saved.0.index());
+					options.set_block_signals(false);
+
+					self.connect_with_deferred(&options, "item_selected", |this, args| {
+						let Some(idx) = args.first().and_then(|arg| arg.try_to::<i32>().ok())
+						else {
+							return godot_error!("Option button signal did not provide int argument")
+						};
+
+						let Some(language) = Language::from_repr(idx)
+						else { return godot_error!("Invalid index for language: {idx}") };
+
+						let new_setting = LanguageSetting(language);
+						replace_setting(&mut this.unsaved_settings, new_setting);
+						this.enable_dirty_changes_buttons(true);
+
+						new_setting.apply();
+						this.apply_language(language);
+					});
+				}
+				SettingsEnum::MaxFps(default) => {
+					let saved = SettingsEnum::get_saved(&key, default);
+					self.saved_settings.insert(key, saved.into());
+					saved.apply();
+
+					let mut spin_box = self.spin_box_target_framerate.clone();
+					spin_box.set_value_no_signal(saved.0 as f64);
+
+					self.connect_with_deferred(&spin_box, "value_changed", |this, args| {
+						let Some(value) = args.first().and_then(|arg| arg.try_to().ok())
+						else {
+							return godot_error!("Spin box signal did not provide float argument")
+						};
+
+						let new_setting = MaxFps(value);
+						replace_setting(&mut this.unsaved_settings, new_setting);
+						this.enable_dirty_changes_buttons(true);
+
+						new_setting.apply();
+					});
+				}
+				SettingsEnum::DialogueTextSpeed(default) => {
+					let saved = SettingsEnum::get_saved(&key, default);
+					self.saved_settings.insert(key, saved.into());
+					saved.apply();
+
+					let mut h_slider = self.h_slider_dialogue_text_speed.clone();
+					h_slider.set_value_no_signal(saved.0 as f64);
+
+					self.connect_with_deferred(&h_slider, "value_changed", |this, args| {
+						let Some(value) = args.first().and_then(|arg| arg.try_to().ok())
+						else {
+							return godot_error!("H slider signal did not provide float argument")
+						};
+
+						let new_setting = DialogueTextSpeed(value);
+						replace_setting(&mut this.unsaved_settings, new_setting);
+						this.enable_dirty_changes_buttons(true);
+
+						new_setting.apply();
+					});
+				}
+				SettingsEnum::Vsync(default) => {
+					let saved = SettingsEnum::get_saved(&key, default);
+					self.saved_settings.insert(key, saved.into());
+					saved.apply();
+
+					let mut check_box = self.check_box_vsync.clone();
+					check_box.set_pressed_no_signal(saved.0);
+
+					self.connect_with_deferred(&check_box, "toggled", |this, args| {
+						let Some(pressed) = args.first().and_then(|arg| arg.try_to().ok())
+						else {
+							return godot_error!("Toggled signal did not provide bool argument")
+						};
+
+						let new_setting = Vsync(pressed);
+						replace_setting(&mut this.unsaved_settings, new_setting);
+						this.enable_dirty_changes_buttons(true);
+
+						new_setting.apply();
+					});
+				}
+				SettingsEnum::MainVolume(default) => {
+					let saved = SettingsEnum::get_saved(&key, default);
+					self.saved_settings.insert(key, saved.into());
+					saved.apply();
+
+					let mut h_slider = self.h_slider_main_volume.clone();
+					h_slider.set_value(saved.0 as f64);
+
+					self.connect_with_deferred(&h_slider, "value_changed", |this, args| {
+						let Some(value) = args.first().and_then(|arg| arg.try_to().ok())
+						else {
+							return godot_error!("H slider signal did not provide float argument")
+						};
+
+						let new_setting = MainVolume(value);
+						replace_setting(&mut this.unsaved_settings, new_setting);
+						this.enable_dirty_changes_buttons(true);
+
+						new_setting.apply();
+					});
+				}
+				SettingsEnum::MusicVolume(default) => {
+					let saved = SettingsEnum::get_saved(&key, default);
+					self.saved_settings.insert(key, saved.into());
+					saved.apply();
+
+					let mut h_slider = self.h_slider_music_volume.clone();
+					h_slider.set_value(saved.0 as f64);
+
+					self.connect_with_deferred(&h_slider, "value_changed", |this, args| {
+						let Some(value) = args.first().and_then(|arg| arg.try_to().ok())
+						else {
+							return godot_error!("H slider signal did not provide float argument")
+						};
+
+						let new_setting = MusicVolume(value);
+						replace_setting(&mut this.unsaved_settings, new_setting);
+						this.enable_dirty_changes_buttons(true);
+
+						new_setting.apply();
+					});
+				}
+				SettingsEnum::SfxVolume(default) => {
+					let saved = SettingsEnum::get_saved(&key, default);
+					self.saved_settings.insert(key, saved.into());
+					saved.apply();
+
+					let mut h_slider = self.h_slider_sfx_volume.clone();
+					h_slider.set_value(saved.0 as f64);
+
+					self.connect_with_deferred(&h_slider, "value_changed", |this, args| {
+						let Some(value) = args.first().and_then(|arg| arg.try_to().ok())
+						else {
+							return godot_error!("H slider signal did not provide float argument")
+						};
+
+						let new_setting = SfxVolume(value);
+						replace_setting(&mut this.unsaved_settings, new_setting);
+						this.enable_dirty_changes_buttons(true);
+
+						new_setting.apply();
+					});
+				}
+				SettingsEnum::VoiceVolume(default) => {
+					let saved = SettingsEnum::get_saved(&key, default);
+					self.saved_settings.insert(key, saved.into());
+					saved.apply();
+
+					let mut h_slider = self.h_slider_voice_volume.clone();
+					h_slider.set_value(saved.0 as f64);
+
+					self.connect_with_deferred(&h_slider, "value_changed", |this, args| {
+						let Some(value) = args.first().and_then(|arg| arg.try_to().ok())
+						else {
+							return godot_error!("H slider signal did not provide float argument")
+						};
+
+						let new_setting = VoiceVolume(value);
+						replace_setting(&mut this.unsaved_settings, new_setting);
+						this.enable_dirty_changes_buttons(true);
+
+						new_setting.apply();
+					});
+				}
 			}
 		}
 
-        self.button_confirm_changes.unwrap_manual().connect("pressed", owner_ref, "_on_button_confirm_changes", VariantArray::new_shared(), Object::CONNECT_DEFERRED).log_if_err();
-        self.button_undo_changes   .unwrap_manual().connect("pressed", owner_ref, "_on_button_undo_changes"   , VariantArray::new_shared(), Object::CONNECT_DEFERRED).log_if_err();
-
-        self.button_close_panel     .unwrap_manual().connect("pressed", owner_ref, "_on_button_close_panel"        , VariantArray::new_shared(), Object::CONNECT_DEFERRED).log_if_err();
-        self.button_on_close_confirm.unwrap_manual().connect("pressed", owner_ref, "_on_button_close_panel_confirm", VariantArray::new_shared(), Object::CONNECT_DEFERRED).log_if_err();
-        self.button_on_close_undo   .unwrap_manual().connect("pressed", owner_ref, "_on_button_close_panel_undo"   , VariantArray::new_shared(), Object::CONNECT_DEFERRED).log_if_err();
-
-        self.button_reset_settings.unwrap_manual().connect("pressed", owner_ref, "_on_button_reset_settings", VariantArray::new_shared(), Object::CONNECT_DEFERRED).log_if_err();
-        self.panel_are_you_sure_reset.unwrap_inst().base().connect(panel_are_you_sure::SIGNAL_YES, owner_ref, 
-                                                                   "_on_panel_are_you_sure_reset_yes", VariantArray::new_shared(), Object::CONNECT_DEFERRED).log_if_err();
-    }
-    
-    #[method]
-    pub fn _open_panel(&mut self, #[base] owner: &CanvasLayer) {
-        self.update_screen_settings();
-        owner.show();
-    }
-
-    #[method]
-    fn _on_check_box_window_maximized(&mut self, button_pressed: bool) {
-        let new_setting = GameSetting::WindowMaximized(button_pressed);
-        SettingsMenuController::replace_setting(&mut self.unsaved_settings, new_setting);
-        self.enable_dirty_changes_buttons(true);
-        OS::godot_singleton().set_deferred("window_maximized", button_pressed);
-    }
-
-    #[method]
-    fn _on_spin_box_window_size_x(&mut self, value: f64) {
-        let new_setting = GameSetting::WindowSize(value as i32, self.spin_box_window_size_y.unwrap_manual().value() as i32);
-        SettingsMenuController::replace_setting(&mut self.unsaved_settings, new_setting);
-        self.enable_dirty_changes_buttons(true);
-    }
-
-    #[method]
-    fn _on_spin_box_window_size_y(&mut self, value: f64) {
-        let new_setting = GameSetting::WindowSize(self.spin_box_window_size_x.unwrap_manual().value() as i32, value as i32);
-        SettingsMenuController::replace_setting(&mut self.unsaved_settings, new_setting);
-        self.enable_dirty_changes_buttons(true);
-    }
-
-    #[method]
-    fn _on_option_button_skill_overlay_mode(&mut self, index: i64) {
-        let new_setting;
-        match index {
-            0 => {
-                let spin_box = self.spin_box_skill_overlay_mode_auto_delay.unwrap_manual();
-                let delay_ms = i64::clamp(spin_box.value() as i64, 0, 10000);
-                new_setting = GameSetting::SkillOverlayMode(SkillOverlayMode::Auto { delay_ms });
-
-                spin_box.set_visible(true);
-                spin_box.set_block_signals(true);
-                spin_box.set_value(delay_ms as f64);
-                spin_box.set_block_signals(false);
-            },
-            1 => {
-                new_setting = GameSetting::SkillOverlayMode(SkillOverlayMode::WaitForInput);
-                self.spin_box_skill_overlay_mode_auto_delay.unwrap_manual().set_visible(false);
-            },
-            _ => {
-                godot_error!("Invalid index for skill overlay mode: {}", index);
-                return;
-            },
-        }
-
-        SettingsMenuController::replace_setting(&mut self.unsaved_settings, new_setting);
-        self.enable_dirty_changes_buttons(true);
-    }
-
-    #[method]
-    fn _on_spin_box_skill_overlay_mode_auto_delay(&mut self, value: f64) {
-        let new_setting = GameSetting::SkillOverlayMode(SkillOverlayMode::Auto { delay_ms: value as i64 });
-        SettingsMenuController::replace_setting(&mut self.unsaved_settings, new_setting);
-        self.enable_dirty_changes_buttons(true);
-    }
-
-    #[method]
-    fn _on_option_button_language(&mut self, #[base] owner: &CanvasLayer, index: i64) {
-        let language = settings::ALL_LANGUAGES[index as usize];
-        let new_setting = GameSetting::Language(language.clone());
-        SettingsMenuController::replace_setting(&mut self.unsaved_settings, new_setting);
-        self.enable_dirty_changes_buttons(true);
-
-        owner.emit_signal(SIGNAL_LANGUAGE_CHANGED, &[language.to_variant()]);
-    }
-
-    #[method]
-    fn _on_spin_box_target_framerate(&mut self, value: f64) {
-        let new_setting = GameSetting::TargetFramerate(value as i64);
-        SettingsMenuController::replace_setting(&mut self.unsaved_settings, new_setting);
-        self.enable_dirty_changes_buttons(true);
-    }
-
-    #[method]
-    fn _on_h_slider_dialogue_text_speed(&mut self, value: f64) {
-        let new_setting = GameSetting::DialogueTextSpeed(value as i32);
-        SettingsMenuController::replace_setting(&mut self.unsaved_settings, new_setting);
-        self.enable_dirty_changes_buttons(true);
-    }
-
-    #[method]
-    fn _on_check_box_vsync(&mut self, button_pressed: bool) {
-        let new_setting = GameSetting::Vsync(button_pressed);
-        SettingsMenuController::replace_setting(&mut self.unsaved_settings, new_setting);
-        self.enable_dirty_changes_buttons(true);
-        OS::godot_singleton().set_deferred("use_vsync", button_pressed);
-    }
-
-    #[method]
-    fn _on_h_slider_main_volume(&mut self, value: f64) {
-        let new_setting = GameSetting::MainVolume(value as i32);
-        SettingsMenuController::replace_setting(&mut self.unsaved_settings, new_setting);
-        self.enable_dirty_changes_buttons(true);
-
-        SettingsMenuController::set_volume_percentage(value as i32, audio::BUS_MAIN);
-    }
-
-    #[method]
-    fn _on_h_slider_music_volume(&mut self, value: f64) {
-        let new_setting = GameSetting::MusicVolume(value as i32);
-        SettingsMenuController::replace_setting(&mut self.unsaved_settings, new_setting);
-        self.enable_dirty_changes_buttons(true);
-
-        SettingsMenuController::set_volume_percentage(value as i32, audio::BUS_MUSIC);
-    }
-
-    #[method]
-    fn _on_h_slider_sfx_volume(&mut self, value: f64) {
-        let new_setting = GameSetting::SfxVolume(value as i32);
-        SettingsMenuController::replace_setting(&mut self.unsaved_settings, new_setting);
-        self.enable_dirty_changes_buttons(true);
-
-        SettingsMenuController::set_volume_percentage(value as i32, audio::BUS_SFX);
-    }
-
-    #[method]
-    fn _on_h_slider_voice_volume(&mut self, value: f64) {
-        let new_setting = GameSetting::VoiceVolume(value as i32);
-        SettingsMenuController::replace_setting(&mut self.unsaved_settings, new_setting);
-        self.enable_dirty_changes_buttons(true);
-
-        SettingsMenuController::set_volume_percentage(value as i32, audio::BUS_VOICE);
-    }
-
-    #[method]
-    fn _on_button_confirm_changes(&mut self) {
-        for unsaved_setting in self.unsaved_settings.values() {
-            match unsaved_setting {
-                GameSetting::WindowMaximized(_) | GameSetting::SkillOverlayMode(_) | GameSetting::Language(_) | GameSetting::DialogueTextSpeed(_)
-                | GameSetting::Vsync(_) | GameSetting::MainVolume(_) | GameSetting::MusicVolume(_) | GameSetting::SfxVolume(_) | GameSetting::VoiceVolume(_)
-                => {},
-                GameSetting::WindowSize(x, y) => {
-                    let os = OS::godot_singleton();
-                    os.set_window_size(Vector2 { x: *x as f32, y: *y as f32 });
-                },
-                GameSetting::TargetFramerate(rate) => {
-                    let engine = Engine::godot_singleton();
-                    engine.set_target_fps(*rate);
-                },
-            }
-
-            self.saved_settings.insert(unsaved_setting.key(), unsaved_setting.clone());
-        }
-
-        SettingsMenuController::write_settings_to_config(&mut self.unsaved_settings);
-        self.unsaved_settings.clear();
-        self.enable_dirty_changes_buttons(false);
-    }
-
-    #[method]
-    fn _on_button_undo_changes(&mut self, #[base] _owner: &CanvasLayer) {
-        self.unsaved_settings.clear();
-        self.enable_dirty_changes_buttons(false);
-
-        self.apply_settings_no_signals(_owner, &self.saved_settings);
-
-        self.update_screen_settings();
-    }
-
-    #[method]
-    fn _on_button_close_panel(&mut self, #[base] _owner: &CanvasLayer) {
-        if self.unsaved_settings.len() > 0 {
-            self.panel_on_close_confirm_or_undo.unwrap_manual().show();
-        } else {
-            _owner.hide();
-            _owner.emit_signal(SIGNAL_PANEL_CLOSED, &[]);
-        }
-    }
-
-    #[method]
-    fn _on_button_close_panel_confirm(&mut self, #[base] _owner: &CanvasLayer) {
-        for unsaved_setting in self.unsaved_settings.values() {
-            match unsaved_setting {
-                GameSetting::WindowMaximized(_) | GameSetting::SkillOverlayMode(_) | GameSetting::Language(_) | GameSetting::DialogueTextSpeed(_)
-                | GameSetting::Vsync(_) | GameSetting::MainVolume(_) | GameSetting::MusicVolume(_) | GameSetting::SfxVolume(_) | GameSetting::VoiceVolume(_)
-                => {},
-                GameSetting::WindowSize(x, y) => {
-                    let os = OS::godot_singleton();
-                    os.set_window_size(Vector2 { x: *x as f32, y: *y as f32 });
-                },
-                GameSetting::TargetFramerate(rate) => {
-                    let engine = Engine::godot_singleton();
-                    engine.set_target_fps(*rate);
-                },
-            }
-
-            self.saved_settings.insert(unsaved_setting.key(), unsaved_setting.clone());
-        }
-
-        SettingsMenuController::write_settings_to_config(&mut self.unsaved_settings);
-        self.unsaved_settings.clear();
-        self.enable_dirty_changes_buttons(false);
-
-        _owner.hide();
-        _owner.emit_signal(SIGNAL_PANEL_CLOSED, &[]);
-    }
-
-    #[method]
-    fn _on_button_close_panel_undo(&mut self, #[base] _owner: &CanvasLayer) {
-        self.unsaved_settings.clear();
-        self.enable_dirty_changes_buttons(false);
-
-        self.apply_settings_no_signals(_owner, &self.saved_settings);
-
-        self.update_screen_settings();
-
-        _owner.hide();
-        _owner.emit_signal(SIGNAL_PANEL_CLOSED, &[]);
-    }
-
-    #[method]
-    fn _on_button_reset_settings(&mut self, #[base] _owner: &CanvasLayer) {
-        self.panel_are_you_sure_reset.unwrap_inst().base().show();
-    }
-
-    #[method]
-    fn _on_panel_are_you_sure_reset_yes(&mut self, #[base] _owner: &CanvasLayer) {
-        self.unsaved_settings.clear();
-        self.enable_dirty_changes_buttons(false);
-
-        self.saved_settings.extend(settings::DEFAULT_SETTINGS.iter().map(|setting| (setting.key(), setting.clone())));
-        self.apply_settings_no_signals(_owner, &self.saved_settings);
-
-        self.update_screen_settings();
-    }
-
-    fn apply_settings_no_signals(&self, _owner: &CanvasLayer, settings: &HashMap<&'static str, GameSetting>) {
-        for setting in settings.values() {
-            match setting {
-                GameSetting::WindowSize(x, y) => {
-                    let spin_box_x = self.spin_box_window_size_x.unwrap_manual();
-                    spin_box_x.set_block_signals(true);
-                    spin_box_x.set_value(*x as f64);
-                    spin_box_x.set_block_signals(false);
-
-                    let spin_box_y = self.spin_box_window_size_y.unwrap_manual();
-                    spin_box_y.set_block_signals(true);
-                    spin_box_y.set_value(*y as f64);
-                    spin_box_y.set_block_signals(false);
-
-                    let os = OS::godot_singleton();
-                    os.set_window_size(Vector2 { x: *x as f32, y: *y as f32 });
-                },
-                GameSetting::TargetFramerate(rate) => {
-                    let spin_box = self.spin_box_target_framerate.unwrap_manual();
-                    spin_box.set_block_signals(true);
-                    spin_box.set_value(*rate as f64);
-                    spin_box.set_block_signals(false);
-
-                    let engine = Engine::godot_singleton();
-                    engine.set_target_fps(*rate);
-                },
-                GameSetting::WindowMaximized(maximized) => {
-                    let check_box = self.check_box_window_maximized.unwrap_manual();
-                    check_box.set_block_signals(true);
-                    check_box.set_pressed(*maximized);
-                    check_box.set_block_signals(false);
-                    
-                    OS::godot_singleton().set_deferred("window_maximized", *maximized);
-                },
-                GameSetting::SkillOverlayMode(mode) => {
-                    let option_button = self.option_button_skill_overlay_mode.unwrap_manual();
-                    option_button.set_block_signals(true);
-                    option_button.select(mode.index());
-                    option_button.set_block_signals(false);
-
-                    let spin_box = self.spin_box_skill_overlay_mode_auto_delay.unwrap_manual();
-                    match mode {
-                        SkillOverlayMode::Auto { delay_ms } => {
-                            spin_box.set_visible(true);
-                            spin_box.set_block_signals(true);
-                            spin_box.set_value(*delay_ms as f64);
-                            spin_box.set_block_signals(false);
-                        },
-                        SkillOverlayMode::WaitForInput => {
-                            spin_box.set_visible(false);
-                        },
-                    }
-                },
-                GameSetting::Language(language) => {
-                    let option_button = self.option_button_language.unwrap_manual();
-                    option_button.set_block_signals(true);
-                    option_button.select(language.index());
-                    option_button.set_block_signals(false);
-
-                    _owner.emit_signal(SIGNAL_LANGUAGE_CHANGED, &[language.to_variant()]);
-                },
-                GameSetting::DialogueTextSpeed(speed) => {
-                    let h_slider = self.h_slider_dialogue_text_speed.unwrap_manual();
-                    h_slider.set_block_signals(true);
-                    h_slider.set_value(*speed as f64);
-                    h_slider.set_block_signals(false);
-                },
-                GameSetting::Vsync(vsync) => {
-                    let check_box = self.check_box_vsync.unwrap_manual();
-                    check_box.set_block_signals(true);
-                    check_box.set_pressed(*vsync);
-                    check_box.set_block_signals(false);
-
-                    OS::godot_singleton().set_deferred("use_vsync", *vsync);
-                },
-                GameSetting::MainVolume(volume) => {
-                    let h_slider = self.h_slider_main_volume.unwrap_manual();
-                    h_slider.set_block_signals(true);
-                    h_slider.set_value(*volume as f64);
-                    h_slider.set_block_signals(false);
-
-                    SettingsMenuController::set_volume_percentage(*volume, audio::BUS_MAIN);
-                },
-                GameSetting::MusicVolume(volume) => {
-                    let h_slider = self.h_slider_music_volume.unwrap_manual();
-                    h_slider.set_block_signals(true);
-                    h_slider.set_value(*volume as f64);
-                    h_slider.set_block_signals(false);
-
-                    SettingsMenuController::set_volume_percentage(*volume, audio::BUS_MUSIC);
-                },
-                GameSetting::SfxVolume(volume) => {
-                    let h_slider = self.h_slider_sfx_volume.unwrap_manual();
-                    h_slider.set_block_signals(true);
-                    h_slider.set_value(*volume as f64);
-                    h_slider.set_block_signals(false);
-
-                    SettingsMenuController::set_volume_percentage(*volume, audio::BUS_SFX);
-                },
-                GameSetting::VoiceVolume(volume) => {
-                    let h_slider = self.h_slider_voice_volume.unwrap_manual();
-                    h_slider.set_block_signals(true);
-                    h_slider.set_value(*volume as f64);
-                    h_slider.set_block_signals(false);
-
-                    SettingsMenuController::set_volume_percentage(*volume, audio::BUS_VOICE);
-                },
-            }
-        }
-    }
-
-    fn update_screen_settings(&mut self) {
-        let os = OS::godot_singleton();
-
-        {
-            let window_maximized = os.is_window_maximized();
-
-            let check_box = self.check_box_window_maximized.unwrap_manual();
-            check_box.set_block_signals(true);
-            check_box.set_pressed(window_maximized);
-            check_box.set_block_signals(false);
-
-            let new_setting = GameSetting::WindowMaximized(window_maximized);
-            self.unsaved_settings.remove(new_setting.key());
-            SettingsMenuController::replace_setting(&mut self.saved_settings, new_setting);
-        }
-
-        {
-            let window_size = os.window_size();
-
-            let spin_box_x = self.spin_box_window_size_x.unwrap_manual();
-            spin_box_x.set_block_signals(true);
-            spin_box_x.set_value(window_size.x as f64);
-            spin_box_x.set_block_signals(false);
-
-            let spin_box_y = self.spin_box_window_size_y.unwrap_manual();
-            spin_box_y.set_block_signals(true);
-            spin_box_y.set_value(window_size.y as f64);
-            spin_box_y.set_block_signals(false);
-
-            let new_setting = GameSetting::WindowSize(window_size.x as i32, window_size.y as i32);
-            self.unsaved_settings.remove(new_setting.key());
-            SettingsMenuController::replace_setting(&mut self.saved_settings, new_setting);
-        }
-
-        {
-            let target_framerate = Engine::godot_singleton().target_fps();
-
-            let spin_box = self.spin_box_target_framerate.unwrap_manual();
-            spin_box.set_block_signals(true);
-            spin_box.set_value(target_framerate as f64);
-            spin_box.set_block_signals(false);
-
-            let new_setting = GameSetting::TargetFramerate(target_framerate);
-            self.unsaved_settings.remove(new_setting.key());
-            SettingsMenuController::replace_setting(&mut self.saved_settings, new_setting);
-        }
-
-        self.enable_dirty_changes_buttons(self.unsaved_settings.len() > 0);
-    }
-
-    fn enable_dirty_changes_buttons(&self, enable: bool) {
-        self.button_confirm_changes.unwrap_manual().set_disabled(!enable);
-        self.button_undo_changes.unwrap_manual().set_disabled(!enable);
-    }
-
-    fn replace_setting(settings: &mut HashMap<&'static str, GameSetting>, new_setting: GameSetting) {
-        let key = new_setting.key();
-        settings.insert(key, new_setting);
-    }
-
-    fn write_settings_to_config(settings: &mut HashMap<&'static str, GameSetting>) {
-        let config = ConfigFile::new();
-        if let Err(error) = config.load(shared::CONFIG_PATH) {
-            godot_warn!("Failed to load config file: {}", error);
-        }
-
-        for (key, setting) in settings.iter() {
-            config.set_value("player_prefs", key, setting);
-        }
-
-        if let Err(error) = config.save(shared::CONFIG_PATH) {
-            godot_warn!("Failed to load config file: {}", error);
-        } else {
-            settings.clear();
-        }
-    }
-
-    fn volume_percentage_to_db(base100_percentage: i32) -> f64 {
-        if base100_percentage <= 0 {
-            return -80.0;
-        }
-
-        let base1_percentage = f64::clamp(base100_percentage as f64, 0.0, 100.0) / 100.0;
-        return 20.0 * base1_percentage.log10();
-    }
-
-    fn set_volume_percentage(base100_percentage: i32, bus_name: &str) {
-        let volume_db = SettingsMenuController::volume_percentage_to_db(base100_percentage);
-        let audio_server = AudioServer::godot_singleton();
-        let bus_index = audio_server.get_bus_index(bus_name);
-        audio_server.set_bus_volume_db(bus_index, volume_db);
-    }
+		{
+			let button = self.button_confirm_changes.clone();
+			self.connect_with_deferred(&button, "pressed", |this, _| {
+				this.confirm_changes();
+			});
+		}
+
+		{
+			let button = self.button_undo_changes.clone();
+			self.connect_with_deferred(&button, "pressed", |this, _| {
+				this.unsaved_settings.clear();
+				this.enable_dirty_changes_buttons(false);
+				this.apply_settings_no_signals();
+				this.update_screen_settings();
+			});
+		}
+
+		{
+			let button = self.button_close_panel.clone();
+			self.connect_with_deferred(&button, "pressed", |this, _| {
+				if !this.unsaved_settings.is_empty() {
+					this.panel_on_close_confirm_or_undo.show();
+				} else {
+					let mut base = this.base_mut();
+					base.hide();
+					base.emit_signal(Self::SIGNAL_PANEL_CLOSED, &[]);
+				}
+			});
+		}
+
+		{
+			let button = self.button_on_close_confirm.clone();
+			self.connect_with_deferred(&button, "pressed", |this, _| {
+				this.confirm_changes();
+				let mut base = this.base_mut();
+				base.hide();
+				base.emit_signal(Self::SIGNAL_PANEL_CLOSED, &[]);
+			});
+		}
+
+		{
+			let button = self.button_on_close_undo.clone();
+			self.connect_with_deferred(&button, "pressed", |this, _| {
+				this.unsaved_settings.clear();
+				this.enable_dirty_changes_buttons(false);
+				this.apply_settings_no_signals();
+				this.update_screen_settings();
+
+				let mut base = this.base_mut();
+				base.hide();
+				base.emit_signal(Self::SIGNAL_PANEL_CLOSED, &[]);
+			});
+		}
+
+		{
+			let button = self.button_reset_settings.clone();
+			self.connect_with_deferred(&button, "pressed", |this, _| {
+				this.panel_are_you_sure_reset.bind_mut().show();
+			});
+		}
+
+		{
+			let panel = self.panel_are_you_sure_reset.clone();
+			self.connect_with_deferred(&panel, PanelAreYouSure::SIGNAL_YES, |this, _| {
+				this.unsaved_settings.clear();
+				this.enable_dirty_changes_buttons(false);
+
+				let default_settings = SettingsTable::default().into_iter().map(|s| (s.key(), s));
+
+				this.saved_settings.extend(default_settings);
+				this.apply_settings_no_signals();
+				this.update_screen_settings();
+			});
+		}
+	}
+}
+
+#[godot_api]
+impl SettingsMenuController {
+	const SIGNAL_LANGUAGE_CHANGED: &'static str = "language_changed";
+	const SIGNAL_PANEL_CLOSED: &'static str = "panel_closed";
+
+	#[signal]
+	pub fn language_changed(language: Language) {}
+
+	#[signal]
+	pub fn panel_closed() {}
+}
+
+impl SettingsMenuController {
+	pub fn open_panel(&mut self) {
+		self.update_screen_settings();
+		self.base_mut().show();
+	}
+
+	fn apply_settings_no_signals(&mut self) {
+		for &setting in self.saved_settings.values() {
+			match setting {
+				SettingsEnum::WindowSize(size) => {
+					self.spin_box_window_size_x
+						.set_value_no_signal(size.0.x as f64);
+					self.spin_box_window_size_y
+						.set_value_no_signal(size.0.y as f64);
+				}
+				SettingsEnum::MaxFps(rate) => {
+					self.spin_box_target_framerate
+						.set_value_no_signal(rate.0 as f64);
+				}
+				SettingsEnum::WindowMaximized(maximized) => {
+					self.check_box_window_maximized
+						.set_pressed_no_signal(maximized.0);
+				}
+				SettingsEnum::SkillOverlayModeSetting(mode) => {
+					let option_button = &mut self.option_button_skill_overlay_mode;
+					option_button.set_block_signals(true);
+					option_button.select(mode.0.index());
+					option_button.set_block_signals(false);
+
+					let spin_box = &mut self.spin_box_skill_overlay_mode_auto_delay;
+					match mode.0 {
+						SkillOverlayMode::Auto { delay_ms } => {
+							spin_box.set_visible(true);
+							spin_box.set_value_no_signal(delay_ms as f64);
+						}
+						SkillOverlayMode::WaitForInput => {
+							spin_box.set_visible(false);
+						}
+					}
+				}
+				SettingsEnum::LanguageSetting(language) => {
+					let option_button = &mut self.option_button_language;
+					option_button.set_block_signals(true);
+					option_button.select(language.0.index());
+					option_button.set_block_signals(false);
+
+					self.base().clone().call_deferred(
+						"emit_signal",
+						&[
+							Self::SIGNAL_LANGUAGE_CHANGED.to_variant(),
+							language.to_variant(),
+						],
+					);
+				}
+				SettingsEnum::DialogueTextSpeed(speed) => {
+					self.h_slider_dialogue_text_speed
+						.set_value_no_signal(speed.0 as f64);
+				}
+				SettingsEnum::Vsync(vsync) => {
+					self.check_box_vsync.set_pressed_no_signal(vsync.0);
+				}
+				SettingsEnum::MainVolume(main) => {
+					self.h_slider_main_volume.set_value_no_signal(main.0 as f64);
+				}
+				SettingsEnum::MusicVolume(music) => {
+					self.h_slider_music_volume
+						.set_value_no_signal(music.0 as f64);
+				}
+				SettingsEnum::SfxVolume(sfx) => {
+					self.h_slider_sfx_volume.set_value_no_signal(sfx.0 as f64);
+				}
+				SettingsEnum::VoiceVolume(voice) => {
+					self.h_slider_voice_volume
+						.set_value_no_signal(voice.0 as f64);
+				}
+			}
+
+			setting.apply();
+		}
+	}
+
+	fn update_screen_settings(&mut self) {
+		{
+			let is_maximized =
+				DisplayServer::singleton().window_get_mode() == WindowMode::MAXIMIZED;
+
+			self.check_box_window_maximized
+				.set_pressed_no_signal(is_maximized);
+
+			let new_setting = WindowMaximized(is_maximized);
+			self.unsaved_settings.remove(&new_setting.key());
+			replace_setting(&mut self.saved_settings, new_setting);
+		}
+
+		{
+			let size = DisplayServer::singleton().window_get_size();
+
+			self.spin_box_window_size_x
+				.set_value_no_signal(size.x as f64);
+			self.spin_box_window_size_y
+				.set_value_no_signal(size.y as f64);
+
+			let new_setting = WindowSize(size);
+			self.unsaved_settings.remove(&new_setting.key());
+			replace_setting(&mut self.saved_settings, new_setting);
+		}
+
+		{
+			let max_fps = Engine::singleton().get_max_fps();
+
+			self.spin_box_target_framerate
+				.set_value_no_signal(max_fps as f64);
+
+			let new_setting = MaxFps(max_fps);
+			self.unsaved_settings.remove(&new_setting.key());
+			replace_setting(&mut self.saved_settings, new_setting);
+		}
+
+		self.enable_dirty_changes_buttons(!self.unsaved_settings.is_empty());
+	}
+
+	fn enable_dirty_changes_buttons(&mut self, enable: bool) {
+		self.button_confirm_changes.set_disabled(!enable);
+		self.button_undo_changes.set_disabled(!enable);
+	}
+
+	fn apply_language(&mut self, language: Language) {
+		self.base_mut().call_deferred(
+			"emit_signal",
+			&[
+				Self::SIGNAL_LANGUAGE_CHANGED.to_variant(),
+				language.to_variant(),
+			],
+		);
+	}
+
+	fn confirm_changes(&mut self) {
+		for (key, unsaved_setting) in self.unsaved_settings.drain() {
+			unsaved_setting.confirmed();
+			self.saved_settings.insert(key, unsaved_setting);
+		}
+
+		write_settings_to_config(&mut self.unsaved_settings);
+		self.enable_dirty_changes_buttons(false);
+	}
 }

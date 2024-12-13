@@ -1,8 +1,8 @@
 use gdnative::core_types::FromVariant;
 use gdnative::export::Export;
 use util_gdnative::prelude::ToVariant;
-use crate::prelude::{CharacterVariant, GirlVariant};
-use crate::prelude::{ExportInfo, FromVariantError, Variant};
+use crate::internal_prelude::{CharacterVariant, GirlVariant};
+use crate::internal_prelude::{ExportInfo, FromVariantError, Variant};
 
 #[repr(transparent)]
 #[derive(Copy, Clone)]

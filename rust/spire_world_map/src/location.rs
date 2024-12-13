@@ -1,15 +1,12 @@
-#[allow(unused_imports)]
-use crate::*;
-use gdnative::prelude::{FromVariant, ToVariant};
-use serde::{Deserialize, Serialize};
 use strum_macros::VariantArray;
 
+use super::*;
+
 #[repr(u8)]
-#[derive(Serialize, Deserialize)]
-#[derive(Clone, Copy, Debug)]
-#[derive(PartialEq, Eq, Hash)]
-#[derive(ToVariant, FromVariant)]
-#[derive(VariantArray)]
+#[derive(
+	Serialize, Deserialize, Clone, Copy, Debug, PartialEq, Eq, Hash, VariantArray, GodotConvert,
+)]
+#[godot(via = u8)]
 pub enum WorldLocation {
 	Chapel = 0,
 	Grove = 1,
@@ -37,7 +34,7 @@ impl WorldLocation {
 			WorldLocation::Cave => &[],
 		};
 	}
-	
+
 	pub fn is_unlocked(&self, save: &SaveFile) -> bool {
 		return match self {
 			WorldLocation::Chapel => true,

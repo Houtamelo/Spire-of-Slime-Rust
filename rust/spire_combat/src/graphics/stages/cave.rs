@@ -1,8 +1,5 @@
-#[allow(unused_imports)]
-use crate::prelude::*;
-use super::randomizer::*;
+use super::*;
 
 //todo!()
 
-pub const CAVE_NODE: BGTree =
-	BGTree::new(None, &[]);
+pub const CAVE_NODE: BGTree = BGTree::new(None, &[]);

@@ -11,11 +11,15 @@
       <sourceFolder url="file://$MODULE_DIR$/rust/spire_combat/src" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/rust/spire_local_map/src" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/rust/spire_main_menu/src" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/rust/spire_locale/src" isTestSource="false" />
       <excludeFolder url="file://$MODULE_DIR$/.idea/copilot/chatSessions" />
       <excludeFolder url="file://$MODULE_DIR$/target" />
       <excludeFolder url="file://$MODULE_DIR$/.history/rust" />
       <excludeFolder url="file://$MODULE_DIR$/.trunk" />
       <excludeFolder url="file://$MODULE_DIR$/godot/.import" />
+      <excludeFolder url="file://$MODULE_DIR$/.history" />
+      <excludeFolder url="file://$MODULE_DIR$/.idea/fileTemplates" />
+      <excludeFolder url="file://$MODULE_DIR$/godot/godot" />
     </content>
     <orderEntry type="inheritedJdk" />
     <orderEntry type="sourceFolder" forTests="false" />

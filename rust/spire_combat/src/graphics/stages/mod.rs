@@ -1,19 +1,40 @@
-#[allow(unused_imports)]
-use crate::prelude::*;
-use serialization::SerializedBG;
+use super::*;
 
-pub mod randomizer;
-pub mod serialization;
-mod grove;
-mod forest;
 mod cave;
+mod forest;
+mod grove;
+mod randomizer;
+mod serialization;
 
-#[derive(Debug, Copy, Clone, PartialEq, Eq, Hash, Serialize, Deserialize)]
+pub use cave::*;
+pub use forest::*;
+pub use grove::*;
+pub use randomizer::*;
+pub use serialization::*;
+
+#[derive(GodotConvert)]
+#[godot(via = GString)]
+#[derive(Debug, Copy, Clone, Default, PartialEq, Eq, Hash, Serialize, Deserialize)]
 pub enum CombatBG {
+	#[default]
 	Grove,
 	Forest,
 	Cave,
 }
+
+impl Var for CombatBG {
+	fn get_property(&self) -> Self::Via { self.to_godot() }
+
+	fn set_property(&mut self, value: Self::Via) {
+		if let Ok(new) = Self::try_from_godot(value.clone()) {
+			*self = new;
+		} else {
+			godot_error!("Invalid CombatBG value: {value:?}");
+		}
+	}
+}
+
+impl Export for CombatBG {}
 
 impl CombatBG {
 	pub fn padding(&self) -> StagePadding {
@@ -23,7 +44,7 @@ impl CombatBG {
 			CombatBG::Cave => default(),
 		}
 	}
-	
+
 	fn path(&self) -> &'static str {
 		match self {
 			CombatBG::Grove => "res://Core/Combat/Backgrounds/Grove/grove.tscn",
@@ -31,41 +52,38 @@ impl CombatBG {
 			CombatBG::Cave => "res://Core/Combat/Backgrounds/Cave/cave.tscn",
 		}
 	}
-	
+
 	fn randomize(&self, rng: &mut impl Rng, parent: &Node2D, name: &str) -> Result<SerializedBG> {
-		let bg_tree =
-			match self {
-				CombatBG::Grove => grove::GROVE_NODE,
-				CombatBG::Forest => forest::FOREST_NODE,
-				CombatBG::Cave => cave::CAVE_NODE,
-			};
+		let bg_tree = match self {
+			CombatBG::Grove => grove::GROVE_NODE,
+			CombatBG::Forest => forest::FOREST_NODE,
+			CombatBG::Cave => cave::CAVE_NODE,
+		};
 
 		let tree = unsafe { bg_tree.randomize_recursive(rng, name, parent)? };
 		Ok(SerializedBG { stage: *self, tree })
 	}
-	
-	fn spawn(&self, parent: &Node2D) -> Result<Ref<Node2D>> {
-		let bg = spawn_prefab_as::<Node2D>(self.path())?;
 
-		let bg_ref = unsafe { bg.assume_shared() };
-		parent.add_child(bg, false);
-
-		Ok(bg_ref)
-	}
-	
-	pub fn spawn_randomized(&self, parent: &Node2D, rng: &mut impl Rng) -> Result<(Ref<Node2D>, SerializedBG)> {
+	fn spawn(&self, parent: &mut Gd<Node2D>) -> Result<Gd<Node2D>> {
 		let bg = spawn_prefab_as::<Node2D>(self.path())?;
-		
-		let bg_ref = unsafe { bg.assume_shared() };
-		parent.add_child(bg, false);
-		
-		let serial = 
-			self.randomize(rng, parent, bg.name().to_string().as_str())?;
-		
-		Ok((bg_ref, serial))
+		parent.add_child(&bg);
+		Ok(bg)
 	}
-	
-	pub fn deserialize(serial: SerializedBG, parent: &Node2D) -> Result<Ref<Node2D>> {
+
+	pub fn spawn_randomized(
+		&self,
+		parent: &mut Gd<Node2D>,
+		rng: &mut impl Rng,
+	) -> Result<(Gd<Node2D>, SerializedBG)> {
+		let bg = spawn_prefab_as::<Node2D>(self.path())?;
+		parent.add_child(&bg);
+
+		let serial = self.randomize(rng, parent, &bg.get_name().to_string())?;
+
+		Ok((bg, serial))
+	}
+
+	pub fn deserialize(serial: SerializedBG, parent: &mut Gd<Node2D>) -> Result<Gd<Node2D>> {
 		serial.deserialize(parent)
 	}
 }

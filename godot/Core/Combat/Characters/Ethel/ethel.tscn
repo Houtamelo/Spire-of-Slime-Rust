@@ -1,4 +1,4 @@
-[gd_scene load_steps=7 format=2]
+[gd_scene load_steps=11 format=2]
 
 [ext_resource path="res://Ideas/shader-material_post-processor_motion-blur.tres" type="Material" id=1]
 [ext_resource path="res://Ideas/fx_FHD_pivoted.png" type="Texture" id=2]
@@ -7,8 +7,135 @@
 [ext_resource path="res://Ideas/particles-material_pierce-fx.tres" type="Material" id=5]
 [ext_resource path="res://Core/Combat/Characters/Ethel/Anims/Idle/sprite-frames.tres" type="SpriteFrames" id=6]
 
+[sub_resource type="Animation" id=1]
+length = 0.001
+tracks/0/type = "value"
+tracks/0/path = NodePath("anims/pierce/slash_particles:emitting")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/keys = {
+"times": PoolRealArray( 0 ),
+"transitions": PoolRealArray( 1 ),
+"update": 0,
+"values": [ false ]
+}
+tracks/1/type = "value"
+tracks/1/path = NodePath("anims/pierce/trail:emitting")
+tracks/1/interp = 1
+tracks/1/loop_wrap = true
+tracks/1/imported = false
+tracks/1/enabled = true
+tracks/1/keys = {
+"times": PoolRealArray( 0 ),
+"transitions": PoolRealArray( 1 ),
+"update": 0,
+"values": [ false ]
+}
+tracks/2/type = "value"
+tracks/2/path = NodePath(".:position")
+tracks/2/interp = 1
+tracks/2/loop_wrap = true
+tracks/2/imported = false
+tracks/2/enabled = true
+tracks/2/keys = {
+"times": PoolRealArray( 0 ),
+"transitions": PoolRealArray( 1 ),
+"update": 0,
+"values": [ Vector2( 152, 1071 ) ]
+}
+
+[sub_resource type="Animation" id=2]
+resource_name = "clash"
+
+[sub_resource type="Animation" id=3]
+resource_name = "idle"
+tracks/0/type = "value"
+tracks/0/path = NodePath("anims/idle:visible")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/keys = {
+"times": PoolRealArray(  ),
+"transitions": PoolRealArray(  ),
+"update": 1,
+"values": [  ]
+}
+
+[sub_resource type="Animation" id=4]
+resource_name = "pierce"
+step = 0.01
+tracks/0/type = "value"
+tracks/0/path = NodePath("anims/pierce:visible")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/keys = {
+"times": PoolRealArray( 0.01, 0.99 ),
+"transitions": PoolRealArray( 1, 1 ),
+"update": 1,
+"values": [ true, false ]
+}
+tracks/1/type = "value"
+tracks/1/path = NodePath("anims/idle:visible")
+tracks/1/interp = 1
+tracks/1/loop_wrap = true
+tracks/1/imported = false
+tracks/1/enabled = true
+tracks/1/keys = {
+"times": PoolRealArray( 0.01, 0.99 ),
+"transitions": PoolRealArray( 1, 1 ),
+"update": 1,
+"values": [ false, true ]
+}
+tracks/2/type = "value"
+tracks/2/path = NodePath("anims/pierce/slash_particles:emitting")
+tracks/2/interp = 1
+tracks/2/loop_wrap = true
+tracks/2/imported = false
+tracks/2/enabled = true
+tracks/2/keys = {
+"times": PoolRealArray( 0.01, 0.21 ),
+"transitions": PoolRealArray( 1, 1 ),
+"update": 1,
+"values": [ false, true ]
+}
+tracks/3/type = "value"
+tracks/3/path = NodePath("anims/pierce/trail:emitting")
+tracks/3/interp = 1
+tracks/3/loop_wrap = true
+tracks/3/imported = false
+tracks/3/enabled = true
+tracks/3/keys = {
+"times": PoolRealArray( 0.01, 0.21, 1 ),
+"transitions": PoolRealArray( 1, 1, 1 ),
+"update": 1,
+"values": [ true, true, false ]
+}
+tracks/4/type = "value"
+tracks/4/path = NodePath(".:position")
+tracks/4/interp = 1
+tracks/4/loop_wrap = true
+tracks/4/imported = false
+tracks/4/enabled = true
+tracks/4/keys = {
+"times": PoolRealArray( 0, 0.21 ),
+"transitions": PoolRealArray( 1, 1 ),
+"update": 0,
+"values": [ Vector2( 152, 1071 ), Vector2( 996, 931 ) ]
+}
+
 [node name="ethel" type="Node2D"]
-position = Vector2( 863, 699 )
+position = Vector2( 152, 1071 )
+
+[node name="animation_player" type="AnimationPlayer" parent="."]
+anims/RESET = SubResource( 1 )
+anims/clash = SubResource( 2 )
+anims/idle = SubResource( 3 )
+anims/pierce = SubResource( 4 )
 
 [node name="anims" type="Node2D" parent="."]
 __meta__ = {
@@ -16,7 +143,6 @@ __meta__ = {
 }
 
 [node name="pierce" type="Node2D" parent="anims"]
-visible = false
 __meta__ = {
 "_edit_lock_": true
 }
@@ -52,9 +178,12 @@ process_material = ExtResource( 4 )
 texture = ExtResource( 3 )
 
 [node name="idle" type="Node2D" parent="anims"]
+visible = false
 
 [node name="sprite" type="AnimatedSprite" parent="anims/idle"]
 frames = ExtResource( 6 )
-frame = 34
+frame = 46
 playing = true
 offset = Vector2( -26, -180 )
+
+[node name="clash" type="Node2D" parent="anims"]

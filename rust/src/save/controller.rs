@@ -1,73 +1,60 @@
-#[allow(unused_imports)]
-use crate::*;
+use godot::classes::file_access::ModeFlags;
 
-use crate::save::file::SaveFile;
+use super::*;
 
-static SAVE_DIRECTORY: &str = "user://save/";
+const DIRECTORY: &str = "user://save/";
 
-#[derive(Debug, Default)]
+#[derive(Default)]
 pub struct SaveFilesController {
 	saves: HashMap<String, SaveFile>,
 }
 
 impl SaveFilesController {
 	pub fn load_saves_from_disk(&mut self) {
-		let save_folder_path = SAVE_DIRECTORY;
-		let save_folder = Directory::new();
+		self.saves.clear();
 
-		if save_folder.open(save_folder_path).is_err() {
-			save_folder.make_dir_recursive(save_folder_path)
-				.log_if_err();
+		let mut saves_dir = match DirAccess::open(DIRECTORY) {
+			Some(folder) => folder,
+			None => {
+				DirAccess::make_dir_recursive_absolute(DIRECTORY);
 
-			return;
+				let open_err = DirAccess::get_open_error();
+				return godot_print!(
+					"Could not open save folder.\n\
+						 Error: {open_err:?}"
+				);
+			}
+		};
+
+		match saves_dir.list_dir_begin() {
+			Error::OK => {}
+			err => return godot_error!("SavesFolder::list_dir_begin() failed.\n Error: {err:?}"),
 		}
 
-		if let Err(error) = save_folder.list_dir_begin(true, true) {
-			godot_error!("Failed to get files in save folder: {}", error);
-			return;
-		}
-		
-		while let child_name = save_folder.get_next() && child_name.len() > 0 {
-			if false == save_folder.current_is_dir() {
+		while let file = saves_dir.get_next()
+			&& !file.is_empty()
+		{
+			if !saves_dir.current_is_dir() {
 				continue;
 			}
 
-			let child_path = format!("{save_folder_path}/{child_name}");
-			let child_folder = Directory::new();
-			if let Err(error) = child_folder.open(child_path.as_str()) {
-				godot_error!("Failed to open save folder that was listed: {}", error);
-				continue;
-			}
-
-			let save_file_path = format!("{child_path}/main.ron");
-			if false == child_folder.file_exists(save_file_path.as_str()) {
-				continue;
-			}
-
-			let save_file = File::new();
-			if let Err(error) = save_file.open(save_file_path.as_str(), File::READ) {
-				godot_error!("Failed to open save file: {}", error);
-				continue;
-			}
-
-			let save_ron = save_file.get_as_text(false).to_string();
-			match ron::from_str::<SaveFile>(save_ron.as_str()) {
-				Ok(save) => { self.saves.insert(save.name.clone(), save); },
-				Err(err) => { godot_error!("Failed to deserialize save at path: {save_file_path}, contents: {err}"); }
+			match read_save(format!("{file}/main.ron")) {
+				Ok(save) => {
+					self.saves.insert(save.name.clone(), save);
+				}
+				Err(err) => {
+					godot_error!("{err}");
+				}
 			}
 		}
 	}
 
-	pub fn get_saves(&self) -> &HashMap<String, SaveFile> {
-		return &self.saves;
-	}
-	
-	pub fn get_save(&self, save_name: &str) -> Option<&SaveFile> {
-		return self.saves.get(save_name);
-	}
+	pub const fn get_saves(&self) -> &HashMap<String, SaveFile> { &self.saves }
+
+	pub fn get_save(&self, save_name: &str) -> Option<&SaveFile> { self.saves.get(save_name) }
 
 	pub fn add_save(&mut self, save: SaveFile) {
-		if self.saves.get(&save.name).is_some() {
+		if self.saves.contains_key(&save.name) {
 			godot_warn!("Trying to add a save that already exists: {}", save.name);
 		}
 
@@ -76,93 +63,129 @@ impl SaveFilesController {
 	}
 
 	pub fn delete_save(&mut self, save_name: &str) {
-		if self.saves.remove(save_name).is_none() {
-			godot_warn!("Trying to delete a save that doesn't exist: {}", save_name);
-			return;
+		if self.saves.remove(save_name).is_some() {
+			let folder_path = format!("{}/{save_name}", DIRECTORY);
+			let global_path = ProjectSettings::singleton().globalize_path(&folder_path);
+			Os::singleton().move_to_trash(&global_path).log_if_err();
+		} else {
+			godot_warn!(
+				"Tried to delete a save that doesn't exist, named \"{}\"",
+				save_name
+			);
 		}
-
-		let save_path = format!("{SAVE_DIRECTORY}/{save_name}");
-		let global_save_path = ProjectSettings::godot_singleton().globalize_path(save_path);
-		OS::godot_singleton().move_to_trash(global_save_path).log_if_err();
 	}
 
 	pub fn overwrite_save(&mut self, mut save: SaveFile) {
 		if self.saves.remove(&save.name).is_none() {
-			godot_warn!("Trying to overwrite a save that doesn't exist: {}", save.name);
+			godot_warn!(
+				"Tried to overwrite a save that doesn't exist, named \"{}\"",
+				save.name
+			);
 		}
 
 		save.is_dirty = true;
 		self.saves.insert(save.name.clone(), save);
-		self.write_saves_to_disk()
-			.log_if_err();
+		self.write_saves_to_disk().log_if_err();
 	}
 
-	fn write_saves_to_disk(&mut self) -> Result<(), GodotError> {
-		for save in self.saves.values_mut().filter(|save| save.is_dirty) {
-			save.is_dirty = false;
-			match ron::to_string(&save) {
-				Ok(save_ron) => {
-					let save_name = &save.name;
-					let exclusive_folder_path = format!("{SAVE_DIRECTORY}/{save_name}");
-					let exclusive_folder = Directory::new();
-					if exclusive_folder.open(exclusive_folder_path.as_str()).is_err() {
-						exclusive_folder.make_dir_recursive(exclusive_folder_path.as_str())?;
+	fn write_saves_to_disk(&mut self) -> Result<()> {
+		self.saves
+			.values_mut()
+			.filter(|save| save.is_dirty)
+			.try_for_each(|save| {
+				let save_name = &save.name;
+				let folder_path = GString::from(format!("{DIRECTORY}/{save_name}"));
+
+				if !DirAccess::dir_exists_absolute(&folder_path) {
+					match DirAccess::make_dir_recursive_absolute(&folder_path) {
+						Error::OK => {}
+						err => {
+							bail!("Could not create save folder. \n Error: {err:?}");
+						}
 					}
-
-					let save_file_name = "main.ron";
-					let save_file_path = format!("{exclusive_folder_path}/{save_file_name}");
-
-					backup_old_main(exclusive_folder_path.as_str(), &exclusive_folder, save_file_path.as_str()).log_if_err();
-
-					let save_file = File::new();
-					save_file.open(save_file_path, File::WRITE)?;
-					save_file.store_string(save_ron.as_str());
-					save_file.close();
-				},
-				Err(err) => {
-					godot_error!("Failed to serialize save: {}", err);
-					save.is_dirty = true;
 				}
+
+				let save_path = format!("{folder_path}/main.ron");
+				backup_old_main(folder_path, save_path.clone()).log_if_err();
+				write_save(save, save_path.clone())?;
+
+				save.is_dirty = false;
+				Ok(())
+			})
+	}
+}
+
+fn read_save(path: String) -> Result<SaveFile> {
+	let raw_text = FileAccess::get_file_as_string(&path);
+
+	if raw_text.is_empty() {
+		bail!(
+			"Failed to open save file at \"{path}\". \n\
+			   Error: {:?}",
+			FileAccess::get_open_error()
+		);
+	}
+
+	ron::from_str(raw_text.to_string().as_str()).map_err(|err| {
+		anyhow!(
+			"Failed to parse save file at \"{path}\". \n\
+			 Error: {err}"
+		)
+	})
+}
+
+fn write_save(save: &SaveFile, path: String) -> Result<()> {
+	let save_ron = ron::to_string(&save)?;
+
+	FileAccess::open(&path, ModeFlags::WRITE)
+		.ok_or_else(|| {
+			anyhow!(
+				"Failed to open save file at \"{path}\". \n\
+			 Error: {:?}",
+				FileAccess::get_open_error()
+			)
+		})
+		.map(|mut save_file| {
+			save_file.store_string(&save_ron);
+			save_file.close();
+		})
+}
+
+#[allow(clippy::never_loop)]
+fn backup_old_main(folder_path: GString, main_path: String) -> Result<()> {
+	let old_main = read_save(main_path)?;
+	let mut folder = DirAccess::open(&folder_path).ok_or_else(|| {
+		anyhow!(
+			"Could not open save folder. \n\
+			 Error: {:?}",
+			DirAccess::get_open_error()
+		)
+	})?;
+
+	let backup_file_name = 'outer: loop {
+		let mut oldest_file = None;
+		for backup_index in 1..=50 {
+			let file_name = format!("backup_{backup_index}.ron");
+			if folder.file_exists(&file_name) {
+				let file_path = format!("{folder_path}/{file_name}");
+				let file_time = FileAccess::get_modified_time(&file_path);
+				if let Some((_, oldest_time)) = oldest_file
+					&& oldest_time <= file_time
+				{
+					continue;
+				} else {
+					oldest_file = Some((file_name, file_time));
+				}
+			} else {
+				break 'outer file_name;
 			}
 		}
 
-		return Ok(());
+		break oldest_file
+			.map(pluck!(.0))
+			.unwrap_or_else(|| own!("backup_1.ron"));
+	};
 
-		fn backup_old_main(exclusive_folder_path: &str, exclusive_folder: &Ref<Directory, Unique>, save_file_path: &str) -> Result<(), GodotError> {
-			let save_file = File::new();
-			save_file.open(save_file_path, File::READ)?;
-
-			let old_main_save = save_file.get_as_text(false).to_string();
-
-			let dummy_file = File::new();
-
-			let backup_file_name = 'outer: loop {
-				let mut oldest_file : Option<(String, i64)> = None;
-				for backup_index in 1..=50 {
-					let file_name = format!("backup_{backup_index}.ron");
-					if exclusive_folder.file_exists(file_name.as_str()) {
-						let file_path = format!("{exclusive_folder_path}/{file_name}");
-						let file_time = dummy_file.get_modified_time(file_path);
-						if let Some((_, oldest_time)) = oldest_file && oldest_time <= file_time {
-							continue;
-						} else {
-							oldest_file = Some((file_name, file_time));
-						}
-					} else {
-						break 'outer file_name;
-					}
-				}
-
-				break oldest_file.unwrap().0;
-			};
-
-			let backup_file_path = format!("{exclusive_folder_path}/{backup_file_name}");
-			let backup_file = File::new();
-			backup_file.open(backup_file_path, File::WRITE)?;
-			backup_file.store_string(old_main_save);
-			backup_file.close();
-
-			return Ok(());
-		}
-	}
+	let backup_file_path = format!("{folder_path}/{backup_file_name}");
+	write_save(&old_main, backup_file_path)
 }

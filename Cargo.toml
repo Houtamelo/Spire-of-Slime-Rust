@@ -7,8 +7,23 @@ members = [
     "rust/spire_settings_menu",
     "rust/spire_shared",
     "rust/spire_main_menu",
-    "rust/spire_local_map"]
+    "rust/spire_local_map",
+]
 resolver = "2"
 
-[profile.dev]
-incremental = true
+[workspace.dependencies]
+godot = "0.2"
+houtamelo_utils = "3.0"
+houtamelo_utils_gdext = "0.4.3"
+spire_tween = "0.4"
+declarative_type_state = "0.6"
+rand = { version = "0.8.5", features = ["serde1"] }
+rand_xoshiro = { version = "0.6.0", features = ["serde1"] }
+serde = { version = "1.0", features = ["derive"] }
+ron = "0.8.1"
+getrandom = "0.2.15"
+uuid = { version = "1.10", features = ["serde"] }
+anyhow = { version = "1.0", features = ["backtrace", "std"] }
+replace_with = "0.1.7"
+comfy-bounded-ints = { version = "0.5", git = "https://github.com/Houtamelo/comfy-bounded-ints", branch = "unchained", features = ["serde"] }
+derived-deref = { version = "2.0" }

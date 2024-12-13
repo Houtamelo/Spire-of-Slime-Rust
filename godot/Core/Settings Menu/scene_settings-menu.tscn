@@ -1,0 +1,251 @@
+[gd_scene load_steps=8 format=3 uid="uid://chhrwivgja5oq"]
+
+[ext_resource type="Texture2D" uid="uid://d2sqs68ltofvi" path="res://Core/Settings Menu/background_settings-menu.png" id="1"]
+[ext_resource type="Theme" path="res://Core/Settings Menu/theme_settings-menu.tres" id="2"]
+[ext_resource type="Texture2D" uid="uid://ckgsglkn6lulw" path="res://Core/Settings Menu/frame_settings-menu.png" id="3"]
+[ext_resource type="PackedScene" path="res://Core/Shared/disallow-click-focus_on-parent.tscn" id="4"]
+[ext_resource type="Texture2D" uid="uid://bp1u5i2tieb7c" path="res://Core/Settings Menu/UI/Toggle/toggle_off.png" id="4_06s2b"]
+[ext_resource type="Texture2D" uid="uid://dtd4fp7cp0lcw" path="res://Core/Settings Menu/UI/Button/button.png" id="8"]
+[ext_resource type="Texture2D" uid="uid://bvd5nfuue8ufh" path="res://Core/Settings Menu/UI/Slider/slider.png" id="12"]
+
+[node name="scene_settings-menu" type="Control"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+theme = ExtResource("2")
+
+[node name="background" type="TextureRect" parent="."]
+layout_mode = 0
+texture = ExtResource("1")
+
+[node name="check-box_maximize-window" type="CheckBox" parent="."]
+layout_mode = 0
+offset_left = 1263.0
+offset_top = 210.0
+offset_right = 1676.0
+offset_bottom = 344.0
+action_mode = 0
+
+[node name="label2" type="Label" parent="check-box_maximize-window"]
+layout_mode = 0
+offset_left = 100.0
+offset_top = 25.0
+offset_right = 407.0
+offset_bottom = 65.0
+text = "Maximize Window"
+vertical_alignment = 1
+
+[node name="disallow-click-focus_on-parent" parent="check-box_maximize-window" instance=ExtResource("4")]
+script = null
+
+[node name="background" type="Button" parent="check-box_maximize-window"]
+show_behind_parent = true
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+focus_mode = 0
+mouse_filter = 1
+action_mode = 0
+shortcut_in_tooltip = false
+icon = ExtResource("4_06s2b")
+
+[node name="frame" type="TextureRect" parent="."]
+layout_mode = 0
+mouse_filter = 2
+texture = ExtResource("3")
+
+[node name="spin-box_frame-rate" type="TextureRect" parent="."]
+layout_mode = 0
+offset_left = 1264.0
+offset_top = 322.0
+offset_right = 1676.0
+offset_bottom = 492.0
+mouse_filter = 0
+texture = ExtResource("8")
+
+[node name="label" type="Label" parent="spin-box_frame-rate"]
+layout_mode = 0
+offset_left = 73.0
+offset_top = 46.0
+offset_right = 270.0
+offset_bottom = 86.0
+text = "Frame rate:"
+vertical_alignment = 1
+
+[node name="spin-box" type="SpinBox" parent="spin-box_frame-rate"]
+layout_mode = 0
+offset_left = 278.0
+offset_top = 31.0
+offset_right = 360.0
+offset_bottom = 98.0
+mouse_filter = 1
+min_value = 10.0
+max_value = 144.0
+value = 144.0
+rounded = true
+
+[node name="disallow-click-focus_on-parent" parent="spin-box_frame-rate/spin-box" instance=ExtResource("4")]
+script = null
+
+[node name="slider_main-volume" type="TextureRect" parent="."]
+layout_mode = 0
+offset_left = 246.0
+offset_top = 168.0
+offset_right = 758.0
+offset_bottom = 327.0
+mouse_filter = 0
+texture = ExtResource("12")
+
+[node name="progress_bar" type="ProgressBar" parent="slider_main-volume"]
+show_behind_parent = true
+layout_mode = 0
+offset_left = 90.0
+offset_top = 65.0
+offset_right = 415.0
+offset_bottom = 109.0
+mouse_filter = 2
+step = 1.0
+value = 50.0
+rounded = true
+show_percentage = false
+
+[node name="label" type="Label" parent="slider_main-volume"]
+layout_mode = 0
+offset_left = 87.0
+offset_top = 52.0
+offset_right = 308.0
+offset_bottom = 92.0
+theme_override_font_sizes/font_size = 28
+text = "Main Volume"
+vertical_alignment = 1
+
+[node name="value" type="Label" parent="slider_main-volume"]
+layout_mode = 0
+offset_left = 329.0
+offset_top = 53.0
+offset_right = 412.0
+offset_bottom = 93.0
+theme_override_font_sizes/font_size = 28
+text = "100%"
+horizontal_alignment = 2
+vertical_alignment = 1
+clip_text = true
+
+[node name="h_slider" type="HSlider" parent="slider_main-volume"]
+modulate = Color(1, 0, 0, 0)
+layout_mode = 0
+offset_left = 83.0
+offset_top = 87.0
+offset_right = 417.0
+offset_bottom = 103.0
+mouse_filter = 1
+
+[node name="slider_main-volume2" type="TextureRect" parent="."]
+layout_mode = 0
+offset_left = 250.0
+offset_top = 314.0
+offset_right = 762.0
+offset_bottom = 473.0
+mouse_filter = 0
+texture = ExtResource("12")
+
+[node name="progress_bar" type="ProgressBar" parent="slider_main-volume2"]
+show_behind_parent = true
+layout_mode = 0
+offset_left = 90.0
+offset_top = 65.0
+offset_right = 415.0
+offset_bottom = 109.0
+mouse_filter = 2
+step = 1.0
+value = 50.0
+rounded = true
+show_percentage = false
+
+[node name="label" type="Label" parent="slider_main-volume2"]
+layout_mode = 0
+offset_left = 87.0
+offset_top = 52.0
+offset_right = 308.0
+offset_bottom = 92.0
+theme_override_font_sizes/font_size = 28
+text = "Music Volume"
+vertical_alignment = 1
+
+[node name="value" type="Label" parent="slider_main-volume2"]
+layout_mode = 0
+offset_left = 329.0
+offset_top = 53.0
+offset_right = 412.0
+offset_bottom = 93.0
+theme_override_font_sizes/font_size = 28
+text = "100%"
+horizontal_alignment = 2
+vertical_alignment = 1
+clip_text = true
+
+[node name="h_slider" type="HSlider" parent="slider_main-volume2"]
+modulate = Color(1, 0, 0, 0)
+layout_mode = 0
+offset_left = 83.0
+offset_top = 87.0
+offset_right = 417.0
+offset_bottom = 103.0
+mouse_filter = 1
+
+[node name="slider_main-volume3" type="TextureRect" parent="."]
+layout_mode = 0
+offset_left = 257.0
+offset_top = 461.0
+offset_right = 769.0
+offset_bottom = 620.0
+mouse_filter = 0
+texture = ExtResource("12")
+
+[node name="progress_bar" type="ProgressBar" parent="slider_main-volume3"]
+show_behind_parent = true
+layout_mode = 0
+offset_left = 90.0
+offset_top = 65.0
+offset_right = 415.0
+offset_bottom = 109.0
+mouse_filter = 2
+step = 1.0
+value = 50.0
+rounded = true
+show_percentage = false
+
+[node name="label" type="Label" parent="slider_main-volume3"]
+layout_mode = 0
+offset_left = 87.0
+offset_top = 52.0
+offset_right = 308.0
+offset_bottom = 92.0
+theme_override_font_sizes/font_size = 28
+text = "Voice Volume"
+vertical_alignment = 1
+
+[node name="value" type="Label" parent="slider_main-volume3"]
+layout_mode = 0
+offset_left = 329.0
+offset_top = 53.0
+offset_right = 412.0
+offset_bottom = 93.0
+theme_override_font_sizes/font_size = 28
+text = "100%"
+horizontal_alignment = 2
+vertical_alignment = 1
+clip_text = true
+
+[node name="h_slider" type="HSlider" parent="slider_main-volume3"]
+modulate = Color(1, 0, 0, 0)
+layout_mode = 0
+offset_left = 83.0
+offset_top = 87.0
+offset_right = 417.0
+offset_bottom = 103.0
+mouse_filter = 1

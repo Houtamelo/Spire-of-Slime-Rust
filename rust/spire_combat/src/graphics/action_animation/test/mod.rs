@@ -1,14 +1,12 @@
-#[allow(unused_imports)]
-use crate::prelude::*;
+/*
+todo!
+use crate::internal_prelude::*;
 use crate::graphics::action_animation::skills::offensive::*;
 use crate::graphics::action_animation::test::exported_character::NameWrapper;
 use crate::graphics::{CombatScene, entity_anim};
-use crate::graphics::entity_anim::EntityAnim;
 use crate::graphics::stages::CombatBG;
 
 use std::iter;
-use gdnative::export::Export;
-use gdnative::export::hint::{ArrayHint, EnumHint, IntHint};
 use rand::SeedableRng;
 use rand_xoshiro::Xoshiro256StarStar;
 use strum::VariantNames;
@@ -28,20 +26,21 @@ impl Export for Targets {
 	fn export_info(_hint: Option<Self::Hint>) -> ExportInfo {
 		let values =
 			GirlVariant::VARIANTS.iter()
-			                     .chain(NPCVariant::VARIANTS)
-			                     .map(|v| v.to_string())
-			                     .collect::<Vec<_>>();
-		
+								 .chain(NpcVariant::VARIANTS)
+								 .map(|v| v.to_string())
+								 .collect::<Vec<_>>();
+
 		ArrayHint::with_element_hint::<CharacterVariant>(<IntHint<u16>>::Enum(EnumHint::new(values))).export_info()
 	}
 }
 
 
-#[extends(Node)]
+#[derive(GodotClass)]
+#[class(no_init, base = Node)]
 pub struct AnimTester {
-	#[export_path] button_play_offensive: Option<Ref<Button>>,
-	#[export_path] button_play_defensive: Option<Ref<Button>>,
-	#[export_path] button_play_lewd: Option<Ref<Button>>,
+	#[export_path] button_play_offensive: Option<Gd<Button>>,
+	#[export_path] button_play_defensive: Option<Gd<Button>>,
+	#[export_path] button_play_lewd: Option<Gd<Button>>,
 	#[property] caster: NameWrapper,
 	#[property] targets: Targets,
 	#[property] skill: SkillWrapper,
@@ -62,40 +61,40 @@ fn unload_characters(parent: &Node, character: impl Iterator<Item = &CharacterNo
 }
 
 const CASTER_POS: Position = Position {
-	order: Bound_u8::new(0),
-	size: Bound_u8::new(1),
-	side: Side::Left,
+	order: Bnd_u64::new(0),
+	size: Bnd_u64::new(1),
+	side: Team::Left,
 };
 
-#[methods]
+#[godot_api]
 impl AnimTester {
-	#[method]
-	unsafe fn _ready(&mut self, #[base] owner: &Node) {
+	#[func]
+	fn ready(&mut self, #[base] owner: &Node) {
 		self.grab_nodes_by_path(owner);
-		
-		self.button_play_offensive.unwrap().connect_fn("pressed", owner, fn_name(&Self::_play_offensive));
-		self.button_play_defensive.unwrap().connect_fn("pressed", owner, fn_name(&Self::_play_defensive));
-		self.button_play_lewd.unwrap().connect_fn("pressed", owner, fn_name(&Self::_play_lewd));
-		
+
+		self.button_play_offensive.unwrap().connect_deferred("pressed", owner, fn_name(&Self::_play_offensive));
+		self.button_play_defensive.unwrap().connect_deferred("pressed", owner, fn_name(&Self::_play_defensive));
+		self.button_play_lewd.unwrap().connect_deferred("pressed", owner, fn_name(&Self::_play_lewd));
+
 		let mut rng = Xoshiro256StarStar::from_entropy();
 		let combat_scene = CombatScene::load(owner, CombatBG::Grove, &mut rng).unwrap().into_base().assume_safe();
 		self.animation_nodes = Some(AnimationNodes::from_combat_root(&combat_scene, CombatBG::Grove).unwrap());
 	}
-	
+
 	#[allow(unused)]
 	#[allow(unreachable_code)]
-	#[method]
+	#[func]
 	unsafe fn _play_offensive(&mut self, #[base] owner: &Node) {
 		unload_characters(owner, self.loaded_characters.iter());
 		self.current_sequence
 			.take()
-			.map(|id| { 
+			.map(|id| {
 				id.kill()
 			});
-		
+
 		let caster = load_character(owner, self.caster.0);
 		let mut rng = Xoshiro256StarStar::from_entropy();
-		let targets = 
+		let targets =
 			self.targets.0
 				.iter()
 				.map(|node| {
@@ -111,24 +110,24 @@ impl AnimTester {
 			iter::once(caster)
 				.chain(targets.iter().map(pluck!(.0)))
 				.collect::<Vec<_>>();
-		
+
 		self.loaded_characters = all_characters.clone();
-		
+
 		let skill: Box<dyn OffensiveAnim> = {
 			todo!()
 		};
-		
+
 		let mut targets_clone = targets.clone();
-		
+
 		let mut seq = Sequence::new();
 		seq.append_interval(0.1);
 		seq.append_call(move || {
 			let with_positions =
 				iter::once((caster, CASTER_POS))
 					.chain(targets.iter().enumerate().map(|(i, (target, _))| {
-						(target.clone(), Position { order: i.into(), size: target.name().position_size(), side: Side::Right })
+						(target.clone(), Position { order: i.into(), size: target.name().position_size(), side: Team::Right })
 					})).collect::<Vec<_>>();
-			
+
 			calc_default_positions(CombatBG::Grove.padding(), with_positions.into_iter())
 				.into_iter()
 				.for_each(|(character, pos)| {
@@ -139,38 +138,39 @@ impl AnimTester {
 						});
 				});
 		});
-		
+
 		let enemies = CountOrMore::new([{
 			let (first_target, result) = targets_clone.remove(0);
-			(ActionParticipant { 
+			(ActionParticipant {
 				godot: first_target,
-				pos_before: Position { order: 0.into(), size: first_target.name().position_size(), side: Side::Right },
-				pos_after: Position { order: 0.into(), size: first_target.name().position_size(), side: Side::Right },
+				pos_before: Position { order: 0.into(), size: first_target.name().position_size(), side: Team::Right },
+				pos_after: Position { order: 0.into(), size: first_target.name().position_size(), side: Team::Right },
 			}, result)
 		}], targets_clone.into_iter().enumerate().map(|(index, (target, result))| {
 			(ActionParticipant {
 				godot: target,
-				pos_before: Position { order: index.into(), size: target.name().position_size(), side: Side::Right },
-				pos_after: Position { order: index.into(), size: target.name().position_size(), side: Side::Right },
+				pos_before: Position { order: index.into(), size: target.name().position_size(), side: Team::Right },
+				pos_after: Position { order: index.into(), size: target.name().position_size(), side: Team::Right },
 			}, result)
 		}).collect());
-		
+
 		let skill_anim = SkillAnimation {
 			caster: ActionParticipant { godot: caster, pos_before: CASTER_POS, pos_after: CASTER_POS },
 			kind: ActionKind::OnEnemies { skill, enemies }
 		};
-		
+
 		seq.append_sequence(self.animation_nodes.as_ref().unwrap().animate_skill(skill_anim, Vec::new()).unwrap());
 		self.current_sequence = Some(seq.register().unwrap());
 	}
-	
-	#[method]
+
+	#[func]
 	fn _play_defensive(&self) {
-		
+
 	}
-	
-	#[method]
+
+	#[func]
 	fn _play_lewd(&self) {
-		
+
 	}
 }
+*/

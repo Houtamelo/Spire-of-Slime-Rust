@@ -1,106 +1,115 @@
-#[allow(unused_imports)]
-use crate::prelude::*;
-use crate::effects::*;
+use super::*;
 
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Clone, Serialize, Deserialize)]
 pub struct LewdSkill {
-	pub skill_name: SkillVariant,
-	pub recovery_ms: SaturatedU64,
-	pub charge_ms  : SaturatedU64,
-	pub acc_mode : ACCMode,
-	pub dmg_mode : DMGMode,
-	pub crit_mode: CRITMode,
-	pub effects_self    : DynamicArray<SelfApplier>,
-	pub effects_target  : DynamicArray<TargetApplier>,
+	pub skill_name: SkillIdent,
+	pub recovery_ms: Int,
+	pub charge_ms: Int,
+	pub acc_mode: AccuracyMode,
+	pub dmg_mode: DmgMode,
+	pub crit_mode: CritMode,
+	pub effects_self: Vec<CasterApplierEnum>,
+	pub effects_target: Vec<TargetApplierEnum>,
 	pub caster_positions: PositionMatrix,
 	pub target_positions: PositionMatrix,
-	pub multi_target    : bool,
-	pub use_counter     : UseCounter,
+	pub multi_target: bool,
+	pub use_counter: UseCounter,
 }
 
 impl LewdSkill {
-	pub fn calc_dmg(&self, caster: &CombatCharacter, target: &CombatCharacter, is_crit: bool) -> Option<CheckedRange> {
-		let DMGMode::Power { power, toughness_reduction } = self.dmg_mode 
-			else { return None; };
-
-		let toughness = {
-			let base = target.dyn_stat::<Toughness>().squeeze_to_i64();
-			let min = i64::min(base, 0);
-			i64::max(min, base - toughness_reduction.squeeze_to_i64())
+	//todo! these should just call offensive::calc_dmg
+	pub fn calc_dmg<Caster: 'static, Target: 'static>(
+		&self,
+		caster: &Ptr<Actor>,
+		target: &Ptr<Actor>,
+		ctx: &ActorContext,
+		is_crit: bool,
+	) -> Option<SaneRange> {
+		let DmgMode::Power {
+			power,
+			toughness_reduction,
+		} = self.dmg_mode
+		else {
+			return None;
 		};
 
-		let total_power = { 
-			let mut temp = power.to_sat_i64();
-			temp *= caster.dyn_stat::<Power>().get();
+		let toughness = {
+			let base = target.eval_dyn_stat::<Toughness>(ctx);
+			let min = i64::min(*base, 0);
+			i64::max(min, *base - toughness_reduction)
+		};
+
+		let total_power = {
+			let mut temp = power;
+			temp *= caster.eval_dyn_stat::<Power>(ctx);
 			temp *= 100 - toughness;
 			temp /= 10000;
 			temp
 		};
-		
+
 		let (final_min, final_max) = {
-			let dmg_range = caster.dmg;
-			
-			let mut temp_min = dmg_range.bound_lower().to_sat_i64();
-			let mut temp_max = dmg_range.bound_upper().to_sat_i64();
-			temp_min *= total_power;
-			temp_min /= 100;
-			temp_max *= total_power;
-			temp_max /= 100;
-			
+			let (mut temp_min, mut temp_max) = caster.base_stat::<Damage>().deconstruct();
+
+			temp_min.set_percent(total_power);
+			temp_max.set_percent(total_power);
+
 			if is_crit {
-				temp_min *= 15;
-				temp_min /= 10;
-				temp_max *= 15;
-				temp_max /= 10;
+				temp_min.set_percent(150);
+				temp_max.set_percent(150);
 			}
-			
+
 			(temp_min, temp_max)
 		};
-		
-		return Some(CheckedRange::floor(final_min.squeeze_to(), final_max.squeeze_to()));
+
+		Some(SaneRange::floor(final_min, final_max))
 	}
 
-	pub fn calc_hit_chance(&self, caster: &CombatCharacter, target: &CombatCharacter) -> Option<PercentageU8> {
-		return match self.acc_mode {
-			ACCMode::CanMiss { acc } => {
+	pub fn calc_hit_chance<Caster: 'static, Target: 'static>(
+		&self,
+		caster: &Ptr<Actor>,
+		target: &Ptr<Actor>,
+		ctx: &ActorContext,
+	) -> Option<IntPercent> {
+		match self.acc_mode {
+			AccuracyMode::CanMiss { acc } => {
 				let final_acc = {
-					let mut temp = acc.to_sat_i64();
-					temp += caster.dyn_stat::<Accuracy>().get();
-					temp -= target.dyn_stat::<Dodge>().get();
-					temp.to_percent_u8()
+					let mut temp = acc;
+					temp += caster.eval_dyn_stat::<Accuracy>(ctx);
+					temp -= target.eval_dyn_stat::<Dodge>(ctx);
+					temp
 				};
 
-				Some(final_acc)
+				Some(final_acc.into())
 			}
-			ACCMode::NeverMiss => None,
-		};
+			AccuracyMode::NeverMiss => None,
+		}
 	}
-	
-	pub fn calc_crit_chance(&self, caster: &CombatCharacter) -> Option<PercentageU8> {
-		return match self.crit_mode {
-			CRITMode::CanCrit { chance } => {
+
+	pub fn calc_crit_chance(&self, caster: &Ptr<Actor>, ctx: &ActorContext) -> Option<IntPercent> {
+		match self.crit_mode {
+			CritMode::CanCrit { chance } => {
 				let final_chance = {
-					let mut temp = chance.to_sat_i64();
-					temp += caster.dyn_stat::<CritRate>().get();
-					temp.to_percent_u8()
+					let mut temp = Int::from(chance);
+					temp += caster.eval_dyn_stat::<CritRate>(ctx);
+					temp
 				};
 
-				Some(final_chance)
-			},
-			CRITMode::NeverCrit => None,
-		};
+				Some(final_chance.into())
+			}
+			CritMode::NeverCrit => None,
+		}
 	}
 }
 
 impl SkillData for LewdSkill {
-	fn variant(&self) -> SkillVariant { return self.skill_name  ; }
-	fn recovery_ms(&self) -> &SaturatedU64 { return &self.recovery_ms; }
-	fn charge_ms  (&self) -> &SaturatedU64 { return &self.charge_ms  ; }
-	fn crit(&self) -> &CRITMode { return &self.crit_mode; }
-	fn effects_self    (&self) -> &[SelfApplier]   { return &self.effects_self    ; }
-	fn effects_target  (&self) -> &[TargetApplier] { return &self.effects_target  ; }
-	fn caster_positions(&self) -> &PositionMatrix  { return &self.caster_positions; }
-	fn target_positions(&self) -> &PositionMatrix  { return &self.target_positions; }
-	fn multi_target(&self) -> &bool { return &self.multi_target; }
-	fn use_counter (&self) -> &UseCounter { return &self.use_counter ; }
+	fn variant(&self) -> SkillIdent { self.skill_name }
+	fn recovery_ms(&self) -> &Int { &self.recovery_ms }
+	fn charge_ms(&self) -> &Int { &self.charge_ms }
+	fn crit(&self) -> &CritMode { &self.crit_mode }
+	fn effects_self(&self) -> &[CasterApplierEnum] { &self.effects_self }
+	fn effects_target(&self) -> &[TargetApplierEnum] { &self.effects_target }
+	fn caster_positions(&self) -> &PositionMatrix { &self.caster_positions }
+	fn target_positions(&self) -> &PositionMatrix { &self.target_positions }
+	fn multi_target(&self) -> &bool { &self.multi_target }
+	fn use_counter(&self) -> &UseCounter { &self.use_counter }
 }

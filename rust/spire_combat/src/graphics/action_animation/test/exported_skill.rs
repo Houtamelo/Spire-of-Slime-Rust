@@ -1,7 +1,7 @@
 use gdnative::export::Export;
-use crate::entity::data::skill_variant::EthelSkill;
-use crate::prelude::SkillVariant;
-use crate::prelude::{ExportInfo, FromVariant, FromVariantError, ToVariant, Variant};
+use crate::entities::data::skill_variant::EthelSkill;
+use crate::internal_prelude::SkillVariant;
+use crate::internal_prelude::{ExportInfo, FromVariant, FromVariantError, ToVariant, Variant};
 
 #[repr(transparent)]
 #[derive(Copy, Clone)]
