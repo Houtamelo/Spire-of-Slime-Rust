@@ -12,19 +12,19 @@ pub struct Girl {
 }
 
 impl Girl {
-	pub fn base_stat<Stat: GetGirlCommon + Clone>(&self) -> Stat {
+	pub fn base_stat<Stat: MemberOf<BaseGirlStats, MemberType: Clone>>(&self) -> Stat::MemberType {
 		self.stats.get::<Stat>().clone()
 	}
 
-	pub fn base_stat_mut<Stat: GetGirlCommon>(&mut self) -> &mut Stat {
+	pub fn base_stat_mut<Stat: MemberOf<BaseGirlStats>>(&mut self) -> &mut Stat::MemberType {
 		self.stats.get_mut::<Stat>()
 	}
 
-	pub fn raw_stat<Stat: GetGirlRawCommon + Clone>(&self) -> Stat {
+	pub fn raw_stat<Stat: MemberOf<RawGirlStats, MemberType: Clone>>(&self) -> Stat::MemberType {
 		self.raw_stats.get::<Stat>().clone()
 	}
 
-	pub fn raw_stat_mut<Stat: GetGirlRawCommon>(&mut self) -> &mut Stat {
+	pub fn raw_stat_mut<Stat: MemberOf<RawGirlStats>>(&mut self) -> &mut Stat::MemberType {
 		self.raw_stats.get_mut::<Stat>()
 	}
 

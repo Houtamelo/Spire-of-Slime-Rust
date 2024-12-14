@@ -6,9 +6,9 @@ mod grove;
 mod randomizer;
 mod serialization;
 
-pub use cave::*;
-pub use forest::*;
-pub use grove::*;
+use cave::*;
+use forest::*;
+use grove::*;
 pub use randomizer::*;
 pub use serialization::*;
 
@@ -55,16 +55,16 @@ impl CombatBG {
 
 	fn randomize(&self, rng: &mut impl Rng, parent: &Node2D, name: &str) -> Result<SerializedBG> {
 		let bg_tree = match self {
-			CombatBG::Grove => grove::GROVE_NODE,
-			CombatBG::Forest => forest::FOREST_NODE,
-			CombatBG::Cave => cave::CAVE_NODE,
+			CombatBG::Grove => GROVE_NODE,
+			CombatBG::Forest => FOREST_NODE,
+			CombatBG::Cave => CAVE_NODE,
 		};
 
-		let tree = unsafe { bg_tree.randomize_recursive(rng, name, parent)? };
+		let tree = bg_tree.randomize_recursive(rng, name, parent)?;
 		Ok(SerializedBG { stage: *self, tree })
 	}
 
-	fn spawn(&self, parent: &mut Gd<Node2D>) -> Result<Gd<Node2D>> {
+	fn spawn(&self, parent: &mut Node2D) -> Result<Gd<Node2D>> {
 		let bg = spawn_prefab_as::<Node2D>(self.path())?;
 		parent.add_child(&bg);
 		Ok(bg)
@@ -72,7 +72,7 @@ impl CombatBG {
 
 	pub fn spawn_randomized(
 		&self,
-		parent: &mut Gd<Node2D>,
+		parent: &mut Node2D,
 		rng: &mut impl Rng,
 	) -> Result<(Gd<Node2D>, SerializedBG)> {
 		let bg = spawn_prefab_as::<Node2D>(self.path())?;
@@ -83,7 +83,7 @@ impl CombatBG {
 		Ok((bg, serial))
 	}
 
-	pub fn deserialize(serial: SerializedBG, parent: &mut Gd<Node2D>) -> Result<Gd<Node2D>> {
+	pub fn deserialize(serial: SerializedBG, parent: &mut Node2D) -> Result<Gd<Node2D>> {
 		serial.deserialize(parent)
 	}
 }

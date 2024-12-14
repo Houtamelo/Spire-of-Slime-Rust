@@ -1,4 +1,4 @@
-use crate::internal_prelude::*;
+use super::*;
 
 #[derive(Serialize, Deserialize, Clone, Default)]
 pub struct PrimaryUpgradeCount {
@@ -10,14 +10,14 @@ pub struct PrimaryUpgradeCount {
 
 #[derive(Serialize, Deserialize, Clone, Default)]
 pub struct SecondaryUpgradeCount {
-	stun_def:    Int,
-	move_res:    Int,
-	debuff_res:  Int,
-	poison_res:  Int,
-	move_rate:   Int,
+	stun_def: Int,
+	move_res: Int,
+	debuff_res: Int,
+	poison_res: Int,
+	move_rate: Int,
 	debuff_rate: Int,
 	poison_rate: Int,
-	composure:   Int,
+	composure: Int,
 }
 
 #[repr(u8)]

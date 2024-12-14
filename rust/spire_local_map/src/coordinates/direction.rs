@@ -1,7 +1,18 @@
 use super::*;
 
 #[derive(
-	Default, Debug, Copy, Clone, PartialEq, Eq, Hash, Serialize, Deserialize, GodotConvert,
+	Default,
+	Debug,
+	Copy,
+	Clone,
+	PartialEq,
+	Eq,
+	Hash,
+	Serialize,
+	Deserialize,
+	GodotConvert,
+	Var,
+	Export,
 )]
 #[godot(via = u8)]
 #[repr(u8)]

@@ -51,13 +51,13 @@ pub trait CharacterData {
 pub trait NPCData {
 	fn stamina_amplitude(&self, level: i64) -> Int;
 
-	fn generate_random_stamina(&self, level: i64, rng: *mut Xoshiro256PlusPlus) -> MaxStamina
+	fn generate_random_stamina(&self, level: i64, rng: &mut impl Rng) -> MaxStamina
 	where Self: CharacterData {
 		let mut temp = self.max_stamina(level);
 		let amplitude = self.stamina_amplitude(level);
 
 		if amplitude > 0 {
-			temp += unsafe { (*rng).gen_range(0..=*amplitude) };
+			temp += rng.gen_range(0..=*amplitude);
 		}
 
 		temp

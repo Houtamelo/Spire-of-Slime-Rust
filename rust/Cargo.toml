@@ -15,6 +15,7 @@ main_menu = { package = "spire_main_menu", path = "spire_main_menu" }
 settings_menu = { package = "spire_settings_menu", path = "spire_settings_menu" }
 world_map = { package = "spire_world_map", path = "spire_world_map" }
 shared = { package = "spire_shared", path = "spire_shared" }
+serialization = { package = "spire_serialization", path = "spire_serialization" }
 
 godot = { workspace = true, features = ["experimental-godot-api", "experimental-threads"] }
 houtamelo_utils = { workspace = true }

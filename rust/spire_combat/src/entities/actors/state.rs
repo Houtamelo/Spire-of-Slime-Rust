@@ -27,7 +27,7 @@ pub struct GrapplingState {
 	pub duration_ms: Int,
 	pub accumulated_ms: Int,
 	pub victim_id: Id,
-	pub is_defeated: bool,
+	pub victim_defeated: bool,
 }
 
 #[derive(Serialize, Deserialize, Clone)]

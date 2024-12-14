@@ -1,6 +1,6 @@
 use super::*;
 
-#[derive(Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct PersistentHeal {
 	pub duration_ms: Int,
 	pub accumulated_ms: Int,

@@ -67,7 +67,7 @@ pub struct ActorStatsUI {
 	orgasm_toggles: Array<Gd<TextureRect>>,
 
 	#[init(default = OnReady::new(|| load_resource_as::<Texture2D>(
-		"res://Core/Combat/UI/Character Stats/Orgasm Counter/orgasm_off.png"
+		"res://core/combat/UI/Character Stats/Orgasm Counter/orgasm_off.png"
 	).unwrap()))]
 	orgasm_texture_off: OnReady<Gd<Texture2D>>,
 	#[init(default = OnReady::new(|| load_resource_as::<Texture2D>(

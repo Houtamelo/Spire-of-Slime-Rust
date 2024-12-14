@@ -1,6 +1,6 @@
 use combat::prelude::CombatState;
 
-use crate::internal_prelude::*;
+use super::*;
 
 #[allow(non_camel_case_types)]
 #[derive(Clone, Serialize, Deserialize)]

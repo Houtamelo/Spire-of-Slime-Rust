@@ -18,17 +18,21 @@ pub struct ActorBase {
 }
 
 impl ActorBase {
-	pub fn base_stat<Stat: GetBaseCommon + Clone>(&self) -> Stat {
+	pub fn base_stat<Stat: MemberOf<BaseStats, MemberType: Clone>>(&self) -> Stat::MemberType {
 		self.stats.get::<Stat>().clone()
 	}
 
-	pub fn base_stat_mut<Stat: GetBaseCommon>(&mut self) -> &mut Stat { self.stats.get_mut() }
+	pub fn base_stat_mut<Stat: MemberOf<BaseStats>>(&mut self) -> &mut Stat::MemberType {
+		self.stats.get_mut::<Stat>()
+	}
 
-	pub fn raw_stat<Stat: GetRawCommon + Clone>(&self) -> Stat {
+	pub fn raw_stat<Stat: MemberOf<RawStats, MemberType: Clone>>(&self) -> Stat::MemberType {
 		self.raw_stats.get::<Stat>().clone()
 	}
 
-	pub fn raw_stat_mut<Stat: GetRawCommon>(&mut self) -> &mut Stat { self.raw_stats.get_mut() }
+	pub fn raw_stat_mut<Stat: MemberOf<RawStats>>(&mut self) -> &mut Stat::MemberType {
+		self.raw_stats.get_mut::<Stat>()
+	}
 
 	pub fn get_status<SE: IStatusEffect + FromEnumRef<StatusEffect>>(&self) -> Option<&SE> {
 		self.statuses

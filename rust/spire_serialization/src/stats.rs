@@ -1,13 +1,6 @@
 use combat::prelude::*;
 
-#[allow(unused_imports)]
-use crate::internal_prelude::*;
-use crate::save::upgrades::{
-	PrimaryUpgrade,
-	PrimaryUpgradeCount,
-	SecondaryUpgrade,
-	SecondaryUpgradeCount,
-};
+use super::*;
 
 #[derive(Serialize, Deserialize, Clone)]
 pub struct GenericStats {

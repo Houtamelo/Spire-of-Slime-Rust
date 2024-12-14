@@ -68,19 +68,13 @@ impl SaveFilesController {
 			let global_path = ProjectSettings::singleton().globalize_path(&folder_path);
 			Os::singleton().move_to_trash(&global_path).log_if_err();
 		} else {
-			godot_warn!(
-				"Tried to delete a save that doesn't exist, named \"{}\"",
-				save_name
-			);
+			godot_warn!("Tried to delete a save that doesn't exist, named \"{}\"", save_name);
 		}
 	}
 
 	pub fn overwrite_save(&mut self, mut save: SaveFile) {
 		if self.saves.remove(&save.name).is_none() {
-			godot_warn!(
-				"Tried to overwrite a save that doesn't exist, named \"{}\"",
-				save.name
-			);
+			godot_warn!("Tried to overwrite a save that doesn't exist, named \"{}\"", save.name);
 		}
 
 		save.is_dirty = true;
@@ -183,7 +177,7 @@ fn backup_old_main(folder_path: GString, main_path: String) -> Result<()> {
 
 		break oldest_file
 			.map(pluck!(.0))
-			.unwrap_or_else(|| own!("backup_1.ron"));
+			.unwrap_or_else(|| String::from("backup_1.ron"));
 	};
 
 	let backup_file_path = format!("{folder_path}/{backup_file_name}");

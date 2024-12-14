@@ -1,11 +1,11 @@
 use super::*;
 
-mod character_stats;
+mod actor_stats;
 mod skill_button;
 mod speed_buttons;
 mod targeting_tooltip;
 
-pub use character_stats::*;
+pub use actor_stats::*;
 pub use skill_button::*;
 pub use speed_buttons::*;
 pub use targeting_tooltip::*;

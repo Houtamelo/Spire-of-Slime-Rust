@@ -19,7 +19,7 @@ pub struct SerializedBG {
 	pub tree:  SerializedBGTree,
 }
 
-fn deserialize_rng_mode(mode: SerializedRngMode, node: &mut Gd<Node2D>) -> Result<()> {
+fn deserialize_rng_mode(mode: SerializedRngMode, node: &mut Node2D) -> Result<()> {
 	match mode {
 		SerializedRngMode::Switch { on } => {
 			node.set_visible(on);
@@ -62,10 +62,7 @@ fn deserialize_rng_mode(mode: SerializedRngMode, node: &mut Gd<Node2D>) -> Resul
 				child.set_visible(true);
 				Ok(())
 			} else {
-				Err(anyhow!(
-					"Chosen not found in mutually exclusive mode: {:?}",
-					chosen
-				))
+				Err(anyhow!("Chosen not found in mutually exclusive mode: {:?}", chosen))
 			}
 		}
 	}
@@ -88,7 +85,7 @@ fn deserialize_tree(name: String, tree: SerializedBGTree, parent: &Node2D) -> Re
 }
 
 impl SerializedBG {
-	pub fn deserialize(self, parent: &mut Gd<Node2D>) -> Result<Gd<Node2D>> {
+	pub fn deserialize(self, parent: &mut Node2D) -> Result<Gd<Node2D>> {
 		let bg = self.stage.spawn(parent)?;
 		deserialize_tree(bg.get_name().to_string(), self.tree, &bg)?;
 		Ok(bg)

@@ -1,16 +1,13 @@
-#![allow(unused)] //todo!
 use combat::prelude::{EthelSkill, Exhaustion, GirlName, NemaSkill};
-use rand_xoshiro::rand_core::{RngCore, SeedableRng};
-use world_map::prelude::WorldLocation;
 
 use super::*;
 
 #[derive(Serialize, Deserialize, Clone)]
 pub struct DateTime {
-	year:   u64,
-	month:  u64,
-	day:    u64,
-	hour:   u64,
+	year: u64,
+	month: u64,
+	day: u64,
+	hour: u64,
 	minute: u64,
 	second: u64,
 }
@@ -55,7 +52,7 @@ impl SaveFile {
 
 		let mut rng = {
 			let mut seed = <Xoshiro256PlusPlus as SeedableRng>::Seed::default();
-			if let Err(err) = getrandom::getrandom(&mut seed) {
+			if let Err(err) = getrandom(&mut seed) {
 				godot_error!("Failed to get random seed: {err}");
 				Xoshiro256PlusPlus::seed_from_u64(1337)
 			} else {
@@ -64,7 +61,7 @@ impl SaveFile {
 		};
 
 		let ethel = EthelFile {
-			stats:     GenericStats::from_data(
+			stats: GenericStats::from_data(
 				Xoshiro256PlusPlus::seed_from_u64(rng.next_u64()),
 				combat::prelude::DEFAULT_ETHEL.deref(),
 			),
@@ -89,7 +86,9 @@ impl SaveFile {
 			name,
 			date_time,
 			rng,
-			state: SaveState::WorldMap_Event { event: todo!() },
+			state: SaveState::WorldMap_Event {
+				event: String::new(),
+			}, // MemberType
 			map_location: WorldLocation::Chapel,
 			ethel,
 			nema,
@@ -103,14 +102,14 @@ impl SaveFile {
 
 #[derive(Serialize, Deserialize, Clone, Default)]
 pub struct OtherVariables {
-	pub bools:   HashMap<String, bool>,
-	pub ints:    HashMap<String, i32>,
+	pub bools: HashMap<String, bool>,
+	pub ints: HashMap<String, i32>,
 	pub strings: HashMap<String, String>,
 }
 
 #[derive(Serialize, Deserialize, Clone)]
 pub struct EthelFile {
-	pub stats:     GenericStats,
+	pub stats: GenericStats,
 	pub skill_set: [Option<EthelSkill>; 4],
 }
 

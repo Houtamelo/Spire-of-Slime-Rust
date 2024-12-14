@@ -18,7 +18,7 @@ mod internal_prelude {
 
 	pub use bracket_noise::prelude::FastNoise;
 	pub use comfy_bounded_ints::prelude::*;
-	pub use godot::prelude::*;
+	pub use godot::{classes::*, prelude::*};
 	pub use houtamelo_utils::prelude::*;
 	pub use houtamelo_utils_gdext::prelude::*;
 	pub use rand_xoshiro::{Xoshiro256PlusPlus, rand_core::SeedableRng};

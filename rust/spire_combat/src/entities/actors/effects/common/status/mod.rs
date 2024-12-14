@@ -6,7 +6,7 @@ use super::*;
 
 delegated_enum! {
 	ENUM_OUT: {
-	#[derive(Serialize, Deserialize, Clone)]
+	#[derive(Serialize, Deserialize, Clone, Debug)]
 		pub enum StatusEffect {
 			Buff(Buff),
 			Debuff(Debuff),

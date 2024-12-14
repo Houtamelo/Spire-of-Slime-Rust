@@ -1,11 +1,5 @@
-#![allow(unused)]
-
+//TODO: node paths
 use super::*;
-
-lazy_stringname! { pub SIGNAL_OPEN_SETTINGS_MENU = "open_settings_menu" }
-lazy_stringname! { pub SIGNAL_OPEN_CHARACTER_MENU = "open_character_menu" }
-lazy_stringname! { pub SIGNAL_MARKER_CLICKED = "marker_clicked" }
-lazy_stringname! { pub SIGNAL_LINE_CLICKED = "line_clicked" }
 
 #[derive(GodotClass)]
 #[class(init, base = Node2D)]
@@ -16,23 +10,23 @@ pub struct WorldMapController {
 	player_location: Option<WorldLocation>,
 
 	#[init(node = "")]
-	marker_chapel:  OnReady<Gd<Area2D>>,
+	marker_chapel: OnReady<Gd<Area2D>>,
 	#[init(node = "")]
-	marker_grove:   OnReady<Gd<Area2D>>,
+	marker_grove: OnReady<Gd<Area2D>>,
 	#[init(node = "")]
-	marker_cave:    OnReady<Gd<Area2D>>,
+	marker_cave: OnReady<Gd<Area2D>>,
 	#[init(node = "")]
-	marker_forest:  OnReady<Gd<Area2D>>,
+	marker_forest: OnReady<Gd<Area2D>>,
 	mapped_markers: HashMap<WorldLocation, Gd<Area2D>>,
 
 	#[init(node = "")]
-	light_chapel:  OnReady<Gd<Light2D>>,
+	light_chapel: OnReady<Gd<Light2D>>,
 	#[init(node = "")]
-	light_grove:   OnReady<Gd<Light2D>>,
+	light_grove: OnReady<Gd<Light2D>>,
 	#[init(node = "")]
-	light_cave:    OnReady<Gd<Light2D>>,
+	light_cave: OnReady<Gd<Light2D>>,
 	#[init(node = "")]
-	light_forest:  OnReady<Gd<Light2D>>,
+	light_forest: OnReady<Gd<Light2D>>,
 	mapped_lights: HashMap<WorldLocation, Gd<Light2D>>,
 
 	#[init(node = "")]
@@ -51,12 +45,9 @@ pub struct WorldMapController {
 	button_character_menu: OnReady<Gd<Button>>,
 }
 
-/*
 #[godot_api]
 impl INode2D for WorldMapController {
 	fn ready(&mut self) {
-		todo!()
-
 		self.mapped_markers = HashMap::from([
 			(WorldLocation::Chapel, self.marker_chapel.clone()),
 			(WorldLocation::Grove, self.marker_grove.clone()),
@@ -64,279 +55,203 @@ impl INode2D for WorldMapController {
 			(WorldLocation::Cave, self.marker_cave.clone()),
 		]);
 
-		self.mapped_markers.iter()
-			.for_each(|(location, button_ref)|
-			button_ref.touch_assert_sane(|button| {
-				button.connect("input_event", owner_ref, fn_name(&Self::_input_event_marker),
-					location.to_shared_array(), Object::CONNECT_DEFERRED)
-					  .log_if_err();
-				button.connect("mouse_entered", owner_ref, fn_name(&Self::_mouse_entered_marker),
-					location.to_shared_array(), Object::CONNECT_DEFERRED)
-					  .log_if_err();
-				button.connect("mouse_exited", owner_ref, fn_name(&Self::_mouse_exited_marker),
-					location.to_shared_array(), Object::CONNECT_DEFERRED)
-					  .log_if_err();
-			})
-			);
+		for (location, bttn) in self.mapped_markers.clone() {
+			self.connect_with_deferred(&bttn, "input_event", move |this, args| {
+				let input_event = args.try_var_at::<Gd<InputEvent>>(0).ok_log_err()?;
+				if is_confirm_input(&input_event) {
+					this.base_mut()
+						.emit_signal(Self::SIGNAL_MARKER_CLICKED, &[location.to_variant()]);
+				}
+			});
 
-		self.mapped_lights = [
-			(WorldLocation::Chapel, self.light_chapel.unwrap()),
-			(WorldLocation::Grove, self.light_grove.unwrap()),
-			(WorldLocation::Forest, self.light_forest.unwrap()),
-			(WorldLocation::Cave, self.light_cave.unwrap()),
-		].into_iter().collect();
+			self.connect_with_deferred(&bttn, "mouse_entered", move |this, _| {
+				if let Some(marker) = this.mapped_markers.get_mut(&location) {
+					marker.set_modulate(Color::from_rgb(0.8, 0.3, 0.8));
+				}
 
-		self.mapped_lines = [
-			(crate::internal_prelude::WorldPath(WorldLocation::Chapel, WorldLocation::Grove).unwrap(), self.line_chapel_grove.unwrap()),
-			(crate::internal_prelude::WorldPath(WorldLocation::Grove, WorldLocation::Forest).unwrap(), self.line_grove_forest.unwrap()),
-			(crate::internal_prelude::WorldPath(WorldLocation::Forest, WorldLocation::Cave).unwrap(), self.line_forest_cave.unwrap()),
-			(crate::internal_prelude::WorldPath(WorldLocation::Cave, WorldLocation::Chapel).unwrap(), self.line_cave_chapel.unwrap())
-		].into_iter().collect();
+				if let Some(line) = this.active_line_adjacent_to_player(location) {
+					line.set_modulate(Color::from_rgb(0.8, 0.3, 0.8));
+				}
+			});
 
-		self.mapped_lines.iter()
-			.for_each(|(path, line_ref)|
-			line_ref.touch_assert_sane(|line| {
-				line.connect("input_event", owner_ref, fn_name(&Self::_input_event_line),
-					path.to_shared_array(), Object::CONNECT_DEFERRED)
-					.log_if_err();
-				line.connect("mouse_entered", owner_ref, fn_name(&Self::_mouse_entered_line),
-					path.to_shared_array(), Object::CONNECT_DEFERRED)
-					.log_if_err();
-				line.connect("mouse_exited", owner_ref, fn_name(&Self::_mouse_exited_line),
-					path.to_shared_array(), Object::CONNECT_DEFERRED)
-					.log_if_err();
-			})
-			);
+			self.connect_with_deferred(&bttn, "mouse_exited", move |this, _| {
+				if let Some(marker) = this.mapped_markers.get_mut(&location) {
+					marker.set_modulate(Color::from_rgb(1., 1., 1.));
+				}
 
-		self.button_settings_menu
-			.connect("pressed", owner_ref, fn_name(&Self::_button_pressed_settings_menu),
-				VariantArray::new_shared(), Object::CONNECT_DEFERRED)
-			.log_if_err();
+				if let Some(line) = this.active_line_adjacent_to_player(location) {
+					line.set_modulate(Color::from_rgb(1., 1., 1.));
+				}
+			});
+		}
 
-		self.button_character_menu
-			.connect("pressed", owner_ref, fn_name(&Self::_button_pressed_character_menu),
-				VariantArray::new_shared(), Object::CONNECT_DEFERRED)
-			.log_if_err();
+		self.mapped_lights = HashMap::from([
+			(WorldLocation::Chapel, (*self.light_chapel).clone()),
+			(WorldLocation::Grove, (*self.light_grove).clone()),
+			(WorldLocation::Forest, (*self.light_forest).clone()),
+			(WorldLocation::Cave, (*self.light_cave).clone()),
+		]);
+
+		self.mapped_lines = HashMap::from([
+			(
+				const { WorldPath::new(WorldLocation::Chapel, WorldLocation::Grove).unwrap() },
+				self.line_chapel_grove.clone(),
+			),
+			(
+				const { WorldPath::new(WorldLocation::Grove, WorldLocation::Forest).unwrap() },
+				self.line_grove_forest.clone(),
+			),
+			(
+				const { WorldPath::new(WorldLocation::Forest, WorldLocation::Cave).unwrap() },
+				self.line_forest_cave.clone(),
+			),
+			(
+				const { WorldPath::new(WorldLocation::Cave, WorldLocation::Chapel).unwrap() },
+				self.line_cave_chapel.clone(),
+			),
+		]);
+
+		for (path, line) in self.mapped_lines.clone() {
+			self.connect_with_deferred(&line, "input_event", move |this, args| {
+				let input_event = args.try_var_at::<Gd<InputEvent>>(0).ok_log_err()?;
+
+				if is_confirm_input(&input_event) {
+					this.base_mut()
+						.emit_signal(Self::SIGNAL_LINE_CLICKED, &[path.to_variant()]);
+				}
+			});
+
+			self.connect_with_deferred(&line, "mouse_entered", move |this, _| {
+				if let Some(line) = this.mapped_lines.get_mut(&path) {
+					line.set_modulate(Color::from_rgb(0.8, 0.3, 0.8));
+				}
+
+				if let Some(marker) = this.active_marker_adjacent_to_player(path) {
+					marker.set_modulate(Color::from_rgb(0.8, 0.3, 0.8));
+				}
+			});
+
+			self.connect_with_deferred(&line, "mouse_exited", move |this, _| {
+				if let Some(line) = this.mapped_lines.get_mut(&path) {
+					line.set_modulate(Color::from_rgb(1., 1., 1.));
+				}
+
+				if let Some(marker) = this.active_marker_adjacent_to_player(path) {
+					marker.set_modulate(Color::from_rgb(1., 1., 1.));
+				}
+			});
+		}
+
+		self.connect_with_deferred(&self.button_settings_menu.clone(), "pressed", |this, _| {
+			this.base_mut()
+				.emit_signal(Self::SIGNAL_OPEN_SETTINGS_MENU, &[]);
+		});
+
+		self.connect_with_deferred(&self.button_character_menu.clone(), "pressed", |this, _| {
+			this.base_mut()
+				.emit_signal(Self::SIGNAL_OPEN_CHARACTER_MENU, &[]);
+		});
 	}
 }
 
+impl WorldMapController {
+	pub const SIGNAL_OPEN_SETTINGS_MENU: &'static str = "open_settings_menu";
+	pub const SIGNAL_OPEN_CHARACTER_MENU: &'static str = "open_character_menu";
+	pub const SIGNAL_MARKER_CLICKED: &'static str = "marker_clicked";
+	pub const SIGNAL_LINE_CLICKED: &'static str = "line_clicked";
+}
 
 #[godot_api]
 impl WorldMapController {
-	#[signal] fn open_settings_menu() {}
-	#[signal] fn open_character_menu() {}
-	#[signal] fn marker_clicked(location: WorldLocation) {}
-	#[signal] fn line_clicked(path: WorldPath) {}
+	#[signal]
+	fn open_settings_menu() {}
+	#[signal]
+	fn open_character_menu() {}
+	#[signal]
+	fn marker_clicked(location: WorldLocation) {}
+	#[signal]
+	fn line_clicked(path: WorldPath) {}
 
-	#[func]
-	fn initialize(&mut self, player_location: WorldLocation, unlocked_paths: HashSet<WorldPath>) {
-		todo!()
-		/*
+	pub fn initialize(
+		&mut self,
+		player_location: WorldLocation,
+		unlocked_paths: HashSet<WorldPath>,
+	) {
 		self.player_location = Some(player_location);
-		let player_position = self.mapped_markers[&player_location]
+		let player_position = self.mapped_markers[&player_location].get_global_position();
+		self.player_icon.set_global_position(player_position);
 
-			.global_position();
-		self.player_icon
-
-			.set_global_position(player_position);
-
-		let unlocked_locations =
-			unlocked_paths.iter()
+		let unlocked_locations = unlocked_paths
+			.iter()
 			.flat_map(|path| [path.point_a(), path.point_b()])
 			.collect::<HashSet<WorldLocation>>();
 
-		self.mapped_markers
-			.iter()
-			.for_each(|(button_location, button_ref)| {
-				let Some(button) = (unsafe { button_ref.assume_safe_if_sane() })
-					else {
-						godot_error!("{}(): button_ref is not sane.", full_fn_name(&Self::initialize));
-						return;
-					};
+		for (location, button) in &mut self.mapped_markers {
+			let is_visible = unlocked_locations.contains(location);
+			button.set_visible(is_visible);
+			if let Some(light) = self.mapped_lights.get_mut(location) {
+				light.set_visible(is_visible)
+			}
 
-				let is_visible = unlocked_locations.contains(button_location);
-				button.set_visible(is_visible);
-				self.mapped_lights.get(button_location)
-
-					.set_visible(is_visible);
-
-				let path_to_player = WorldPath::new(player_location, *button_location);
-				let is_available = path_to_player.is_some_and(|path|
-					unlocked_paths.contains(&path));
-				button.set_pickable(is_available);
-
-				let color =
-					if is_available {
-						Color::from_rgb(1.0, 1.0, 1.0)
-					} else {
-						Color::from_rgba(1.0, 1.0, 1.0, 0.5)
-					};
-				button.set_modulate(color);
+			let path_to_player = WorldPath::new(player_location, *location);
+			let is_available = path_to_player.is_some_and(|path| unlocked_paths.contains(&path));
+			button.set_pickable(is_available);
+			button.set_modulate(if is_available {
+				Color::from_rgb(1.0, 1.0, 1.0)
+			} else {
+				Color::from_rgba(1.0, 1.0, 1.0, 0.5)
 			});
+		}
 
-		self.mapped_lines
-			.iter()
-			.for_each(|(path, line_ref)| {
-				let Some(line) = (unsafe { line_ref.assume_safe_if_sane() })
-					else {
-						godot_error!("{}(): line_ref is not sane.", full_fn_name(&Self::initialize));
-						return;
-					};
+		for (path, line) in &mut self.mapped_lines {
+			line.set_visible(unlocked_paths.contains(path));
 
-				let is_visible = unlocked_paths.contains(path);
-				line.set_visible(is_visible);
-
-				let is_available = path.contains(player_location);
-				line.set_pickable(is_available);
-
-				let color =
-					if is_available {
-						Color::from_rgb(1.0, 1.0, 1.0)
-					} else {
-						Color::from_rgba(1.0, 1.0, 1.0, 0.5)
-					};
-				line.set_modulate(color);
+			let is_available = path.contains(player_location);
+			line.set_pickable(is_available);
+			line.set_modulate(if is_available {
+				Color::from_rgb(1.0, 1.0, 1.0)
+			} else {
+				Color::from_rgba(1.0, 1.0, 1.0, 0.5)
 			});
-		*/
-	}
-
-	#[func]
-	fn _input_event_marker(
-		&self,
-		_viewport: Gd<Node>,
-		input_event: Gd<InputEvent>,
-		_shape_idx: i64,
-		location: WorldLocation
-	) {
-		todo!()
-		/*
-		if shared::input::is_confirm_input(unsafe { &input_event.assume_safe() }) {
-			owner.emit_signal(SIGNAL_MARKER_CLICKED, &[location.to_variant()]);
 		}
-		*/
 	}
 
-	#[func]
-	fn _input_event_line(
-		&self,
-		_viewport: Gd<Node>,
-		input_event: Gd<InputEvent>,
-		_shape_idx: i64,
-		path: WorldPath
-	) {
-		todo!()
-		/*
-		if shared::input::is_confirm_input(unsafe { &input_event.assume_safe() }) {
-			owner.emit_signal(SIGNAL_LINE_CLICKED, &[path.to_variant()]);
-		}
-		*/
-	}
-
-	fn active_line_adjacent_to_player(&self, marker_location: WorldLocation) -> Option<&Gd<Area2D>> {
-		let Some(player_location) = self.player_location
-			else {
-				godot_error!("{}(): player_location is None.", full_fn_name(&Self::_mouse_entered_marker));
-				return None;
-			};
+	fn active_line_adjacent_to_player(
+		&mut self,
+		marker_location: WorldLocation,
+	) -> Option<&mut Gd<Area2D>> {
+		let player_location = self.player_location?;
 
 		if player_location == marker_location {
 			return None;
 		}
 
-		return WorldPath::new(player_location, marker_location)
-			.and_then(|path|
-				self.mapped_lines.get(&path));
+		WorldPath::new(player_location, marker_location)
+			.and_then(|path| self.mapped_lines.get_mut(&path))
 	}
 
-	#[func]
-	fn _mouse_entered_marker(&self, location: WorldLocation) {
-		self.mapped_markers[&location]
-
-			.set_modulate(Color::from_rgb(0.8, 0.3, 0.8));
-
-		if let Some(line_ref) = self.active_line_adjacent_to_player(location) {
-			line_ref.touch_assert_sane(|line|
-				line.set_modulate(Color::from_rgb(0.8, 0.3, 0.8)));
-		}
-	}
-
-	#[func]
-	fn _mouse_exited_marker(&self, location: WorldLocation) {
-		self.mapped_markers[&location]
-
-			.set_modulate(Color::from_rgb(1., 1., 1.));
-
-		if let Some(line_ref) = self.active_line_adjacent_to_player(location) {
-			line_ref.touch_assert_sane(|line|
-				line.set_modulate(Color::from_rgb(1., 1., 1.)));
-		}
-	}
-
-	fn active_marker_adjacent_to_player(&self, line_path: WorldPath) -> Option<&Gd<Area2D>> {
-		let Some(player_location) = self.player_location
-			else {
-				godot_error!("{}(): player_location is None.", full_fn_name(&Self::_mouse_entered_line));
-				return None;
-			};
+	fn active_marker_adjacent_to_player(
+		&mut self,
+		line_path: WorldPath,
+	) -> Option<&mut Gd<Area2D>> {
+		let player_location = self.player_location?;
 
 		if !line_path.contains(player_location) {
 			return None;
 		}
 
-		let Some(line) = self.mapped_lines
-			.get(&line_path)
-			.and_then(|line_ref| unsafe { line_ref.assume_safe_if_sane() })
-			else {
-				godot_error!("{}(): line_path is not mapped.", full_fn_name(&Self::_mouse_entered_line));
-				return None;
+		let line = self.mapped_lines.get(&line_path)?;
+
+		if line.is_pickable() {
+			let not_player_location = if line_path.point_a() == player_location {
+				line_path.point_b()
+			} else {
+				line_path.point_a()
 			};
 
-		return if line.is_pickable() {
-			let not_player_location =
-				if line_path.point_a() == player_location {
-					line_path.point_b()
-				} else {
-					line_path.point_a()
-				};
-
-			self.mapped_markers.get(&not_player_location)
+			self.mapped_markers.get_mut(&not_player_location)
 		} else {
 			None
-		};
-	}
-
-	#[func]
-	fn _mouse_entered_line(&self, path: WorldPath) {
-		self.mapped_lines[&path]
-
-			.set_modulate(Color::from_rgb(0.8, 0.3, 0.8));
-
-		if let Some(marker_ref) = self.active_marker_adjacent_to_player(path) {
-			marker_ref.touch_assert_sane(|marker|
-				marker.set_modulate(Color::from_rgb(0.8, 0.3, 0.8)));
 		}
-	}
-
-	#[func]
-	fn _mouse_exited_line(&self, path: WorldPath) {
-		self.mapped_lines[&path]
-
-			.set_modulate(Color::from_rgb(1., 1., 1.));
-
-		if let Some(marker_ref) = self.active_marker_adjacent_to_player(path) {
-			marker_ref.touch_assert_sane(|marker|
-				marker.set_modulate(Color::from_rgb(1., 1., 1.)));
-		}
-	}
-
-	#[func]
-	fn _button_pressed_settings_menu(&self, #[base] owner: &Node) {
-		owner.emit_signal(SIGNAL_OPEN_SETTINGS_MENU, &[]);
-	}
-
-	#[func]
-	fn _button_pressed_character_menu(&self, #[base] owner: &Node) {
-		owner.emit_signal(SIGNAL_OPEN_CHARACTER_MENU, &[]);
 	}
 }
-*/

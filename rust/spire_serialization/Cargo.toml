@@ -1,0 +1,20 @@
+[package]
+name = "spire_serialization"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+combat = { path = "../spire_combat", package = "spire_combat" }
+
+comfy-bounded-ints = { workspace = true }
+declarative_type_state = { workspace = true }
+serde = { workspace = true }
+godot = { workspace = true }
+houtamelo_utils = { workspace = true }
+houtamelo_utils_gdext = { workspace = true }
+anyhow = { workspace = true }
+ron = { workspace = true }
+rand_xoshiro = { workspace = true }
+getrandom = { workspace = true }
+
+pluck = "0.1"

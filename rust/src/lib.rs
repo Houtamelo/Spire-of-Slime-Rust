@@ -3,7 +3,6 @@
 #![feature(macro_metavar_expr)]
 
 mod game_manager;
-mod save;
 mod start_screen;
 
 use internal_prelude::*;
@@ -25,11 +24,9 @@ mod internal_prelude {
 	pub use shared::prelude::*;
 	pub use spire_tween::prelude::*;
 	pub use uuid::Uuid;
-
-	pub use crate::save::*;
 }
 
 struct SpireLibrary;
 
 #[godot::prelude::gdextension]
-unsafe impl godot::prelude::ExtensionLibrary for SpireLibrary {}
+unsafe impl ExtensionLibrary for SpireLibrary {}

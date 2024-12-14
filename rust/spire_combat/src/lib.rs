@@ -25,10 +25,8 @@
 #![feature(box_patterns)]
 #![allow(non_camel_case_types)]
 #![allow(clippy::missing_safety_doc)]
-#![allow(clippy::needless_return)]
 #![allow(warnings)]
 #![allow(clippy::absurd_extreme_comparisons)]
-#![allow(clippy::not_unsafe_ptr_arg_deref)]
 #![allow(clippy::derived_hash_with_manual_eq)]
 #![allow(clippy::derive_ord_xor_partial_ord)]
 

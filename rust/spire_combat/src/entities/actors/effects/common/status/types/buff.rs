@@ -1,6 +1,6 @@
 use super::*;
 
-#[derive(Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct Buff {
 	pub duration_ms: Int,
 	pub stat: StatEnum,

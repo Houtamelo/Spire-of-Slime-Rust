@@ -10,78 +10,53 @@ pub use entity_anim::*;
 pub use stages::*;
 pub use ui::*;
 
-#[allow(unused)]
 #[derive(GodotClass)]
 #[class(no_init, base = Node2D)]
 pub struct CombatScene {
-	animation_nodes: AnimationNodes,
+	animation_nodes: Gd<AnimationNodes>,
 	bg: Gd<Node2D>,
 	bg_serial: SerializedBG,
-	character_stats_left: ActorStatsUI,
-	character_stats_right: ActorStatsUI,
+	character_stats_left: Gd<ActorStatsUI>,
+	character_stats_right: Gd<ActorStatsUI>,
 	targeting_tooltip: Gd<TargetingTooltip>,
 	speed_buttons: Gd<SpeedButtons>,
 }
 
 #[godot_api]
 impl CombatScene {
-	pub fn load(parent: &Node, stage: CombatBG, rng: &mut impl Rng) -> Result<Gd<Self>> {
-		todo!()
-		/*
-		let scene = spawn_prefab_as::<Node2D>("res://Core/Combat/scene_combat.tscn")?;
+	pub fn load(parent: &mut Node, stage: CombatBG, rng: &mut impl Rng) -> Result<Gd<Self>> {
+		let mut animation_nodes =
+			spawn_prefab_as::<AnimationNodes>("res://core/combat/scene_combat.tscn")?;
 
-		let (bg, bg_serial) = stage.spawn_randomized(scene, rng)?;
-		let animation_nodes = scene.try_cast::<AnimationNodes>()?;
+		let (bg, bg_serial) = stage.spawn_randomized(&mut animation_nodes, rng)?;
 
-		let character_stats_left = {
-			let node = scene.try_get_node::<Control>("canvas-layer_default/ui/actors-stats/left-side")?;
-			CharacterStatsUI::new(&node)?
-		};
-
+		let mut character_stats_left = animation_nodes
+			.get_child::<ActorStatsUI>("canvas-layer_default/ui/actors-stats/left-side")?;
 		character_stats_left.hide();
 
-		let character_stats_right = {
-			let node = scene.try_get_node::<Control>("canvas-layer_default/ui/actors-stats/right-side")?;
-			CharacterStatsUI::new(&node)?
-		};
-
+		let mut character_stats_right = animation_nodes
+			.get_child::<ActorStatsUI>("canvas-layer_default/ui/actors-stats/right-side")?;
 		character_stats_right.hide();
 
-		let targeting_tooltip = {
-			let node = scene.try_get_node::<Control>("canvas-layer_default/ui/targeting_tooltip")?;
-			TargetingTooltip::build_in(&node)?
-		};
+		let mut targeting_tooltip = animation_nodes
+			.get_child::<TargetingTooltip>("canvas-layer_default/ui/targeting_tooltip")?;
+		targeting_tooltip.hide();
 
-		targeting_tooltip.touch_assert_safe_mut(|tooltip, _| {
-			tooltip.hide()
-		});
+		let speed_buttons =
+			animation_nodes.get_child::<SpeedButtons>("canvas-layer_default/ui/speed-buttons")?;
 
-		let speed_buttons = {
-			let node = scene.try_get_node::<Control>("canvas-layer_default/ui/speed-buttons")?;
-			SpeedButtons::build_in(&node, SpeedSetting::UnPaused { speed: Speed::X1 })?
-		};
-
-		let _self = Self {
-			animation_nodes,
+		let this = Gd::from_object(Self {
+			animation_nodes: animation_nodes.clone(),
 			bg,
 			bg_serial,
 			character_stats_left,
 			character_stats_right,
 			targeting_tooltip,
 			speed_buttons,
-		}.emplace();
+		});
 
-		let base = _self.base();
+		parent.add_child(&this);
 
-		for child in scene.get_children().iter().map(|node| node.to_object::<Node>().unwrap()) {
-			scene.remove_child(child);
-			base.add_child(child, false);
-		}
-
-		scene.queue_free();
-		parent.add_child(unsafe { base.assume_shared() }, false);
-
-		Ok(_self.into_shared())
-		*/
+		Ok(this)
 	}
 }

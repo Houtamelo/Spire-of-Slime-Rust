@@ -8,15 +8,16 @@ members = [
     "rust/spire_shared",
     "rust/spire_main_menu",
     "rust/spire_local_map",
+    "rust/spire_serialization",
 ]
 resolver = "2"
 
 [workspace.dependencies]
-godot = "0.2"
+godot = "0.2.1"
 houtamelo_utils = "3.0"
-houtamelo_utils_gdext = "0.4.3"
+houtamelo_utils_gdext = "0.4.7"
 spire_tween = "0.4"
-declarative_type_state = "0.6"
+declarative_type_state = "0.7.3"
 rand = { version = "0.8.5", features = ["serde1"] }
 rand_xoshiro = { version = "0.6.0", features = ["serde1"] }
 serde = { version = "1.0", features = ["derive"] }

@@ -1,11 +1,11 @@
 use super::*;
 
-#[derive(Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct Riposte {
 	pub duration_ms: Int,
 	pub skill_power: Power,
-	pub acc_mode:    AccuracyMode,
-	pub crit_mode:   CritMode,
+	pub acc_mode: AccuracyMode,
+	pub crit_mode: CritMode,
 }
 
 impl IStatusEffect for Riposte {

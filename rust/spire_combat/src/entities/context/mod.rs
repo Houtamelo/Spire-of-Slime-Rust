@@ -109,6 +109,8 @@ impl ActorContext {
 			.filter(move |(actor, _)| actor.id != id)
 	}
 
+	pub fn iter_actors(&self) -> impl Iterator<Item = &Ptr<Actor>> { self.actors.values() }
+
 	pub fn position_of(&self, id: impl Into<Id>) -> Option<Position> {
 		let id = id.into();
 

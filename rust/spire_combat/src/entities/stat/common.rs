@@ -38,8 +38,8 @@ impl From<Damage> for SaneRange {
 }
 
 mod dyn_stats {
-	pub use type_table::{BaseStats, GetInTable as GetBaseCommon};
-	pub use value_table::{GetInTable as GetInStatTable, StatTable};
+	pub use type_table::BaseStats;
+	pub use value_table::StatTable;
 
 	use super::*;
 
@@ -70,8 +70,8 @@ mod dyn_stats {
 }
 
 mod raw_stats {
-	pub use type_table::{GetInTable as GetRawCommon, RawStats};
-	pub use value_table::{GetInTable as GetRawInStatTable, RawStatTable};
+	pub use type_table::RawStats;
+	pub use value_table::RawStatTable;
 
 	use super::*;
 

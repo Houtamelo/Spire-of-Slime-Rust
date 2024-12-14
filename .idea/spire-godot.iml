@@ -12,6 +12,7 @@
       <sourceFolder url="file://$MODULE_DIR$/rust/spire_local_map/src" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/rust/spire_main_menu/src" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/rust/spire_locale/src" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/rust/spire_serialization/src" isTestSource="false" />
       <excludeFolder url="file://$MODULE_DIR$/.idea/copilot/chatSessions" />
       <excludeFolder url="file://$MODULE_DIR$/target" />
       <excludeFolder url="file://$MODULE_DIR$/.history/rust" />

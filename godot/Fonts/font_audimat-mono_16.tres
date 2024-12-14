@@ -1,0 +1,13 @@
+[gd_resource type="DynamicFont" load_steps=5 format=2]
+
+[ext_resource path="res://Fonts/fallbacks/font_noto-sans-symbols-2_data.tres" type="DynamicFontData" id=1]
+[ext_resource path="res://Fonts/font_audimat-mono_data.tres" type="DynamicFontData" id=2]
+[ext_resource path="res://Fonts/fallbacks/font_noto-sans_data.tres" type="DynamicFontData" id=3]
+[ext_resource path="res://Fonts/fallbacks/font_noto-sans-symbols-1_data.tres" type="DynamicFontData" id=4]
+
+[resource]
+use_filter = true
+font_data = ExtResource( 2 )
+fallback/0 = ExtResource( 3 )
+fallback/1 = ExtResource( 4 )
+fallback/2 = ExtResource( 1 )

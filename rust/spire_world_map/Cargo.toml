@@ -4,6 +4,7 @@ version = "0.1.0"
 edition = "2021"
 
 [dependencies]
+serialization = { path = "../spire_serialization", package = "spire_serialization" }
 shared = { path = "../spire_shared", package = "spire_shared" }
 
 godot = { workspace = true }

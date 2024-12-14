@@ -29,6 +29,7 @@ pub enum PerkTickResult {
 }
 
 impl ActorContext {
+	// TODO: return results
 	pub fn tick_actors(&mut self, delta_ms: Int) {
 		let ids_to_tick = self
 			.left_states
@@ -235,7 +236,7 @@ impl ActorContext {
 				duration_ms,
 				accumulated_ms,
 				victim_id,
-				is_defeated,
+				victim_defeated: is_defeated,
 			}) => {
 				let Some(mut victim) = self.actor_ptr(*victim_id)
 				else {

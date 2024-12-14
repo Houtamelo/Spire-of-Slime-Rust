@@ -215,7 +215,7 @@ impl IControl for MainMenuController {
 	}
 
 	fn unhandled_input(&mut self, event: Gd<InputEvent>) {
-		if any_cancel_input(event) {
+		if any_cancel_input(&event) {
 			self.close_all_panels();
 		}
 	}

@@ -4,6 +4,7 @@
 #![feature(step_trait)]
 #![feature(macro_metavar_expr)]
 #![feature(macro_metavar_expr_concat)]
+#![feature(let_chains)]
 
 mod enumerator_macro;
 mod impl_trait_cast;

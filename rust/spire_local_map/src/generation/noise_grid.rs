@@ -5,10 +5,10 @@ use super::*;
 #[derive(Debug, Clone, Copy, Default)]
 pub struct NoiseInfo {
 	pub altitude: f32,
-	pub biome:    f32,
+	pub biome: f32,
 }
 
-#[derive(Default, Debug, Clone, Copy, GodotConvert)]
+#[derive(Default, Debug, Clone, Copy, GodotConvert, Var, Export)]
 #[godot(via = u8)]
 #[repr(u8)]
 pub enum GridShape {

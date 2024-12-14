@@ -1,4 +1,3 @@
-#[allow(unused_imports)]
 use main_menu::prelude::MainMenuController;
 
 use super::*;

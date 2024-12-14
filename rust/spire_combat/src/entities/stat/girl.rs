@@ -14,8 +14,8 @@ define_num_stats! {
 }
 
 mod dyn_stats {
-	pub use type_table::{BaseGirlStats, GetInTable as GetGirlCommon};
-	pub use value_table::{GetInTable as GetInGirlStatTable, GirlStatTable};
+	pub use type_table::BaseGirlStats;
+	pub use value_table::GirlStatTable;
 
 	use super::*;
 
@@ -32,8 +32,8 @@ mod dyn_stats {
 }
 
 mod raw_stats {
-	pub use type_table::{GetInTable as GetGirlRawCommon, RawGirlStats};
-	pub use value_table::{GetInTable as GetGirlRawInStatTable, RawGirlStatTable};
+	pub use type_table::RawGirlStats;
+	pub use value_table::RawGirlStatTable;
 
 	use super::*;
 

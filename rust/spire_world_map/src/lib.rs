@@ -1,9 +1,8 @@
 mod controller;
-mod location;
 mod path;
 
 pub mod prelude {
-	pub use crate::{controller::*, location::*, path::*};
+	pub use crate::{controller::*, path::*};
 }
 
 use internal_prelude::*;
@@ -14,6 +13,8 @@ mod internal_prelude {
 	pub use houtamelo_utils::prelude::*;
 	pub use houtamelo_utils_gdext::prelude::*;
 	pub use serde::{Deserialize, Serialize};
+	pub use serialization::prelude::*;
+	pub use shared::prelude::*;
 
 	pub use crate::prelude::*;
 }

@@ -155,7 +155,7 @@ impl BGTree {
 }
 
 impl RngMode {
-	fn randomize(&self, rng: &mut impl Rng, node: &mut Gd<Node2D>) -> Result<SerializedRngMode> {
+	fn randomize(&self, rng: &mut impl Rng, node: &mut Node2D) -> Result<SerializedRngMode> {
 		match self {
 			RngMode::Switch { on_chance } => {
 				let on = rng.gen_ratio(**on_chance as u32, 100);

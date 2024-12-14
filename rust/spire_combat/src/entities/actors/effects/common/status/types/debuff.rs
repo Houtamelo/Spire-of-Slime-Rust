@@ -1,12 +1,12 @@
 use super::*;
 
-#[derive(Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct Debuff {
 	pub duration_ms: Int,
 	pub kind: DebuffKind,
 }
 
-#[derive(Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub enum DebuffKind {
 	Standard { stat: StatEnum, stat_decrease: Int },
 	StaggeringForce,
